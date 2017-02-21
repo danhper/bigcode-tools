@@ -1,8 +1,8 @@
-organization := "java-transformer"
+organization := "com.tuvistavie"
 
-name := "java-transformer"
+name := "java-ast-transformer"
 
-version := "0.1-SNAPSHOT"
+version := "0.1"
 
 scalaVersion := "2.12.1"
 
@@ -15,3 +15,5 @@ libraryDependencies ++= Seq(
 
 scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature", "-language:implicitConversions")
 scalacOptions in Test ++= Seq("-Yrangepos")
+
+assemblyOption in assembly := (assemblyOption in assembly).value.copy(prependShellScript = Some(sbtassembly.AssemblyPlugin.defaultShellScript :+ ""))
