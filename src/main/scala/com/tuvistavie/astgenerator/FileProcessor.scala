@@ -3,11 +3,12 @@ package com.tuvistavie.astgenerator
 import java.io.FileInputStream
 import java.nio.file.{Path, Paths}
 
+import com.fasterxml.jackson.databind.JsonNode
 import com.github.javaparser.JavaParser
 import com.github.javaparser.ast.CompilationUnit
-import com.tuvistavie.astgenerator.visitors.{DependencyVisitor, IdentifierReplacementVisitor}
+import com.tuvistavie.astgenerator.visitors.{DependencyVisitor, IdentifierReplacementVisitor, JsonVisitor}
 
-class FileProcessor(private val compilationUnit: CompilationUnit) {
+class FileProcessor(val compilationUnit: CompilationUnit) {
   import com.tuvistavie.astgenerator.util.JavaConversions._
 
   val packageName: String = compilationUnit.getPackageDeclaration.toOption.map(_.getName.toString).getOrElse("")
@@ -22,7 +23,12 @@ class FileProcessor(private val compilationUnit: CompilationUnit) {
 
   def run() {
     val visitors = List(new IdentifierReplacementVisitor)
-    visitors.foreach { visitor => visitor.visit(compilationUnit, null) }
+    visitors.foreach { visitor => compilationUnit.accept(visitor, null) }
+  }
+
+  def toJson(): JsonNode = {
+    val visitor = new JsonVisitor
+    return compilationUnit.accept(visitor, null)
   }
 }
 

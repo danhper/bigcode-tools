@@ -1,5 +1,6 @@
 package com.tuvistavie.astgenerator
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.tuvistavie.astgenerator.util.FileUtils
 
 object Main {
@@ -10,10 +11,8 @@ object Main {
       val paths = FileUtils.findFiles(entryPoint, FileUtils.withExtension("java"))
       val processor = FileProcessor(paths.toList(1))
       processor.run()
-      println(processor)
-//      paths foreach { path =>
-//        val processor = FileProcessor(path)
-//      }
+      val mapper = new ObjectMapper()
+      println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(processor.toJson()))
     }
   }
 }
