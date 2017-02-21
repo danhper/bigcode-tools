@@ -26,9 +26,8 @@ class FileProcessor(val compilationUnit: CompilationUnit) {
     visitors.foreach { visitor => compilationUnit.accept(visitor, null) }
   }
 
-  def toJson(): JsonNode = {
-    val visitor = new JsonVisitor
-    return compilationUnit.accept(visitor, null)
+  def toJson: JsonNode = {
+    compilationUnit.accept(new JsonVisitor, null)
   }
 }
 
