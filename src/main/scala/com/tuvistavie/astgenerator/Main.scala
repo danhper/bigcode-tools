@@ -22,7 +22,7 @@ object Main {
   def makeOutput(config: Config, result: JsonNode): JsonNode = {
     val output = JsonNodeFactory.instance.objectNode()
     output.put("project", config.project)
-    output.put("version", Config.version)
+    output.put("version", Config.formatVersion)
     output.set("result", result)
     output
   }
