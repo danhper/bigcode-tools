@@ -1,5 +1,7 @@
 # java-transformer
 
+[![CircleCI](https://circleci.com/gh/tuvistavie/java-transformer.svg?style=svg&circle-token=2508e8ffaf677893dda1ba0bc670bbd06ce137c5)](https://circleci.com/gh/tuvistavie/java-transformer)
+
 Parses and transform Java AST.
 
 To create an executable jar, run:
