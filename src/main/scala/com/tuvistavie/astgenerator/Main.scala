@@ -8,8 +8,8 @@ import com.fasterxml.jackson.databind.{JsonNode, ObjectMapper, ObjectWriter}
 import com.tuvistavie.astgenerator.util.{CliParser, FileUtils}
 
 object Main {
-  def processFile(path: Path): JsonNode = {
-    val processor = FileProcessor(path)
+  def processFile(path: Path, config: Config): JsonNode = {
+    val processor = FileProcessor(path, config)
     processor.run()
     processor.toJson
   }
@@ -31,7 +31,7 @@ object Main {
     val files = FileUtils.findFiles(config.project, FileUtils.withExtension("java"))
     val projectPath = Paths.get(config.project)
     val result = JsonNodeFactory.instance.objectNode()
-    files map { f => (f, processFile(f)) } foreach {
+    files map { f => (f, processFile(f, config)) } foreach {
       case (f, r) => result.set(projectPath.relativize(f).toString, r)
     }
     val writer = makeWriter(config)

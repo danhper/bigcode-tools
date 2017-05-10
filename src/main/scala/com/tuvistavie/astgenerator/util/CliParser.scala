@@ -9,6 +9,9 @@ object CliParser {
     opt[Unit]("pretty").action( (_, c) =>
       c.copy(pretty = true) ).text("pretty format JSON")
 
+    opt[Unit]('k', "keep-identifiers").action( (_, c) =>
+      c.copy(keepIdentifiers = true) ).text("keep program identifiers and values")
+
     opt[String]('o', "output").required().action( (x, c) =>
       c.copy(output = x) ).text("file output")
 

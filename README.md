@@ -19,3 +19,11 @@ Usage: ast-transformer [options] <project>
   -o, --output <value>  file output
   <project>             project to parse
 ```
+
+## Setup
+
+Add the following to `~/.sbt/0.13/global.sbt`
+
+```scala
+resolvers += "Artima Maven Repository" at "http://repo.artima.com/releases"
+```

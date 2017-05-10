@@ -1,7 +1,9 @@
 package com.tuvistavie.astgenerator
 
-case class Config(pretty: Boolean = false, project: String = "",
-                  output: String = "")
+case class Config(pretty: Boolean = false,
+                  project: String = "",
+                  output: String = "",
+                  keepIdentifiers: Boolean = false)
 
 object Config {
   def version = "0.1"

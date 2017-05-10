@@ -1,7 +1,7 @@
 package com.tuvistavie.astgenerator.visitors
 
 import com.github.javaparser.ast.`type`.{ClassOrInterfaceType, TypeParameter}
-import com.github.javaparser.ast.body.{ClassOrInterfaceDeclaration, TypeDeclaration}
+import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration
 import com.github.javaparser.ast.expr._
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter
 

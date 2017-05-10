@@ -8,7 +8,7 @@ import com.github.javaparser.JavaParser
 import com.github.javaparser.ast.CompilationUnit
 import com.tuvistavie.astgenerator.visitors.{DependencyVisitor, IdentifierReplacementVisitor, JsonVisitor}
 
-class FileProcessor(val compilationUnit: CompilationUnit) {
+class FileProcessor(val compilationUnit: CompilationUnit, val config: Config) {
   import com.tuvistavie.astgenerator.util.JavaConversions._
 
   val packageName: String = compilationUnit.getPackageDeclaration.toOption.map(_.getName.toString).getOrElse("")
@@ -22,8 +22,9 @@ class FileProcessor(val compilationUnit: CompilationUnit) {
   }
 
   def run() {
-    val visitors = List(new IdentifierReplacementVisitor)
-    visitors.foreach { visitor => compilationUnit.accept(visitor, null) }
+    if (!config.keepIdentifiers) {
+      compilationUnit.accept(new IdentifierReplacementVisitor, null)
+    }
   }
 
   def toJson: JsonNode = {
@@ -32,10 +33,10 @@ class FileProcessor(val compilationUnit: CompilationUnit) {
 }
 
 object FileProcessor {
-  def apply(filepath: String): FileProcessor = FileProcessor(Paths.get(filepath))
-  def apply(filepath: Path): FileProcessor = {
+  def apply(filepath: String, config: Config): FileProcessor = FileProcessor(Paths.get(filepath), config)
+  def apply(filepath: Path, config: Config): FileProcessor = {
     val in = new FileInputStream(filepath.toFile)
     val compilationUnit = JavaParser.parse(in)
-    new FileProcessor(compilationUnit)
+    new FileProcessor(compilationUnit, config)
   }
 }
