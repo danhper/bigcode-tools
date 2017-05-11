@@ -8,18 +8,18 @@ import com.fasterxml.jackson.databind.{JsonNode, ObjectMapper, ObjectWriter}
 import com.tuvistavie.astgenerator.util.{CliParser, FileUtils}
 
 object Main {
-  def processFile(path: Path, config: Config): JsonNode = {
+  def processFile(path: Path, config: GenerateAstConfig): JsonNode = {
     val processor = FileProcessor(path, config)
     processor.run()
     processor.toJson
   }
 
-  def makeWriter(config: Config): ObjectWriter = {
+  def makeWriter(config: GenerateAstConfig): ObjectWriter = {
     val mapper = new ObjectMapper()
     if (config.pretty) mapper.writerWithDefaultPrettyPrinter() else mapper.writer()
   }
 
-  def makeOutput(config: Config, result: JsonNode): JsonNode = {
+  def makeOutput(config: GenerateAstConfig, result: JsonNode): JsonNode = {
     val output = JsonNodeFactory.instance.objectNode()
     output.put("project", config.project)
     output.put("version", Config.formatVersion)
@@ -27,7 +27,7 @@ object Main {
     output
   }
 
-  def processProject(config: Config): Unit = {
+  def generateAst(config: GenerateAstConfig): Unit = {
     val files = FileUtils.findFiles(config.project, FileUtils.withExtension("java"))
     val projectPath = Paths.get(config.project)
     val result = JsonNodeFactory.instance.objectNode()
@@ -42,9 +42,9 @@ object Main {
 
   def main(args: Array[String]): Unit = {
     CliParser.parse(args) match {
-      case Some(config) =>
-        processProject(config)
-      case None =>
+      case Some(Config("generate-ast", config: GenerateAstConfig)) =>
+        generateAst(config)
+      case _ =>
     }
   }
 }

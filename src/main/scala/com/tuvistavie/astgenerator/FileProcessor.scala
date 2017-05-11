@@ -8,7 +8,7 @@ import com.github.javaparser.JavaParser
 import com.github.javaparser.ast.CompilationUnit
 import com.tuvistavie.astgenerator.visitors.{DependencyVisitor, IdentifierReplacementVisitor, JsonVisitor}
 
-class FileProcessor(val compilationUnit: CompilationUnit, val config: Config) {
+class FileProcessor(val compilationUnit: CompilationUnit, val config: GenerateAstConfig) {
   import com.tuvistavie.astgenerator.util.JavaConversions._
 
   val packageName: String = compilationUnit.getPackageDeclaration.toOption.map(_.getName.toString).getOrElse("")
@@ -33,8 +33,8 @@ class FileProcessor(val compilationUnit: CompilationUnit, val config: Config) {
 }
 
 object FileProcessor {
-  def apply(filepath: String, config: Config): FileProcessor = FileProcessor(Paths.get(filepath), config)
-  def apply(filepath: Path, config: Config): FileProcessor = {
+  def apply(filepath: String, config: GenerateAstConfig): FileProcessor = FileProcessor(Paths.get(filepath), config)
+  def apply(filepath: Path, config: GenerateAstConfig): FileProcessor = {
     val in = new FileInputStream(filepath.toFile)
     val compilationUnit = JavaParser.parse(in)
     new FileProcessor(compilationUnit, config)
