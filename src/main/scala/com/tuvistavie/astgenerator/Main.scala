@@ -40,11 +40,19 @@ object Main {
     writer.writeValue(outputFile, output)
   }
 
+  def extractTokens(config: ExtractTokensConfig): Unit = {
+
+  }
+
   def main(args: Array[String]): Unit = {
     CliParser.parse(args) match {
-      case Some(Config("generate-ast", config: GenerateAstConfig)) =>
+      case Some(config: GenerateAstConfig) =>
         generateAst(config)
-      case _ =>
+      case Some(config: ExtractTokensConfig) =>
+        extractTokens(config)
+      case Some(NoConfig) =>
+        CliParser.showUsage()
+      case None =>
     }
   }
 }

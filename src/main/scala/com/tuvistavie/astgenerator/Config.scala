@@ -1,17 +1,20 @@
 package com.tuvistavie.astgenerator
 
-sealed trait CommandConfig
+sealed trait Config
 
-case object NoConfig extends CommandConfig
+case object NoConfig extends Config
 
 case class GenerateAstConfig(
   pretty: Boolean = false,
   project: String = "",
   output: String = "",
   keepIdentifiers: Boolean = false
-) extends CommandConfig
+) extends Config
 
-case class Config(command: String = "", commandConfig: CommandConfig = NoConfig)
+case class ExtractTokensConfig(
+  project: String = ""
+) extends Config
+
 
 object Config {
   def version = "0.1"
