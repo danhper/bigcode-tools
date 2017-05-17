@@ -5,7 +5,7 @@ import java.nio.file.{Path, Paths}
 
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import com.fasterxml.jackson.databind.{JsonNode, ObjectMapper, ObjectWriter}
-import com.tuvistavie.astgenerator.util.{CliParser, FileUtils}
+import com.tuvistavie.astgenerator.util.{CliParser, DotGenerator, FileUtils}
 
 object Main {
   def processFile(path: Path, config: GenerateAstConfig): JsonNode = {
@@ -41,7 +41,18 @@ object Main {
   }
 
   def extractTokens(config: ExtractTokensConfig): Unit = {
+    val files = FileUtils.findFiles(config.project, FileUtils.withExtension("java"))
+    val extractor = TokenExtractor(files.head)
+//    extractor.extractTokens.foreach { token => println(token.text) }
+//    extractor.simpleTree()
+  }
 
+  def generateDot(config: GenerateDotConfig): Unit = {
+    val dotGenerator = DotGenerator(config.filepath)
+    val result = dotGenerator.generateDot(config.output)
+    if (!config.silent) {
+      println(result)
+    }
   }
 
   def main(args: Array[String]): Unit = {
@@ -50,6 +61,8 @@ object Main {
         generateAst(config)
       case Some(config: ExtractTokensConfig) =>
         extractTokens(config)
+      case Some(config: GenerateDotConfig) =>
+        generateDot(config)
       case Some(NoConfig) =>
         CliParser.showUsage()
       case None =>

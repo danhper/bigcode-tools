@@ -15,6 +15,11 @@ case class ExtractTokensConfig(
   project: String = ""
 ) extends Config
 
+case class GenerateDotConfig(
+  filepath: String = "",
+  output: Option[String] = None,
+  silent: Boolean = false
+) extends Config
 
 object Config {
   def version = "0.1"

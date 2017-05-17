@@ -1,6 +1,6 @@
 package com.tuvistavie.astgenerator.util
 
-import com.tuvistavie.astgenerator.{Config, ExtractTokensConfig, GenerateAstConfig, NoConfig}
+import com.tuvistavie.astgenerator._
 
 object CliParser {
 
@@ -15,7 +15,7 @@ object CliParser {
         c.copy(keepIdentifiers = true) } }.text("keep program identifiers and values"),
 
       opt[String]('o', "output").required().action { (x, c) => (c: @unchecked) match { case c: GenerateAstConfig =>
-        c.copy(output = x) } }.text("file output"),
+        c.copy(output = x) } }.text("output file"),
 
       arg[String]("<project>").action { (x, c) => (c: @unchecked) match { case c: GenerateAstConfig =>
         c.copy(project = x) } }.text("project to parse")
@@ -24,6 +24,15 @@ object CliParser {
     cmd("extract-tokens").action((_, _) => ExtractTokensConfig()).children(
       arg[String]("<project>").action { (x, c) => (c: @unchecked) match { case c: ExtractTokensConfig =>
         c.copy(project = x) } }.text("project to parse")
+    )
+
+    cmd("generate-dot").action((_, _) => GenerateDotConfig()).children(
+      arg[String]("<filepath>").action { (x, c) => (c: @unchecked) match { case c: GenerateDotConfig =>
+        c.copy(filepath = x) } }.text("file to parse"),
+      opt[String]('o', "output").action { (x, c) => (c: @unchecked) match { case c: GenerateDotConfig =>
+        c.copy(output = Some(x)) } }.text("output file"),
+      opt[Unit]('s', "silent").action { (_, c) => (c: @unchecked) match { case c: GenerateDotConfig =>
+        c.copy(silent = true) } }.text("do not output dot")
     )
   }
 
