@@ -1,6 +1,5 @@
 package com.tuvistavie.astgenerator.visitors
 
-import com.github.javaparser.ast.Node
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration
 import com.github.javaparser.ast.expr._
 import com.github.javaparser.ast.visitor.GenericVisitorAdapter

@@ -1,4 +1,4 @@
-package com.tuvistavie.astgenerator
+package com.tuvistavie.astgenerator.ast
 
 import java.io.FileInputStream
 import java.nio.file.{Path, Paths}
@@ -6,9 +6,10 @@ import java.nio.file.{Path, Paths}
 import com.fasterxml.jackson.databind.JsonNode
 import com.github.javaparser.JavaParser
 import com.github.javaparser.ast.CompilationUnit
+import com.tuvistavie.astgenerator.GenerateAstConfig
 import com.tuvistavie.astgenerator.visitors.{DependencyVisitor, IdentifierReplacementVisitor, JsonVisitor}
 
-class FileProcessor(val compilationUnit: CompilationUnit, val config: GenerateAstConfig) {
+class JSONGenerator(val compilationUnit: CompilationUnit, val config: GenerateAstConfig) {
   import com.tuvistavie.astgenerator.util.JavaConversions._
 
   val packageName: String = compilationUnit.getPackageDeclaration.toOption.map(_.getName.toString).getOrElse("")
@@ -32,11 +33,11 @@ class FileProcessor(val compilationUnit: CompilationUnit, val config: GenerateAs
   }
 }
 
-object FileProcessor {
-  def apply(filepath: String, config: GenerateAstConfig): FileProcessor = FileProcessor(Paths.get(filepath), config)
-  def apply(filepath: Path, config: GenerateAstConfig): FileProcessor = {
+object JSONGenerator {
+  def apply(filepath: String, config: GenerateAstConfig): JSONGenerator = JSONGenerator(Paths.get(filepath), config)
+  def apply(filepath: Path, config: GenerateAstConfig): JSONGenerator = {
     val in = new FileInputStream(filepath.toFile)
     val compilationUnit = JavaParser.parse(in)
-    new FileProcessor(compilationUnit, config)
+    new JSONGenerator(compilationUnit, config)
   }
 }

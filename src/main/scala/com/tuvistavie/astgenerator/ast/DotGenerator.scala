@@ -1,4 +1,4 @@
-package com.tuvistavie.astgenerator.util
+package com.tuvistavie.astgenerator.ast
 
 import java.io.{FileInputStream, IOException}
 import java.nio.charset.StandardCharsets
@@ -6,6 +6,7 @@ import java.nio.file.{Files, Path, Paths}
 
 import com.github.javaparser.JavaParser
 import com.github.javaparser.ast.{CompilationUnit, Node}
+import com.tuvistavie.astgenerator.GenerateDotConfig
 
 import scala.collection.JavaConverters._
 import scala.sys.process._
@@ -14,11 +15,11 @@ import scala.sys.process._
 class DotGenerator(val filepath: Path) {
   val parsed: CompilationUnit = JavaParser.parse(new FileInputStream(filepath.toFile))
 
-  def generateDot(output: Option[String] = None): String = {
+  def generateDot(generateDotConfig: GenerateDotConfig): String = {
     val links = generateLinks(parsed).map { case (n1, n2) =>
       s"${nodeId(n1)} -> ${nodeId(n2)};"
     }
-    val nodes = generateNodes(parsed).map(formatNode)
+    val nodes = generateNodes(parsed).map(formatNode(_, generateDotConfig.hideIdentifiers))
 
     val dot = s"""digraph ${filepath.getFileName.toString.replace(".", "_")} {
         ${nodes.mkString("\n")}
@@ -26,7 +27,7 @@ class DotGenerator(val filepath: Path) {
     }
     """.stripMargin
 
-    output.foreach(outputDot(dot, _))
+    generateDotConfig.output.foreach(outputDot(dot, _))
     dot
   }
 
@@ -75,8 +76,13 @@ class DotGenerator(val filepath: Path) {
     Files.write(output, dot.getBytes(StandardCharsets.UTF_8))
   }
 
-  private def formatNode(node: Node): String = {
-    s"${nodeId(node)} [label = ${node.getClass.getSimpleName}];"
+  private def formatNode(node: Node, hideIdentifiers: Boolean): String = {
+    s"""${nodeId(node)} [label = "${formatLabel(node, hideIdentifiers)}"];"""
+  }
+
+  private def formatLabel(node: Node, hideIdentifiers: Boolean) = {
+    val token = TokenExtractor.extractToken(node)
+    if (hideIdentifiers) { token.tokenType } else { token.label }
   }
 
   private def nodeId(node: Node): Int = System.identityHashCode(node)

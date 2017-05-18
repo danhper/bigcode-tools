@@ -18,7 +18,8 @@ case class ExtractTokensConfig(
 case class GenerateDotConfig(
   filepath: String = "",
   output: Option[String] = None,
-  silent: Boolean = false
+  silent: Boolean = false,
+  hideIdentifiers: Boolean = false
 ) extends Config
 
 object Config {

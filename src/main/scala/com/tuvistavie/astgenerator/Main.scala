@@ -5,11 +5,12 @@ import java.nio.file.{Path, Paths}
 
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import com.fasterxml.jackson.databind.{JsonNode, ObjectMapper, ObjectWriter}
-import com.tuvistavie.astgenerator.util.{CliParser, DotGenerator, FileUtils}
+import com.tuvistavie.astgenerator.ast.{DotGenerator, JSONGenerator, TokenExtractor}
+import com.tuvistavie.astgenerator.util.{CliParser, FileUtils}
 
 object Main {
   def processFile(path: Path, config: GenerateAstConfig): JsonNode = {
-    val processor = FileProcessor(path, config)
+    val processor = JSONGenerator(path, config)
     processor.run()
     processor.toJson
   }
@@ -49,7 +50,7 @@ object Main {
 
   def generateDot(config: GenerateDotConfig): Unit = {
     val dotGenerator = DotGenerator(config.filepath)
-    val result = dotGenerator.generateDot(config.output)
+    val result = dotGenerator.generateDot(config)
     if (!config.silent) {
       println(result)
     }

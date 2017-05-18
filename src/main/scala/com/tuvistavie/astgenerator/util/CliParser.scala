@@ -32,7 +32,9 @@ object CliParser {
       opt[String]('o', "output").action { (x, c) => (c: @unchecked) match { case c: GenerateDotConfig =>
         c.copy(output = Some(x)) } }.text("output file"),
       opt[Unit]('s', "silent").action { (_, c) => (c: @unchecked) match { case c: GenerateDotConfig =>
-        c.copy(silent = true) } }.text("do not output dot")
+        c.copy(silent = true) } }.text("do not output dot"),
+      opt[Unit]("hide-identifiers").action { (_, c) => (c: @unchecked) match { case c: GenerateDotConfig =>
+        c.copy(hideIdentifiers = true) } }.text("do not show tokens")
     )
   }
 
