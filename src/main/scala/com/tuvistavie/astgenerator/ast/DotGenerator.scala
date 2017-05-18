@@ -99,4 +99,12 @@ class DotGenerator(val filepath: Path) {
 object DotGenerator {
   def apply(filepath: String): DotGenerator = DotGenerator(Paths.get(filepath))
   def apply(filepath: Path): DotGenerator = new DotGenerator(filepath)
+
+  def run(config: GenerateDotConfig): Unit = {
+    val dotGenerator = DotGenerator(config.filepath)
+    val result = dotGenerator.generateDot(config)
+    if (!config.silent) {
+      println(result)
+    }
+  }
 }
