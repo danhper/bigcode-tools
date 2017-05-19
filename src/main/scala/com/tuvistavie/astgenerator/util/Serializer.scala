@@ -2,6 +2,8 @@ package com.tuvistavie.astgenerator.util
 import resource.managed
 import java.io._
 
+import scala.reflect.ClassTag
+
 object Serializer {
   def dumpToFile(obj: Any, filepath: String): Unit = {
     for {
@@ -22,10 +24,13 @@ object Serializer {
     }
   }
 
-  def loadFromFile[A](filepath: String): A = {
+  def loadFromFile[A](filepath: String)(implicit Tag: ClassTag[A]): A = {
     managed(new FileInputStream(filepath))
       .flatMap(fis => managed(new ScalaObjectInputStream(fis)))
-      .map(ois => ois.readObject().asInstanceOf[A])
-      .acquireAndGet(identity)
+      .map(ois => ois.readObject())
+      .acquireAndGet {
+        case Tag(x) => x
+        case v => throw new RuntimeException(s"could not cast to ${Tag.runtimeClass.getName}")
+      }
   }
 }

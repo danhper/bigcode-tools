@@ -70,6 +70,6 @@ object VocabularyGenerator {
   }
 
   def loadFromFile(filepath: String): Set[Subgraph] = {
-    Serializer.loadFromFile(filepath)
+    Serializer.loadFromFile[Set[Subgraph]](filepath)
   }
 }

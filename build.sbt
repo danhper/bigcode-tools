@@ -16,6 +16,9 @@ libraryDependencies ++= Seq(
 
 )
 
-scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature", "-language:implicitConversions")
+
+javacOptions ++= Seq("-Xlint:unchecked", "-Xlint:deprecation")
+
+scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature", "-language:implicitConversions", "-Xlint")
 
 assemblyOption in assembly := (assemblyOption in assembly).value.copy(prependShellScript = Some(sbtassembly.AssemblyPlugin.defaultShellScript :+ ""))
