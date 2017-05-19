@@ -16,11 +16,11 @@ object TokenExtractor {
     case n => Token(n)
   }
 
-  private def safeNumToString[A](n: => A)(implicit num: Numeric[A]): Option[String] = {
-    util.Try(n).map(numToString(_)(num)).toOption
+  private def safeNumToString[A](n: => A): Option[String] = {
+    util.Try(n).map(numToString(_)).toOption
   }
 
-  private def numToString[A](n: A)(implicit num: Numeric[A]): String = n match {
+  private def numToString[A](n: A): String = n match {
     case 0 => "0"
     case _ => "NON-ZERO"
   }

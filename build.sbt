@@ -4,7 +4,7 @@ name := "java-ast-transformer"
 
 version := "0.1"
 
-scalaVersion := "2.12.1"
+scalaVersion := "2.12.2"
 
 libraryDependencies ++= Seq(
   "com.github.javaparser" % "javaparser-core" % "3.1.0-beta.2",
