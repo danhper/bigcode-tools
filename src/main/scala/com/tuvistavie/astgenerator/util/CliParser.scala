@@ -32,9 +32,20 @@ object CliParser {
       opt[String]('o', "output").action { (x, c) => (c: @unchecked) match { case c: GenerateDotConfig =>
         c.copy(output = Some(x)) } }.text("output file"),
       opt[Unit]('s', "silent").action { (_, c) => (c: @unchecked) match { case c: GenerateDotConfig =>
-        c.copy(silent = true) } }.text("do not output dot"),
+        c.copy(silent = true) } }.text("do not output dot to stdout"),
       opt[Unit]("hide-identifiers").action { (_, c) => (c: @unchecked) match { case c: GenerateDotConfig =>
         c.copy(hideIdentifiers = true) } }.text("do not show tokens")
+    )
+
+    cmd("generate-vocabulary").action((_, _) => GenerateVocabularyConfig()).children(
+      arg[String]("<project>").action { (x, c) => (c: @unchecked) match { case c: GenerateVocabularyConfig =>
+        c.copy(project = x) } }.text("project from which vocabulary should be generated"),
+      opt[Seq[Int]]('d', "depth").valueName("<depth1>,<depth2>").action { (x, c) => (c: @unchecked) match { case c: GenerateVocabularyConfig =>
+        c.copy(depths = x) } }.text("the depth of the extracted subgraphs"),
+      opt[String]('o', "output").action { (x, c) => (c: @unchecked) match { case c: GenerateVocabularyConfig =>
+        c.copy(output = Some(x)) } }.text("output file"),
+      opt[Unit]('s', "silent").action { (_, c) => (c: @unchecked) match { case c: GenerateVocabularyConfig =>
+        c.copy(silent = true) } }.text("do not output info to stdout")
     )
   }
 
