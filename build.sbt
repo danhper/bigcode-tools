@@ -12,8 +12,8 @@ libraryDependencies ++= Seq(
   "com.github.scopt" %% "scopt" % "3.5.0",
   "org.scalactic" %% "scalactic" % "3.0.1",
   "org.scalatest" %% "scalatest" % "3.0.1" % "test",
-  "com.jsuereth" %% "scala-arm" % "2.0"
-
+  "com.jsuereth" %% "scala-arm" % "2.0",
+  "org.deeplearning4j" % "deeplearning4j-core" % "0.8.0"
 )
 
 

@@ -30,7 +30,7 @@ object Serializer {
       .map(ois => ois.readObject())
       .acquireAndGet {
         case Tag(x) => x
-        case v => throw new RuntimeException(s"could not cast to ${Tag.runtimeClass.getName}")
+        case _ => throw new RuntimeException(s"could not cast to ${Tag.runtimeClass.getName}")
       }
   }
 }

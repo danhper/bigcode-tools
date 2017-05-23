@@ -29,6 +29,12 @@ case class GenerateVocabularyConfig(
   silent: Boolean = false
 ) extends Config
 
+case class SkipgramConfig(
+  project: String = "",
+  windowDepth: Int = 2,
+  includeSiblings: Boolean = true
+) extends Config
+
 object Config {
   def version = "0.1"
   def formatVersion = "1.0"

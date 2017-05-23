@@ -12,6 +12,8 @@ object Main {
         // extractTokens(config)
       case Some(config: GenerateDotConfig) =>
         DotGenerator.run(config)
+      case Some(config: SkipgramConfig) =>
+        // create embedding
       case Some(config: GenerateVocabularyConfig) =>
         VocabularyGenerator.generateProjectVocabulary(config)
       case Some(NoConfig) =>

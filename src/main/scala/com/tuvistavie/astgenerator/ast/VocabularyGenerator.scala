@@ -6,7 +6,7 @@ import java.nio.file.{Path, Paths}
 import com.github.javaparser.JavaParser
 import com.github.javaparser.ast.Node
 import com.tuvistavie.astgenerator.GenerateVocabularyConfig
-import com.tuvistavie.astgenerator.models.Subgraph
+import com.tuvistavie.astgenerator.models.{Subgraph, Vocabulary}
 import com.tuvistavie.astgenerator.util.{FileUtils, Serializer}
 
 import scala.collection.JavaConverters._
@@ -54,17 +54,17 @@ class VocabularyGenerator {
 object VocabularyGenerator {
   def apply(): VocabularyGenerator = new VocabularyGenerator()
 
-  def generateProjectVocabulary(config: GenerateVocabularyConfig): Set[Subgraph] = {
+  def generateProjectVocabulary(config: GenerateVocabularyConfig): Vocabulary = {
     val extractor = VocabularyGenerator()
     val files = FileUtils.findFiles(config.project, FileUtils.withExtension("java"))
     val vocabulary: mutable.Set[Subgraph] = mutable.Set.empty
     files.foreach { filepath =>
       vocabulary ++= extractor.generateVocabulary(filepath, config.depths)
     }
-    val extractedVocabulary = vocabulary.toSet
+    val extractedVocabulary = Vocabulary(vocabulary.toSet)
     config.output.foreach(f => Serializer.dumpToFile(extractedVocabulary, f))
     if (!config.silent) {
-      println(s"extracted ${vocabulary.size} letters from ${files.size} files")
+      println(s"extracted ${extractedVocabulary.size} letters from ${files.size} files")
     }
     extractedVocabulary
   }
