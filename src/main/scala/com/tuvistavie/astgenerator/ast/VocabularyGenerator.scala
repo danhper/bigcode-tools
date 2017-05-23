@@ -6,7 +6,7 @@ import java.nio.file.{Path, Paths}
 import com.github.javaparser.JavaParser
 import com.github.javaparser.ast.Node
 import com.tuvistavie.astgenerator.GenerateVocabularyConfig
-import com.tuvistavie.astgenerator.models.{Subgraph, Vocabulary}
+import com.tuvistavie.astgenerator.models.{Subgraph, SubgraphVocabItem, Vocabulary}
 import com.tuvistavie.astgenerator.util.{FileUtils, Serializer}
 
 import scala.collection.JavaConverters._
@@ -14,6 +14,9 @@ import scala.collection.mutable
 
 
 class VocabularyGenerator {
+  private val vocabulary: mutable.Map[Subgraph, Int] = mutable.Map.empty
+  private val vocabularyItems: mutable.Map[Int, SubgraphVocabItem] = mutable.Map.empty
+
   def createSubgraph(node: Node, depth: Int): Subgraph = {
     if (depth == 0) {
       return Subgraph(TokenExtractor.extractToken(node))
@@ -23,20 +26,25 @@ class VocabularyGenerator {
     currentSubgraph
   }
 
-  def generateVocabulary(filepath: String, depths: Seq[Int] = List(1)): Set[Subgraph] = {
+  def generateVocabulary(filepath: String, depths: Seq[Int] = List(1)): Unit = {
     generateVocabulary(Paths.get(filepath), depths)
   }
 
-  def generateVocabulary(filepath: Path, depths: Seq[Int]): Set[Subgraph] = {
+  def generateVocabulary(filepath: Path, depths: Seq[Int]): Unit = {
     val root = JavaParser.parse(new FileInputStream(filepath.toFile))
-    val vocabulary: mutable.Set[Subgraph] = mutable.Set.empty
     val nodes = getNodes(root)
     nodes.foreach { n =>
       depths.foreach { d =>
-        vocabulary += createSubgraph(n, d)
+        val subgraph = createSubgraph(n, d)
+        if (!vocabulary.contains(subgraph)) {
+          vocabulary += (subgraph -> vocabularyItems.size)
+          vocabularyItems += (vocabularyItems.size -> SubgraphVocabItem(subgraph))
+        }
+        val index = vocabulary(subgraph)
+        val item = vocabularyItems(index)
+        vocabularyItems.update(index, item.copy(count = item.count + 1))
       }
     }
-    vocabulary.toSet
   }
 
   private def getNodes(root: Node): List[Node] = {
@@ -45,23 +53,24 @@ class VocabularyGenerator {
     while (queue.nonEmpty) {
       val currentNode = queue.dequeue()
       nodes += currentNode
-      currentNode.getChildNodes.forEach(n => queue.enqueue(n))
+      currentNode.getChildNodes.asScala.foreach(n => queue.enqueue(n))
     }
     nodes.toList
   }
+
+  def create(): Vocabulary = Vocabulary(vocabularyItems.toMap, vocabulary.toMap)
 }
 
 object VocabularyGenerator {
   def apply(): VocabularyGenerator = new VocabularyGenerator()
 
   def generateProjectVocabulary(config: GenerateVocabularyConfig): Vocabulary = {
-    val extractor = VocabularyGenerator()
+    val generator = VocabularyGenerator()
     val files = FileUtils.findFiles(config.project, FileUtils.withExtension("java"))
-    val vocabulary: mutable.Set[Subgraph] = mutable.Set.empty
     files.foreach { filepath =>
-      vocabulary ++= extractor.generateVocabulary(filepath, config.depths)
+      generator.generateVocabulary(filepath, config.depths)
     }
-    val extractedVocabulary = Vocabulary(vocabulary.toSet)
+    val extractedVocabulary = generator.create()
     config.output.foreach(f => Serializer.dumpToFile(extractedVocabulary, f))
     if (!config.silent) {
       println(s"extracted ${extractedVocabulary.size} letters from ${files.size} files")
@@ -69,7 +78,7 @@ object VocabularyGenerator {
     extractedVocabulary
   }
 
-  def loadFromFile(filepath: String): Set[Subgraph] = {
-    Serializer.loadFromFile[Set[Subgraph]](filepath)
+  def loadFromFile(filepath: String): Vocabulary = {
+    Serializer.loadFromFile[Vocabulary](filepath)
   }
 }
