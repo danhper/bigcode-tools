@@ -7,23 +7,36 @@ Parses and transform Java AST.
 To create an executable jar, run:
 
 ```
-sbt assembly
+make jar
 ```
 
 ## Usage
 
 ```
-Usage: ast-transformer [options] <project>
+ast-transformer 0.1
+  Usage: ast-transformer [generate-ast|extract-tokens|generate-dot|generate-vocabulary] <args>...
 
-  --pretty              pretty format JSON
-  -o, --output <value>  file output
-  <project>             project to parse
-```
+  Command: generate-ast [options] <project>
 
-## Setup
+    --pretty                 pretty format JSON
+    -k, --keep-identifiers   keep program identifiers and values
+    -o, --output <value>     output file
+    <project>                project to parse
+  Command: extract-tokens <project>
 
-Add the following to `~/.sbt/0.13/global.sbt`
+    <project>                project to parse
+  Command: generate-dot [options] <filepath>
 
-```scala
-resolvers += "Artima Maven Repository" at "http://repo.artima.com/releases"
+    <filepath>               file to parse
+    -o, --output <value>     output file
+    -s, --silent             do not output dot to stdout
+    --hide-identifiers       do not show tokens
+  Command: generate-vocabulary [options] <project>
+
+    <project>                project from which vocabulary should be generated
+    -d, --depth <depth1>,<depth2>
+                             the depth of the extracted subgraphs
+    -o, --output <value>     output file
+    -s, --silent             do not output info to stdout
+
 ```
