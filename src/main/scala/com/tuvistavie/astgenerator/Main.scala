@@ -1,6 +1,7 @@
 package com.tuvistavie.astgenerator
 
 import com.tuvistavie.astgenerator.ast.{DotGenerator, JSONGenerator, VocabularyGenerator}
+import com.tuvistavie.astgenerator.models._
 import com.tuvistavie.astgenerator.util.CliParser
 
 object Main {

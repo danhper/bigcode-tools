@@ -2,8 +2,7 @@ package com.tuvistavie.astgenerator.ast
 
 import java.nio.file.Path
 
-import com.tuvistavie.astgenerator.SkipgramConfig
-import com.tuvistavie.astgenerator.models.Vocabulary
+import com.tuvistavie.astgenerator.models.{SkipgramConfig, Vocabulary}
 import com.tuvistavie.astgenerator.util.FileUtils
 
 class SkipgramIterator(vocabulary: Vocabulary, skipgramConfig: SkipgramConfig) {

@@ -6,12 +6,8 @@ import org.nd4s.Implicits._
 
 
 case class UnigramTable(table: INDArray) {
-  def sample(count: Int): INDArray = {
-    val result = Nd4j.zeros(count)
-    (0 until count).foreach(i => {
-      result(i) = table(util.Random.nextInt(table.length()))
-    })
-    result
+  def sample(count: Int): List[Int] = {
+    (0 until count).map(_ => util.Random.nextInt(table.length())).toList
   }
 }
 

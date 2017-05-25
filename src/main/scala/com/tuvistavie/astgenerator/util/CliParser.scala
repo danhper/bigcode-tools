@@ -1,6 +1,6 @@
 package com.tuvistavie.astgenerator.util
 
-import com.tuvistavie.astgenerator._
+import com.tuvistavie.astgenerator.models._
 
 object CliParser {
 

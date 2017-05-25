@@ -6,7 +6,7 @@ import java.nio.file.{Files, Path, Paths}
 
 import com.github.javaparser.JavaParser
 import com.github.javaparser.ast.{CompilationUnit, Node}
-import com.tuvistavie.astgenerator.GenerateDotConfig
+import com.tuvistavie.astgenerator.models.GenerateDotConfig
 
 import scala.collection.JavaConverters._
 import scala.sys.process._

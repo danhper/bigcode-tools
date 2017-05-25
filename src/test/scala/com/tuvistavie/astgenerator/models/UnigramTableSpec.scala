@@ -25,9 +25,9 @@ class UnigramTableSpec extends FunSpec with Matchers {
     it("should return a random array with given size") {
       val unigramTable = UnigramTable.fromVocabulary(vocabulary, 30)
       val sampled = unigramTable.sample(12)
-      sampled.length() should equal (12)
+      sampled.length should equal (12)
       (0 to 4).foreach(i => {
-        sampled.eq(i).sum(1) should not equal arr(12)
+        sampled.find(_ == i).size should not equal 12
       })
     }
   }

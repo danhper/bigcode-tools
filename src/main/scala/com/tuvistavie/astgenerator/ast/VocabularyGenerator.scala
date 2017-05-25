@@ -5,8 +5,7 @@ import java.nio.file.{Path, Paths}
 
 import com.github.javaparser.JavaParser
 import com.github.javaparser.ast.Node
-import com.tuvistavie.astgenerator.GenerateVocabularyConfig
-import com.tuvistavie.astgenerator.models.{Subgraph, SubgraphVocabItem, Vocabulary}
+import com.tuvistavie.astgenerator.models.{GenerateVocabularyConfig, Subgraph, SubgraphVocabItem, Vocabulary}
 import com.tuvistavie.astgenerator.util.{FileUtils, Serializer}
 
 import scala.collection.JavaConverters._

@@ -6,8 +6,6 @@ version := "0.1"
 
 scalaVersion := "2.11.8"
 
-classpathTypes += "maven-plugin"
-
 libraryDependencies ++= Seq(
   "com.github.javaparser" % "javaparser-core" % "3.1.0-beta.2",
   "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.8.6",

@@ -1,4 +1,4 @@
-package com.tuvistavie.astgenerator
+package com.tuvistavie.astgenerator.models
 
 sealed trait Config
 
@@ -32,7 +32,12 @@ case class GenerateVocabularyConfig(
 case class SkipgramConfig(
   project: String = "",
   windowDepth: Int = 2,
-  includeSiblings: Boolean = true
+  includeSiblings: Boolean = true,
+  embeddingSize: Int = 300,
+  vocabularySize: Int = 10000,
+  negativeSamples: Int = 5,
+  unigramTable: UnigramTable = null,
+  learningRate: Double = 0.5
 ) extends Config
 
 object Config {
