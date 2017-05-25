@@ -1,13 +1,37 @@
 package com.tuvistavie.astgenerator.models
 
 import org.nd4j.linalg.api.ndarray.INDArray
+import org.nd4j.linalg.factory.Nd4j
 import org.nd4s.Implicits._
 
 
-case class UnigramTable(table: INDArray)
+case class UnigramTable(table: INDArray) {
+  def sample(count: Int): INDArray = {
+    val result = Nd4j.zeros(count)
+    (0 until count).foreach(i => {
+      result(i) = table(util.Random.nextInt(table.length()))
+    })
+    result
+  }
+}
 
 object UnigramTable {
-  def fromVocabulary(vocabulary: Vocabulary): UnigramTable = {
-    UnigramTable(List(1,2).toNDArray)
+  def fromVocabulary(vocabulary: Vocabulary, size: Int = 10 * 1000 * 1000): UnigramTable = {
+    val table = Nd4j.zeros(size)
+    val power = 0.75
+
+    val normalizingConstant = vocabulary.items.map { case (_, v) => math.pow(v.count, power) }.sum
+
+    var i = 0
+    var p = 0.0
+
+    vocabulary.items.foreach { case (key, unigram) =>
+      p += math.pow(unigram.count, power) / normalizingConstant
+      while (i < size && i.toFloat / size < p) {
+        table(i) = key
+        i += 1
+      }
+    }
+    UnigramTable(table)
   }
 }

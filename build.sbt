@@ -15,7 +15,6 @@ libraryDependencies ++= Seq(
   "org.scalactic" %% "scalactic" % "3.0.1",
   "org.scalatest" %% "scalatest" % "3.0.1" % "test",
   "com.jsuereth" %% "scala-arm" % "2.0",
-  "org.deeplearning4j" % "deeplearning4j-core" % "0.8.0",
   "org.nd4j" % "nd4j-cuda-8.0-platform" % "0.8.0",
   "org.nd4j" % "nd4j-native-platform" % "0.8.0",
   "org.nd4j" %% "nd4s" % "0.8.0"
