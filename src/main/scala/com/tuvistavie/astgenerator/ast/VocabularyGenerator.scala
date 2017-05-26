@@ -12,37 +12,26 @@ import scala.collection.JavaConverters._
 import scala.collection.mutable
 
 
-class VocabularyGenerator {
+class VocabularyGenerator(subgraphDepth: Int) {
   private val vocabulary: mutable.Map[Subgraph, Int] = mutable.Map.empty
   private val vocabularyItems: mutable.Map[Int, SubgraphVocabItem] = mutable.Map.empty
 
-  def createSubgraph(node: Node, depth: Int): Subgraph = {
-    if (depth == 0) {
-      return Subgraph(TokenExtractor.extractToken(node))
-    }
-    val childSubgraphs = node.getChildNodes.asScala.map(n => createSubgraph(n, depth - 1)).toList
-    val currentSubgraph = createSubgraph(node, depth - 1).copy(children = childSubgraphs)
-    currentSubgraph
+  def generateVocabulary(filepath: String): Unit = {
+    generateVocabulary(Paths.get(filepath))
   }
 
-  def generateVocabulary(filepath: String, depths: Seq[Int] = List(1)): Unit = {
-    generateVocabulary(Paths.get(filepath), depths)
-  }
-
-  def generateVocabulary(filepath: Path, depths: Seq[Int]): Unit = {
+  def generateVocabulary(filepath: Path): Unit = {
     val root = JavaParser.parse(new FileInputStream(filepath.toFile))
     val nodes = getNodes(root)
     nodes.foreach { n =>
-      depths.foreach { d =>
-        val subgraph = createSubgraph(n, d)
-        if (!vocabulary.contains(subgraph)) {
-          vocabulary += (subgraph -> vocabularyItems.size)
-          vocabularyItems += (vocabularyItems.size -> SubgraphVocabItem(subgraph))
-        }
-        val index = vocabulary(subgraph)
-        val item = vocabularyItems(index)
-        vocabularyItems.update(index, item.copy(count = item.count + 1))
+      val subgraph = VocabularyGenerator.createSubgraph(n, subgraphDepth)
+      if (!vocabulary.contains(subgraph)) {
+        vocabulary += (subgraph -> vocabularyItems.size)
+        vocabularyItems += (vocabularyItems.size -> SubgraphVocabItem(subgraph))
       }
+      val index = vocabulary(subgraph)
+      val item = vocabularyItems(index)
+      vocabularyItems.update(index, item.copy(count = item.count + 1))
     }
   }
 
@@ -57,17 +46,19 @@ class VocabularyGenerator {
     nodes.toList
   }
 
-  def create(): Vocabulary = Vocabulary(vocabularyItems.toMap, vocabulary.toMap)
+  def create(): Vocabulary = {
+    Vocabulary(vocabularyItems.toMap, vocabulary.toMap, subgraphDepth)
+  }
 }
 
 object VocabularyGenerator {
-  def apply(): VocabularyGenerator = new VocabularyGenerator()
+  def apply(subgraphDepth: Int): VocabularyGenerator = new VocabularyGenerator(subgraphDepth)
 
   def generateProjectVocabulary(config: GenerateVocabularyConfig): Vocabulary = {
-    val generator = VocabularyGenerator()
+    val generator = VocabularyGenerator(config.subgraphDepth)
     val files = FileUtils.findFiles(config.project, FileUtils.withExtension("java"))
     files.foreach { filepath =>
-      generator.generateVocabulary(filepath, config.depths)
+      generator.generateVocabulary(filepath)
     }
     val extractedVocabulary = generator.create()
     config.output.foreach(f => Serializer.dumpToFile(extractedVocabulary, f))
@@ -79,5 +70,14 @@ object VocabularyGenerator {
 
   def loadFromFile(filepath: String): Vocabulary = {
     Serializer.loadFromFile[Vocabulary](filepath)
+  }
+
+  def createSubgraph(node: Node, depth: Int): Subgraph = {
+    if (depth == 0) {
+      return Subgraph(TokenExtractor.extractToken(node))
+    }
+    val childSubgraphs = node.getChildNodes.asScala.map(n => createSubgraph(n, depth - 1)).toList
+    val currentSubgraph = createSubgraph(node, depth - 1).copy(children = childSubgraphs)
+    currentSubgraph
   }
 }

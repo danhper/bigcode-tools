@@ -8,7 +8,7 @@ class UnigramTableSpec extends FunSpec with Matchers {
   val vocabularyItems = Map(
     1 -> dummyItem(3), 2 -> dummyItem(8),
     3 -> dummyItem(1), 4 -> dummyItem(4))
-  val vocabulary = Vocabulary(vocabularyItems, Map.empty)
+  val vocabulary = Vocabulary(vocabularyItems, Map.empty, 1)
 
   describe("fromVocabulary") {
     it("should create a valid unigram table") {

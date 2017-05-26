@@ -25,13 +25,13 @@ case class GenerateDotConfig(
 case class GenerateVocabularyConfig(
   project: String = "",
   output: Option[String] = None,
-  depths: Seq[Int] = List(1),
+  subgraphDepth: Int = 1,
   silent: Boolean = false
 ) extends Config
 
 case class SkipgramConfig(
   project: String = "",
-  windowDepth: Int = 2,
+  windowSize: Int = 2,
   includeSiblings: Boolean = true,
   embeddingSize: Int = 300,
   vocabularySize: Int = 10000,

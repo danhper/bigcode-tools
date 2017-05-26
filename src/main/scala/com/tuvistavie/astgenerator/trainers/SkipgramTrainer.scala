@@ -15,6 +15,10 @@ class SkipgramTrainer(config: SkipgramConfig) {
   }
   private val syn1 = Nd4j.zeros(config.vocabularySize, config.embeddingSize)
 
+  private def trainBatch(iterator: Iterator[(Int, Int)]): Unit = {
+    iterator.foreach { case (word, context) => trainSample(word, context) }
+  }
+
   private def trainSample(word: Int, context: Int): Unit = {
     val negativeSamples = config.unigramTable.sample(config.negativeSamples).map(_ -> 0)
     val samples = (word -> 1) +: negativeSamples
