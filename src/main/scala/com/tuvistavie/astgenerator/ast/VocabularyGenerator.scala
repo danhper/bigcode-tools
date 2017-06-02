@@ -22,7 +22,7 @@ class VocabularyGenerator(subgraphDepth: Int) {
 
   def generateVocabulary(filepath: Path): Unit = {
     val root = JavaParser.parse(new FileInputStream(filepath.toFile))
-    val nodes = getNodes(root)
+    val nodes = VocabularyGenerator.getNodes(root)
     nodes.foreach { n =>
       val subgraph = VocabularyGenerator.createSubgraph(n, subgraphDepth)
       if (!vocabulary.contains(subgraph)) {
@@ -35,16 +35,6 @@ class VocabularyGenerator(subgraphDepth: Int) {
     }
   }
 
-  private def getNodes(root: Node): List[Node] = {
-    val queue = mutable.Queue(root)
-    val nodes: mutable.MutableList[Node] = mutable.MutableList.empty
-    while (queue.nonEmpty) {
-      val currentNode = queue.dequeue()
-      nodes += currentNode
-      currentNode.getChildNodes.asScala.foreach(n => queue.enqueue(n))
-    }
-    nodes.toList
-  }
 
   def create(): Vocabulary = {
     Vocabulary(vocabularyItems.toMap, vocabulary.toMap, subgraphDepth)
@@ -79,5 +69,16 @@ object VocabularyGenerator {
     val childSubgraphs = node.getChildNodes.asScala.map(n => createSubgraph(n, depth - 1)).toList
     val currentSubgraph = createSubgraph(node, depth - 1).copy(children = childSubgraphs)
     currentSubgraph
+  }
+
+  def getNodes(root: Node): List[Node] = {
+    val queue = mutable.Queue(root)
+    val nodes: mutable.MutableList[Node] = mutable.MutableList.empty
+    while (queue.nonEmpty) {
+      val currentNode = queue.dequeue()
+      nodes += currentNode
+      currentNode.getChildNodes.asScala.foreach(n => queue.enqueue(n))
+    }
+    nodes.toList
   }
 }

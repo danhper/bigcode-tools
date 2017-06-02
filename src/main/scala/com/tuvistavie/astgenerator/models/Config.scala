@@ -31,6 +31,7 @@ case class GenerateVocabularyConfig(
 
 case class SkipgramConfig(
   project: String = "",
+  epochs: Int = 5,
   windowSize: Int = 2,
   includeSiblings: Boolean = true,
   embeddingSize: Int = 300,
