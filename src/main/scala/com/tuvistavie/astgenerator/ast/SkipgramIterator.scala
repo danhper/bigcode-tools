@@ -22,6 +22,9 @@ class SkipgramIterator(vocabulary: Vocabulary, skipgramConfig: SkipgramConfig) {
 
   def nextBatch(size: Int): List[(Int, Int)] = {
     val result = ListBuffer.empty[(Int, Int)]
+    while (result.length < size && hasMoreData) {
+      result.append(nextDatum())
+    }
 
     result.toList
   }
@@ -32,12 +35,14 @@ class SkipgramIterator(vocabulary: Vocabulary, skipgramConfig: SkipgramConfig) {
     currentData.hasNext || currentFileNodes.hasNext || filesIterator.hasNext || currentEpoch < skipgramConfig.epochs
   }
 
-//  def nextDatum(): (Int, Int) = {
-//    if (currentData.hasNext) {
-//      currentData.next()
-//    } else {
-//    }
-//  }
+  def nextDatum(): (Int, Int) = {
+    if (currentData.hasNext) {
+      currentData.next()
+    } else {
+      currentData = generateContextPairs(nextNode()).iterator
+      nextDatum()
+    }
+  }
 
   def nextNode(): Node = {
     if (currentFileNodes.hasNext) {
