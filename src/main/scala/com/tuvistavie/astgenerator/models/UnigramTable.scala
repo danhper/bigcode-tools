@@ -7,7 +7,7 @@ import org.nd4s.Implicits._
 
 case class UnigramTable(table: INDArray) {
   def sample(count: Int): List[Int] = {
-    (0 until count).map(_ => util.Random.nextInt(table.length())).toList
+    (0 until count).map(_ => table(util.Random.nextInt(table.length())).toInt).toList
   }
 }
 

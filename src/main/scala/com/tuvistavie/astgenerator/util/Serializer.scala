@@ -2,9 +2,16 @@ package com.tuvistavie.astgenerator.util
 import resource.managed
 import java.io._
 
+import org.nd4j.linalg.api.ndarray.INDArray
+import org.nd4j.linalg.factory.Nd4j
+
 import scala.reflect.ClassTag
 
 object Serializer {
+  def dumpINDArrayToFile(obj: INDArray, filepath: String): Unit = {
+    managed(new FileOutputStream(filepath)).foreach(Nd4j.write(_, obj))
+  }
+
   def dumpToFile(obj: Any, filepath: String): Unit = {
     for {
       fos <- managed(new FileOutputStream(filepath))
@@ -22,6 +29,10 @@ object Serializer {
         case _: ClassNotFoundException => super.resolveClass(desc)
       }
     }
+  }
+
+  def loadINDArrayFromFile(filepath: String): INDArray = {
+    managed(new FileInputStream(filepath)).acquireAndGet(Nd4j.read)
   }
 
   def loadFromFile[A](filepath: String)(implicit Tag: ClassTag[A]): A = {

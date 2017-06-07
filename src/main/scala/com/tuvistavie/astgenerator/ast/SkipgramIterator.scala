@@ -8,11 +8,12 @@ import com.github.javaparser.ast.Node
 import com.tuvistavie.astgenerator.models.{SkipgramConfig, Subgraph, Vocabulary}
 import com.tuvistavie.astgenerator.util.FileUtils
 import com.tuvistavie.astgenerator.util.JavaConversions._
+import com.typesafe.scalalogging.LazyLogging
 
 import collection.JavaConverters._
 import scala.collection.mutable.ListBuffer
 
-class SkipgramIterator(vocabulary: Vocabulary, skipgramConfig: SkipgramConfig) {
+class SkipgramIterator(vocabulary: Vocabulary, skipgramConfig: SkipgramConfig) extends LazyLogging {
   val files: Set[Path] = FileUtils.findFiles(skipgramConfig.project, FileUtils.withExtension("java"))
 
   private var filesIterator: Iterator[Path] = Iterator.empty
@@ -60,12 +61,13 @@ class SkipgramIterator(vocabulary: Vocabulary, skipgramConfig: SkipgramConfig) {
 
   private def moveToNextEpoch(): Unit = {
     currentEpoch += 1
+    logger.debug(s"iterating on epoch $currentEpoch")
     filesIterator = files.iterator
     currentFileNodes = nodesFromFile(filesIterator.next()).iterator
   }
 
   private def nodesFromFile(filepath: Path): List[Node] = {
-    val filepath = filesIterator.next()
+    logger.debug(s"iterating on file $filepath")
     val root = JavaParser.parse(new FileInputStream(filepath.toFile))
     VocabularyGenerator.getNodes(root)
   }

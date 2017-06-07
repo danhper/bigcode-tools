@@ -31,13 +31,16 @@ case class GenerateVocabularyConfig(
 
 case class SkipgramConfig(
   project: String = "",
+  vocabularyPath: String = "",
+  output: String = "",
   epochs: Int = 5,
   windowSize: Int = 2,
   includeSiblings: Boolean = true,
   embeddingSize: Int = 300,
-  vocabularySize: Int = 10000,
   negativeSamples: Int = 5,
+  batchSize: Int = 64,
   unigramTable: UnigramTable = null,
+  vocabularySize: Int = -1,
   learningRate: Double = 0.5
 ) extends Config
 
