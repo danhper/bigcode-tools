@@ -35,11 +35,11 @@ class SkipgramTrainer(config: SkipgramConfig) {
     val err = Nd4j.zeros(config.embeddingSize)
 
     samples.foreach { case (target, label) =>
-      val wordVector = syn0(context, ->)
-      val contextVector = syn1(target, ->)
-      val out = Transforms.sigmoid(wordVector dot contextVector.T)
+      val wordVector = syn0(context, ->) // 1 x embeddingSize
+      val contextVector = syn1(target, ->) // 1 x embeddingSize
+      val out = Transforms.sigmoid(wordVector dot contextVector.T) // 1 x 1 (0 < out < 1)
       val g = config.learningRate * (label - out(0))
-      err += g
+      err += syn1(target, ->) * g
       syn1(target, ->) += syn0(context, ->) * g
     }
 
