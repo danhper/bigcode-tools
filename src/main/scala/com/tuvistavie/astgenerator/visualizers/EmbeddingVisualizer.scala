@@ -1,12 +1,16 @@
 package com.tuvistavie.astgenerator.visualizers
 
+
 import com.tuvistavie.astgenerator.models.{VisualizeEmbeddingsConfig, Vocabulary}
 import com.tuvistavie.astgenerator.util.Serializer
 import org.nd4j.linalg.api.ndarray.INDArray
 import org.nd4j.linalg.dimensionalityreduction.PCA
-import plotly.{Plotly, Scatter}
 import plotly.element.ScatterMode
 import plotly.layout.Layout
+import plotly.{Plotly, Scatter}
+
+import scala.reflect.io.{File, Path}
+
 
 class EmbeddingVisualizer(vocabulary: Vocabulary, embeddings: INDArray) {
   def visualize(dimensions: Int, normalize: Boolean = true, name: String = "Embeddings"): Scatter = {
@@ -33,6 +37,9 @@ object EmbeddingVisualizer {
     val visualizer = new EmbeddingVisualizer(vocabulary, embeddings)
     val plot = visualizer.visualize(config.dimensions)
     val layout = Layout(title=config.title)
+    if (config.replace) {
+      File(Path(config.output)).delete()
+    }
     Plotly.plot(
       config.output,
       Seq(plot),

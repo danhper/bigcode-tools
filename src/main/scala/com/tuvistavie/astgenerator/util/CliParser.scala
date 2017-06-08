@@ -85,6 +85,21 @@ object CliParser {
       opt[Unit]('r', "replace").action { (_, c) => (c: @unchecked) match { case c: VisualizeEmbeddingsConfig =>
         c.copy(replace = true) } }.text("replace the previous file")
     )
+
+    cmd("visualize-vocabulary-distribution").action((_, _) => VisualizeVocabularyDistributionConfig()).children(
+      opt[String]('v' ,"vocabulary-path").required().action { (x, c) => (c: @unchecked) match { case c: VisualizeVocabularyDistributionConfig =>
+        c.copy(vocabularyPath = x) } }.text("path of the saved vocabulary"),
+      opt[String]('o', "output").action { (x, c) => (c: @unchecked) match { case c: VisualizeVocabularyDistributionConfig =>
+        c.copy(output = x) } }.text("output file"),
+      opt[String]("title").action { (x, c) => (c: @unchecked) match { case c: VisualizeVocabularyDistributionConfig =>
+        c.copy(title = x) } }.text("plot title"),
+      opt[Seq[Int]]("breakpoints").action { (x, c) => (c: @unchecked) match { case c: VisualizeVocabularyDistributionConfig =>
+        c.copy(breakpoints = x) } }.text("breakpoints to plot distribution"),
+      opt[Unit]("no-open").action { (_, c) => (c: @unchecked) match { case c: VisualizeVocabularyDistributionConfig =>
+        c.copy(openBrowser = false) } }.text("do not open the browser"),
+      opt[Unit]('r', "replace").action { (_, c) => (c: @unchecked) match { case c: VisualizeVocabularyDistributionConfig =>
+        c.copy(replace = true) } }.text("replace the previous file")
+    )
   }
 
   def parse(args: Array[String]): Option[Config] = {

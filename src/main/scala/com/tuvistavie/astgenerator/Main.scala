@@ -4,7 +4,7 @@ import com.tuvistavie.astgenerator.ast.{DotGenerator, JSONGenerator, VocabularyG
 import com.tuvistavie.astgenerator.models._
 import com.tuvistavie.astgenerator.trainers.SkipgramTrainer
 import com.tuvistavie.astgenerator.util.CliParser
-import com.tuvistavie.astgenerator.visualizers.EmbeddingVisualizer
+import com.tuvistavie.astgenerator.visualizers.{EmbeddingVisualizer, VocabularyDistributionVisualizer}
 
 object Main {
   def main(args: Array[String]): Unit = {
@@ -21,6 +21,8 @@ object Main {
         VocabularyGenerator.generateProjectVocabulary(config)
       case Some(NoConfig) =>
         CliParser.showUsage()
+      case Some(config: VisualizeVocabularyDistributionConfig) =>
+        VocabularyDistributionVisualizer.visualizeVocabularyDistribution(config)
       case Some(config: VisualizeEmbeddingsConfig) =>
         EmbeddingVisualizer.visualizeEmbeddings(config)
       case None =>

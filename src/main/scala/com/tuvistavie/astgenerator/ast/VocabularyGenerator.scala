@@ -63,7 +63,7 @@ object VocabularyGenerator {
   }
 
   def createSubgraph(node: Node, depth: Int): Subgraph = {
-    if (depth == 0) {
+    if (depth == 1) {
       return Subgraph(TokenExtractor.extractToken(node))
     }
     val childSubgraphs = node.getChildNodes.asScala.map(n => createSubgraph(n, depth - 1)).toList

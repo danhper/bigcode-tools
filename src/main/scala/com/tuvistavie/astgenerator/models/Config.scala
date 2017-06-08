@@ -41,8 +41,9 @@ case class SkipgramConfig(
   batchSize: Int = 64,
   unigramTable: UnigramTable = null,
   vocabularySize: Int = -1,
-  learningRate: Double = 0.5
+  learningRate: Double = 0.1
 ) extends Config
+
 
 case class VisualizeEmbeddingsConfig(
   embeddingsPath: String = "",
@@ -52,6 +53,15 @@ case class VisualizeEmbeddingsConfig(
   replace: Boolean = false,
   openBrowser: Boolean = true,
   dimensions: Int = 2
+) extends Config
+
+case class VisualizeVocabularyDistributionConfig(
+  vocabularyPath: String = "",
+  title: String = "Vocabulary distribution",
+  output: String = "tmp/vocabulary-distribution.html",
+  replace: Boolean = false,
+  openBrowser: Boolean = true,
+  breakpoints: Seq[Int] = Seq(1, 10, 100, 1000, 5000)
 ) extends Config
 
 object Config {

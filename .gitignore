@@ -29,4 +29,5 @@ project/plugins/project/
 *.png
 *.bin
 
-*.html
+tmp/*
+!tmp/.keep
