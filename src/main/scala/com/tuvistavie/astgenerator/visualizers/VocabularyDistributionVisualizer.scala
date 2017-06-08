@@ -24,9 +24,7 @@ class VocabularyDistributionVisualizer(vocabulary: Vocabulary) {
   }
 
   def makeTitle(baseTitle: String): String = {
-    val uniqueLettersCount = vocabulary.size
-    val lettersCount = vocabulary.items.values.map(_.count).sum
-    f"${baseTitle }<br>$uniqueLettersCount unique letters<br>$lettersCount letters in total"
+    f"${baseTitle }<br>${vocabulary.size} unique letters<br>${vocabulary.totalLettersCount} letters in total"
   }
 }
 

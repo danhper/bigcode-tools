@@ -26,6 +26,7 @@ case class GenerateVocabularyConfig(
   project: String = "",
   output: Option[String] = None,
   subgraphDepth: Int = 1,
+  vocabularySize: Int = 10000,
   silent: Boolean = false
 ) extends Config
 

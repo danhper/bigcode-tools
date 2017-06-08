@@ -35,9 +35,10 @@ class VocabularyGenerator(subgraphDepth: Int) {
     }
   }
 
-
-  def create(): Vocabulary = {
-    Vocabulary(vocabularyItems.toMap, vocabulary.toMap, subgraphDepth)
+  def create(size: Int): Vocabulary = {
+    val items = vocabularyItems.toSeq.sortBy { case (_, v) => -v.count }.take(size).toMap
+    val vocab = vocabulary.filter { case (_, index) => items.contains(index) }.toMap
+    Vocabulary(items, vocab, subgraphDepth)
   }
 }
 
@@ -50,7 +51,7 @@ object VocabularyGenerator {
     files.foreach { filepath =>
       generator.generateVocabulary(filepath)
     }
-    val extractedVocabulary = generator.create()
+    val extractedVocabulary = generator.create(config.vocabularySize)
     config.output.foreach(f => Serializer.dumpToFile(extractedVocabulary, f))
     if (!config.silent) {
       println(s"extracted ${extractedVocabulary.size} letters from ${files.size} files")

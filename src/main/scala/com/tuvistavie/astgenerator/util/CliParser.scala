@@ -42,9 +42,11 @@ object CliParser {
         c.copy(project = x) } }.text("project from which vocabulary should be generated"),
       opt[Int]('d', "depth").valueName("<depth1>,<depth2>").action { (x, c) => (c: @unchecked) match { case c: GenerateVocabularyConfig =>
         c.copy(subgraphDepth = x) } }.text("the depth of the extracted subgraphs"),
+      opt[Int]('s', "size").action { (x, c) => (c: @unchecked) match { case c: GenerateVocabularyConfig =>
+        c.copy(vocabularySize = x) } }.text("the maximum size of the vocabulary"),
       opt[String]('o', "output").action { (x, c) => (c: @unchecked) match { case c: GenerateVocabularyConfig =>
         c.copy(output = Some(x)) } }.text("output file"),
-      opt[Unit]('s', "silent").action { (_, c) => (c: @unchecked) match { case c: GenerateVocabularyConfig =>
+      opt[Unit]("silent").action { (_, c) => (c: @unchecked) match { case c: GenerateVocabularyConfig =>
         c.copy(silent = true) } }.text("do not output info to stdout")
     )
 

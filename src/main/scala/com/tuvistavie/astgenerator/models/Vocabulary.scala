@@ -10,6 +10,8 @@ case class Vocabulary(
   def indexFor(subgraph: Subgraph): Int = {
     vocabHash.getOrElse(subgraph, Vocabulary.unk)
   }
+
+  val totalLettersCount: Int = items.values.map(_.count).sum
 }
 
 object Vocabulary {
