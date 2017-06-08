@@ -17,9 +17,9 @@ libraryDependencies ++= Seq(
   "org.nd4j" % "nd4j-native-platform" % "0.8.0",
   "org.nd4j" %% "nd4s" % "0.8.0",
   "ch.qos.logback" % "logback-classic" % "1.1.7",
-  "com.typesafe.scala-logging" %% "scala-logging" % "3.5.0"
+  "com.typesafe.scala-logging" %% "scala-logging" % "3.5.0",
+  "org.plotly-scala" %% "plotly-render" % "0.3.1"
 )
-
 
 javacOptions ++= Seq("-Xlint:unchecked", "-Xlint:deprecation")
 

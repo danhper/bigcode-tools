@@ -44,6 +44,16 @@ case class SkipgramConfig(
   learningRate: Double = 0.5
 ) extends Config
 
+case class VisualizeEmbeddingsConfig(
+  embeddingsPath: String = "",
+  vocabularyPath: String = "",
+  title: String = "Word embeddings",
+  output: String = "tmp/embeddings.html",
+  replace: Boolean = false,
+  openBrowser: Boolean = true,
+  dimensions: Int = 2
+) extends Config
+
 object Config {
   def version = "0.1"
   def formatVersion = "1.0"

@@ -70,6 +70,21 @@ object CliParser {
       opt[Unit]("without-siblings").action { (_, c) => (c: @unchecked) match { case c: SkipgramConfig =>
         c.copy(includeSiblings = false) } }.text("do not include siblings in context")
     )
+
+    cmd("visualize-embeddings").action((_, _) => VisualizeEmbeddingsConfig()).children(
+      opt[String]('v' ,"vocabulary-path").required().action { (x, c) => (c: @unchecked) match { case c: VisualizeEmbeddingsConfig =>
+        c.copy(vocabularyPath = x) } }.text("path of the saved vocabulary"),
+      opt[String]('e', "embeddings-path").required().action { (x, c) => (c: @unchecked) match { case c: VisualizeEmbeddingsConfig =>
+        c.copy(embeddingsPath = x) } }.text("embeddings path"),
+      opt[String]('o', "output").action { (x, c) => (c: @unchecked) match { case c: VisualizeEmbeddingsConfig =>
+        c.copy(output = x) } }.text("output file"),
+      opt[String]("title").action { (x, c) => (c: @unchecked) match { case c: VisualizeEmbeddingsConfig =>
+        c.copy(title = x) } }.text("plot title"),
+      opt[Unit]("no-open").action { (_, c) => (c: @unchecked) match { case c: VisualizeEmbeddingsConfig =>
+        c.copy(openBrowser = false) } }.text("do not open the browser"),
+      opt[Unit]('r', "replace").action { (_, c) => (c: @unchecked) match { case c: VisualizeEmbeddingsConfig =>
+        c.copy(replace = true) } }.text("replace the previous file")
+    )
   }
 
   def parse(args: Array[String]): Option[Config] = {
