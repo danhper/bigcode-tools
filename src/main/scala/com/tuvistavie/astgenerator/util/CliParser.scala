@@ -1,6 +1,6 @@
 package com.tuvistavie.astgenerator.util
 
-import com.tuvistavie.astgenerator._
+import com.tuvistavie.astgenerator.models._
 
 object CliParser {
 
@@ -40,12 +40,35 @@ object CliParser {
     cmd("generate-vocabulary").action((_, _) => GenerateVocabularyConfig()).children(
       arg[String]("<project>").action { (x, c) => (c: @unchecked) match { case c: GenerateVocabularyConfig =>
         c.copy(project = x) } }.text("project from which vocabulary should be generated"),
-      opt[Seq[Int]]('d', "depth").valueName("<depth1>,<depth2>").action { (x, c) => (c: @unchecked) match { case c: GenerateVocabularyConfig =>
-        c.copy(depths = x) } }.text("the depth of the extracted subgraphs"),
+      opt[Int]('d', "depth").valueName("<depth1>,<depth2>").action { (x, c) => (c: @unchecked) match { case c: GenerateVocabularyConfig =>
+        c.copy(subgraphDepth = x) } }.text("the depth of the extracted subgraphs"),
       opt[String]('o', "output").action { (x, c) => (c: @unchecked) match { case c: GenerateVocabularyConfig =>
         c.copy(output = Some(x)) } }.text("output file"),
       opt[Unit]('s', "silent").action { (_, c) => (c: @unchecked) match { case c: GenerateVocabularyConfig =>
         c.copy(silent = true) } }.text("do not output info to stdout")
+    )
+
+    cmd("train-skipgram").action((_, _) => SkipgramConfig()).children(
+      arg[String]("<project>").action { (x, c) => (c: @unchecked) match { case c: SkipgramConfig =>
+        c.copy(project = x) } }.text("project from which skipgram model should be trained"),
+      opt[String]('v' ,"vocabulary-path").required().action { (x, c) => (c: @unchecked) match { case c: SkipgramConfig =>
+        c.copy(vocabularyPath = x) } }.text("path of the saved vocabulary"),
+      opt[String]('o', "output").required().action { (x, c) => (c: @unchecked) match { case c: SkipgramConfig =>
+        c.copy(output = x) } }.text("output file"),
+      opt[Int]("epochs").action { (x, c) => (c: @unchecked) match { case c: SkipgramConfig =>
+        c.copy(epochs = x) } }.text("number of epochs to train"),
+      opt[Int]("batch-size").action { (x, c) => (c: @unchecked) match { case c: SkipgramConfig =>
+        c.copy(batchSize = x) } }.text("batch size"),
+      opt[Double]("learning-rate").action { (x, c) => (c: @unchecked) match { case c: SkipgramConfig =>
+        c.copy(learningRate = x) } }.text("learning rate"),
+      opt[Int]("negative-samples").action { (x, c) => (c: @unchecked) match { case c: SkipgramConfig =>
+        c.copy(negativeSamples = x) } }.text("negative samples"),
+      opt[Int]("window-size").action { (x, c) => (c: @unchecked) match { case c: SkipgramConfig =>
+        c.copy(windowSize = x) } }.text("window size to train the model"),
+      opt[Int]("embedding-size").action { (x, c) => (c: @unchecked) match { case c: SkipgramConfig =>
+        c.copy(embeddingSize = x) } }.text("size of the word embedding"),
+      opt[Unit]("without-siblings").action { (_, c) => (c: @unchecked) match { case c: SkipgramConfig =>
+        c.copy(includeSiblings = false) } }.text("do not include siblings in context")
     )
   }
 

@@ -4,7 +4,7 @@ name := "java-ast-transformer"
 
 version := "0.1"
 
-scalaVersion := "2.12.2"
+scalaVersion := "2.11.8"
 
 libraryDependencies ++= Seq(
   "com.github.javaparser" % "javaparser-core" % "3.1.0-beta.2",
@@ -12,8 +12,12 @@ libraryDependencies ++= Seq(
   "com.github.scopt" %% "scopt" % "3.5.0",
   "org.scalactic" %% "scalactic" % "3.0.1",
   "org.scalatest" %% "scalatest" % "3.0.1" % "test",
-  "com.jsuereth" %% "scala-arm" % "2.0"
-
+  "com.jsuereth" %% "scala-arm" % "2.0",
+  "org.nd4j" % "nd4j-cuda-8.0-platform" % "0.8.0",
+  "org.nd4j" % "nd4j-native-platform" % "0.8.0",
+  "org.nd4j" %% "nd4s" % "0.8.0",
+  "ch.qos.logback" % "logback-classic" % "1.1.7",
+  "com.typesafe.scala-logging" %% "scala-logging" % "3.5.0"
 )
 
 

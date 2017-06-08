@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.{JsonNode, ObjectMapper, ObjectWriter}
 import com.github.javaparser.JavaParser
 import com.github.javaparser.ast.CompilationUnit
 import com.tuvistavie.astgenerator.util.FileUtils
-import com.tuvistavie.astgenerator.{Config, GenerateAstConfig}
+import com.tuvistavie.astgenerator.models.{Config, GenerateAstConfig}
 import com.tuvistavie.astgenerator.visitors.{DependencyVisitor, IdentifierReplacementVisitor, JsonVisitor}
 
 class JSONGenerator(val compilationUnit: CompilationUnit, val config: GenerateAstConfig) {

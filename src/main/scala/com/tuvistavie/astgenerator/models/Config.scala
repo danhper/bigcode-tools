@@ -1,4 +1,4 @@
-package com.tuvistavie.astgenerator
+package com.tuvistavie.astgenerator.models
 
 sealed trait Config
 
@@ -25,8 +25,23 @@ case class GenerateDotConfig(
 case class GenerateVocabularyConfig(
   project: String = "",
   output: Option[String] = None,
-  depths: Seq[Int] = List(1),
+  subgraphDepth: Int = 1,
   silent: Boolean = false
+) extends Config
+
+case class SkipgramConfig(
+  project: String = "",
+  vocabularyPath: String = "",
+  output: String = "",
+  epochs: Int = 5,
+  windowSize: Int = 2,
+  includeSiblings: Boolean = true,
+  embeddingSize: Int = 300,
+  negativeSamples: Int = 5,
+  batchSize: Int = 64,
+  unigramTable: UnigramTable = null,
+  vocabularySize: Int = -1,
+  learningRate: Double = 0.5
 ) extends Config
 
 object Config {
