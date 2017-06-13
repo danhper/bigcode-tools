@@ -36,9 +36,8 @@ class VocabularyGenerator(subgraphDepth: Int) {
   }
 
   def create(size: Int): Vocabulary = {
-    val items = vocabularyItems.toSeq.sortBy { case (_, v) => -v.count }.take(size).toMap
-    val vocab = vocabulary.filter { case (_, index) => items.contains(index) }.toMap
-    Vocabulary(items, vocab, subgraphDepth)
+    val items = vocabularyItems.values.toSeq.sortBy(-_.count).take(size)
+    Vocabulary(items, subgraphDepth)
   }
 }
 

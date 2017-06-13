@@ -36,12 +36,17 @@ class SkipgramIterator(vocabulary: Vocabulary, skipgramConfig: SkipgramConfig) e
     currentData.hasNext || currentFileNodes.hasNext || filesIterator.hasNext || currentEpoch < skipgramConfig.epochs
   }
 
-  def nextDatum(): (Int, Int) = {
+  def nextDatum(): (Int, Int) = nextRawDatum() match {
+    case (word, context) if word == Vocabulary.unk || context == Vocabulary.unk => nextDatum()
+    case datum => datum
+  }
+
+  private def nextRawDatum(): (Int, Int) = {
     if (currentData.hasNext) {
       currentData.next()
     } else {
       currentData = generateContextPairs(nextNode()).iterator
-      nextDatum()
+      nextRawDatum()
     }
   }
 

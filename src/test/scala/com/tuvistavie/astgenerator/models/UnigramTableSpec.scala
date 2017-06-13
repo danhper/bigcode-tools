@@ -5,19 +5,17 @@ import org.scalatest.{FunSpec, Matchers}
 import org.nd4s.Implicits._
 
 class UnigramTableSpec extends FunSpec with Matchers {
-  val vocabularyItems = Map(
-    1 -> dummyItem(3), 2 -> dummyItem(8),
-    3 -> dummyItem(1), 4 -> dummyItem(4))
-  val vocabulary = Vocabulary(vocabularyItems, Map.empty, 1)
+  val vocabularyItems = Seq(dummyItem(3), dummyItem(8), dummyItem(1), dummyItem(4))
+  val vocabulary = Vocabulary(vocabularyItems, 1)
 
   describe("fromVocabulary") {
     it("should create a valid unigram table") {
       val unigram = UnigramTable.fromVocabulary(vocabulary, 30)
       val table = unigram.table
-      table.eq(1).sum(1) should equal (arr(7))
-      table.eq(2).sum(1) should equal (arr(13))
-      table.eq(3).sum(1) should equal (arr(3))
-      table.eq(4).sum(1) should equal (arr(7))
+      table.eq(0).sum(1) should equal (arr(7))
+      table.eq(1).sum(1) should equal (arr(13))
+      table.eq(2).sum(1) should equal (arr(3))
+      table.eq(3).sum(1) should equal (arr(7))
     }
   }
 

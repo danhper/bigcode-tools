@@ -1,5 +1,6 @@
 package com.tuvistavie.astgenerator.models
 
+import com.typesafe.scalalogging.LazyLogging
 import org.nd4j.linalg.api.ndarray.INDArray
 import org.nd4j.linalg.factory.Nd4j
 import org.nd4s.Implicits._
@@ -11,12 +12,13 @@ case class UnigramTable(table: INDArray) {
   }
 }
 
-object UnigramTable {
+object UnigramTable extends LazyLogging {
   def fromVocabulary(vocabulary: Vocabulary, size: Int = 10 * 1000 * 1000): UnigramTable = {
+    logger.debug("initializing unigram table")
     val table = Nd4j.zeros(size)
     val power = 0.75
 
-    val normalizingConstant = vocabulary.items.map { case (_, v) => math.pow(v.count, power) }.sum
+    val normalizingConstant = vocabulary.items.values.map(v => math.pow(v.count, power)).sum
 
     var i = 0
     var p = 0.0
@@ -28,6 +30,7 @@ object UnigramTable {
         i += 1
       }
     }
+    logger.debug("finished initializing unigram table")
     UnigramTable(table)
   }
 }
