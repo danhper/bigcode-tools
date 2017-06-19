@@ -1,16 +1,18 @@
 package com.tuvistavie.astgenerator.ast
 
-import java.io.FileInputStream
+import java.io._
 import java.nio.file.Path
+import java.util.zip.GZIPOutputStream
 
+import resource.managed
 import com.github.javaparser.JavaParser
 import com.github.javaparser.ast.Node
-import com.tuvistavie.astgenerator.models.{SkipgramConfig, Subgraph, Vocabulary}
+import com.tuvistavie.astgenerator.models.{SkipgramConfig, Subgraph, UnigramTable, Vocabulary}
 import com.tuvistavie.astgenerator.util.FileUtils
 import com.tuvistavie.astgenerator.util.JavaConversions._
 import com.typesafe.scalalogging.LazyLogging
 
-import collection.JavaConverters._
+import scala.collection.JavaConverters._
 import scala.collection.mutable.ListBuffer
 
 class SkipgramIterator(vocabulary: Vocabulary, skipgramConfig: SkipgramConfig) extends LazyLogging {
@@ -123,5 +125,20 @@ class SkipgramIterator(vocabulary: Vocabulary, skipgramConfig: SkipgramConfig) e
 object SkipgramIterator {
   def apply(vocabulary: Vocabulary, config: SkipgramConfig): SkipgramIterator = {
     new SkipgramIterator(vocabulary, config)
+  }
+
+  def generateData(config: SkipgramConfig): Unit = {
+    val vocabulary = VocabularyGenerator.loadFromFile(config.vocabularyPath)
+    val iterator = new SkipgramIterator(vocabulary, config.copy(epochs = 1))
+    for {
+      fs <- managed(new FileOutputStream(config.output))
+      gs <- managed(new GZIPOutputStream(fs))
+      pw <- managed(new PrintWriter(gs))
+    } {
+      while (iterator.hasNextBash) {
+        val data = iterator.nextBatch(config.batchSize)
+        data.foreach { case (word, context) => pw.println(f"$word,$context") }
+      }
+    }
   }
 }

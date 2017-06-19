@@ -1,6 +1,6 @@
 package com.tuvistavie.astgenerator
 
-import com.tuvistavie.astgenerator.ast.{DotGenerator, JSONGenerator, VocabularyGenerator}
+import com.tuvistavie.astgenerator.ast.{DotGenerator, JSONGenerator, SkipgramIterator, VocabularyGenerator}
 import com.tuvistavie.astgenerator.models._
 import com.tuvistavie.astgenerator.trainers.SkipgramTrainer
 import com.tuvistavie.astgenerator.util.CliParser
@@ -15,8 +15,10 @@ object Main {
         // extractTokens(config)
       case Some(config: GenerateDotConfig) =>
         DotGenerator.run(config)
-      case Some(config: SkipgramConfig) =>
-        SkipgramTrainer.trainSkipgram(config)
+      case Some(config: SkipgramConfig) => config.action match {
+        case "train" => SkipgramTrainer.trainSkipgram(config)
+        case "generate-data" => SkipgramIterator.generateData(config)
+      }
       case Some(config: GenerateVocabularyConfig) =>
         VocabularyGenerator.generateProjectVocabulary(config)
       case Some(NoConfig) =>

@@ -50,7 +50,7 @@ object CliParser {
         c.copy(silent = true) } }.text("do not output info to stdout")
     )
 
-    cmd("train-skipgram").action((_, _) => SkipgramConfig()).children(
+    def skipgramChildren = List(
       arg[String]("<project>").action { (x, c) => (c: @unchecked) match { case c: SkipgramConfig =>
         c.copy(project = x) } }.text("project from which skipgram model should be trained"),
       opt[String]('v' ,"vocabulary-path").required().action { (x, c) => (c: @unchecked) match { case c: SkipgramConfig =>
@@ -72,6 +72,9 @@ object CliParser {
       opt[Unit]("without-siblings").action { (_, c) => (c: @unchecked) match { case c: SkipgramConfig =>
         c.copy(includeSiblings = false) } }.text("do not include siblings in context")
     )
+
+    cmd("generate-skipgram-data").action((_, _) => SkipgramConfig(action = "generate-data")).children(skipgramChildren: _*)
+    cmd("train-skipgram").action((_, _) => SkipgramConfig(action = "train")).children(skipgramChildren: _*)
 
     cmd("visualize-embeddings").action((_, _) => VisualizeEmbeddingsConfig()).children(
       opt[String]('v' ,"vocabulary-path").required().action { (x, c) => (c: @unchecked) match { case c: VisualizeEmbeddingsConfig =>

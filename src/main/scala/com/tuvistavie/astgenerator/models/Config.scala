@@ -31,6 +31,7 @@ case class GenerateVocabularyConfig(
 ) extends Config
 
 case class SkipgramConfig(
+  action: String = "",
   project: String = "",
   vocabularyPath: String = "",
   output: String = "",
@@ -44,7 +45,6 @@ case class SkipgramConfig(
   vocabularySize: Int = -1,
   learningRate: Double = 0.1
 ) extends Config
-
 
 case class VisualizeEmbeddingsConfig(
   embeddingsPath: String = "",
