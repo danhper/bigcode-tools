@@ -7,8 +7,10 @@ import queue
 import io
 import gzip
 from concurrent.futures import ThreadPoolExecutor
+from os import path
 
 import tensorflow as tf
+import numpy as np
 
 
 class DataReader:
@@ -49,6 +51,7 @@ class Word2VecOptions:
         self.output = options["output"]
         self.threads_count = options["threads_count"]
         self.epochs = options["epochs"]
+        self.learning_rate = options["learning_rate"]
 
 
 class Word2Vec:
@@ -70,12 +73,12 @@ class Word2Vec:
                                 stddev=1.0 / math.sqrt(opts.emb_size)))
         nce_biases = tf.Variable(tf.zeros([opts.vocab_size]))
 
-        train_inputs = tf.placeholder(tf.int32, shape=[opts.batch_size])
-        train_labels = tf.placeholder(tf.int32, shape=[opts.batch_size, 1])
+        train_inputs = tf.placeholder(tf.int32, shape=[None])
+        train_labels = tf.placeholder(tf.int32, shape=[None, 1])
 
         embed = tf.nn.embedding_lookup(embeddings, train_inputs)
 
-        global_step = tf.Variable(0, name="global_step")
+        global_step = tf.Variable(0)
 
         inc = global_step.assign_add(1)
 
@@ -92,10 +95,18 @@ class Word2Vec:
         with tf.control_dependencies([inc]):
             optimizer = tf.train.GradientDescentOptimizer(learning_rate=lr).minimize(loss)
 
+        tf.summary.scalar("loss", loss)
+        merged_summary = tf.summary.merge_all()
+        train_writer = tf.summary.FileWriter(path.dirname(self.options.output), self._session.graph)
+
         self.global_step = global_step
         self.loss = loss
         self.embeddings = embeddings
         self.optimizer = optimizer
+        self.train_inputs = train_inputs
+        self.train_labels = train_labels
+        self.merged_summary = merged_summary
+        self.train_writer = train_writer
 
         self._session.run(tf.global_variables_initializer())
 
@@ -109,25 +120,46 @@ class Word2Vec:
                 break
             self._data_queue.put(batch)
 
+    def _all_futures_done(self, futures):
+        for future in futures:
+            if not future.done():
+                return False
+        return True
+
     def train(self):
         producer_thread = threading.Thread(target=self._produce_data)
         producer_thread.start()
         with ThreadPoolExecutor(max_workers=self.options.threads_count) as executor:
-            future = executor.submit(self._train_thread)
-            while not future.done():
+            futures = [executor.submit(self._train_thread) for _ in range(self.options.threads_count)]
+            while not self._all_futures_done(futures):
                 time.sleep(5)
+                print("step number {0}".format(self._session.run(self.global_step)))
 
     def _train_thread(self):
         while True:
             try:
-                inputs, labels = self._data_queue.get()
-                self._train_batch(tf.stack(inputs), tf.stack(labels))
+                inputs, labels = self._get_batch()
+                self._train_batch(inputs, labels)
             except queue.Empty:
+                print("empty queue")
                 return
+            except Exception as e:
+                print(e)
+                raise e
+
+    def _get_batch(self):
+        inputs, labels = self._data_queue.get()
+        return np.array(inputs), np.array(labels).reshape((len(labels), 1))
 
     def _train_batch(self, inputs, labels):
-        feed_dict = {"train_inputs": inputs, "train_labels": labels}
-        _, cur_loss = self._session.run([self.optimizer, self.loss], feed_dict=feed_dict)
+        feed_dict = {self.train_inputs: inputs, self.train_labels: labels}
+        current_step = self._session.run(self.global_step)
+        if current_step % 100 == 0:
+            _, cur_loss, summary = self._session.run([self.optimizer, self.loss, self.merged_summary], feed_dict=feed_dict)
+            self.train_writer.add_summary(summary, current_step)
+            print("current loss: {0}".format(cur_loss))
+        else:
+            _, cur_loss = self._session.run([self.optimizer, self.loss], feed_dict=feed_dict)
         return cur_loss
 
 
@@ -140,6 +172,7 @@ def create_parser():
     parser.add_argument("--batch-size", type=int, default=1024)
     parser.add_argument("--num-sampled", type=int, default=10)
     parser.add_argument("--epochs", type=int, default=5)
+    parser.add_argument("--learning-rate", type=float, default=0.01)
     parser.add_argument("--threads-count", type=int, default=multiprocessing.cpu_count())
     return parser
 
@@ -153,3 +186,13 @@ def train(namespace):
         for _ in range(options.epochs):
             model.train()
             model.saver.save(session, options.output, global_step=model.global_step)
+
+
+def main():
+    parser = create_parser()
+    namespace = parser.parse_args()
+    train(namespace)
+
+
+if __name__ == '__main__':
+    main()
