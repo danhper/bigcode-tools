@@ -1,7 +1,6 @@
 import math
 import argparse
 import threading
-import time
 import multiprocessing
 import queue
 import io
@@ -18,19 +17,28 @@ class DataReader:
         with gzip.open(input_file, "rb") as f:
             self._raw_data = f.read()
         self.reset_input()
+        self._count_inputs()
+        self.reset_input()
 
     def reset_input(self):
         self.lines = io.BytesIO(self._raw_data)
+
+    def _count_inputs(self):
+        inputs_count = 0
+        for _ in self.lines:
+            inputs_count += 1
+        self.inputs_count = inputs_count
 
     def next_batch(self, batch_size):
         inputs, labels = [], []
         for _ in range(batch_size):
             datum = self.next_datum()
-            # TODO: maybe handle last batch by padding data
             if not datum:
-                return
+                break
             inputs.append(datum[0])
             labels.append(datum[1])
+        if not inputs:
+            return
         return inputs, labels
 
     def next_datum(self):
@@ -48,7 +56,7 @@ class Word2VecOptions:
         self.emb_size = options["emb_size"]
         self.batch_size = options["batch_size"]
         self.num_sampled = options["num_sampled"]
-        self.output = options["output"]
+        self.output_dir = options["output_dir"]
         self.threads_count = options["threads_count"]
         self.epochs = options["epochs"]
         self.learning_rate = options["learning_rate"]
@@ -67,20 +75,33 @@ class Word2Vec:
 
         embeddings = tf.Variable(
             tf.random_uniform([opts.vocab_size, opts.emb_size],
-                              -0.5 / opts.emb_size, 0.5 / opts.emb_size))
+                              -0.5 / opts.emb_size, 0.5 / opts.emb_size),
+            name="embeddings")
         nce_weights = tf.Variable(
             tf.truncated_normal([opts.vocab_size, opts.emb_size],
-                                stddev=1.0 / math.sqrt(opts.emb_size)))
-        nce_biases = tf.Variable(tf.zeros([opts.vocab_size]))
+                                stddev=1.0 / math.sqrt(opts.emb_size)),
+            name="nce_weights")
+        nce_biases = tf.Variable(tf.zeros([opts.vocab_size]), name="nce_biases")
 
         train_inputs = tf.placeholder(tf.int32, shape=[None])
         train_labels = tf.placeholder(tf.int32, shape=[None, 1])
 
         embed = tf.nn.embedding_lookup(embeddings, train_inputs)
 
-        global_step = tf.Variable(0)
+        total_loss = tf.Variable(0, dtype=tf.float32, name="total_loss", trainable=False)
+        reset_loss = total_loss.assign(tf.constant(0, dtype=tf.float32), use_locking=True)
 
-        inc = global_step.assign_add(1)
+        global_step = tf.Variable(0, name="global_step", trainable=False)
+        temporary_step = tf.Variable(0, name="temporary_step", trainable=False)
+
+        epoch = tf.Variable(0, name="epoch", trainable=False)
+        inc_epoch = epoch.assign_add(1)
+
+        average_loss = tf.divide(total_loss, tf.cast(temporary_step, tf.float32))
+
+        inc_global_step = global_step.assign_add(1)
+        inc_temporary_step = temporary_step.assign_add(1)
+        reset_temporary_step = tf.assign(temporary_step, tf.constant(0), use_locking=True)
 
         loss = tf.reduce_mean(
             tf.nn.nce_loss(weights=nce_weights,
@@ -91,13 +112,15 @@ class Word2Vec:
                            num_classes=opts.vocab_size)
         )
 
+        update_loss = tf.assign_add(total_loss, loss)
+
         lr = opts.learning_rate
-        with tf.control_dependencies([inc]):
+        with tf.control_dependencies([inc_global_step, inc_temporary_step, update_loss]):
             optimizer = tf.train.GradientDescentOptimizer(learning_rate=lr).minimize(loss)
 
-        tf.summary.scalar("loss", loss)
+        tf.summary.scalar("loss", average_loss)
         merged_summary = tf.summary.merge_all()
-        train_writer = tf.summary.FileWriter(path.dirname(self.options.output), self._session.graph)
+        train_writer = tf.summary.FileWriter(self.options.output_dir, self._session.graph)
 
         self.global_step = global_step
         self.loss = loss
@@ -107,6 +130,12 @@ class Word2Vec:
         self.train_labels = train_labels
         self.merged_summary = merged_summary
         self.train_writer = train_writer
+        self.average_loss = average_loss
+        self.reset_loss = reset_loss
+        self.temporary_step = temporary_step
+        self.reset_temporary_step = reset_temporary_step
+        self.epoch = epoch
+        self.inc_epoch = inc_epoch
 
         self._session.run(tf.global_variables_initializer())
 
@@ -120,53 +149,54 @@ class Word2Vec:
                 break
             self._data_queue.put(batch)
 
-    def _all_futures_done(self, futures):
-        for future in futures:
-            if not future.done():
-                return False
-        return True
-
     def train(self):
+        self._session.run(self.inc_epoch)
         producer_thread = threading.Thread(target=self._produce_data)
         producer_thread.start()
         with ThreadPoolExecutor(max_workers=self.options.threads_count) as executor:
-            futures = [executor.submit(self._train_thread) for _ in range(self.options.threads_count)]
-            while not self._all_futures_done(futures):
-                time.sleep(5)
-                print("step number {0}".format(self._session.run(self.global_step)))
+            for i in range(self.options.threads_count):
+                record_results = i == 0
+                executor.submit(self._train_thread, record_results=record_results)
+        producer_thread.join(timeout=1)
 
-    def _train_thread(self):
+    def _train_thread(self, record_results=False):
         while True:
             try:
                 inputs, labels = self._get_batch()
-                self._train_batch(inputs, labels)
+                self._train_batch(inputs, labels, record_results=record_results)
             except queue.Empty:
-                print("empty queue")
-                return
+                break
             except Exception as e:
                 print(e)
                 raise e
+        if record_results:
+            self._record_step()
 
     def _get_batch(self):
-        inputs, labels = self._data_queue.get()
+        inputs, labels = self._data_queue.get(timeout=1)
         return np.array(inputs), np.array(labels).reshape((len(labels), 1))
 
-    def _train_batch(self, inputs, labels):
+    def _train_batch(self, inputs, labels, record_results):
         feed_dict = {self.train_inputs: inputs, self.train_labels: labels}
-        current_step = self._session.run(self.global_step)
-        if current_step % 100 == 0:
-            _, cur_loss, summary = self._session.run([self.optimizer, self.loss, self.merged_summary], feed_dict=feed_dict)
-            self.train_writer.add_summary(summary, current_step)
-            print("current loss: {0}".format(cur_loss))
-        else:
-            _, cur_loss = self._session.run([self.optimizer, self.loss], feed_dict=feed_dict)
-        return cur_loss
+        _, tmp_step = self._session.run([self.optimizer, self.temporary_step], feed_dict=feed_dict)
+        if tmp_step > 10000 and record_results:
+            self._record_step()
+
+    def _record_step(self):
+        epoch, current_step, loss, summary = self._session.run([
+            self.epoch, self.global_step, self.average_loss, self.merged_summary
+        ])
+        self.train_writer.add_summary(summary, current_step)
+        progress = (current_step * self.options.batch_size) / self._data.inputs_count % 1 * 100
+        print("epoch: {0}, step: {1}, loss: {2}, progress: {3:.2f}%".format(
+            epoch, current_step, loss, progress))
+        self._session.run([self.reset_loss, self.reset_temporary_step])
 
 
 def create_parser():
     parser = argparse.ArgumentParser(prog="word2vec")
     parser.add_argument("-i", "--input-file", required=True)
-    parser.add_argument("-o", "--output", required=True)
+    parser.add_argument("-o", "--output-dir", required=True)
     parser.add_argument("--vocab-size", type=int, required=True)
     parser.add_argument("--emb-size", type=int, default=100)
     parser.add_argument("--batch-size", type=int, default=1024)
@@ -181,11 +211,12 @@ def train(namespace):
     graph = tf.Graph()
     options = Word2VecOptions(vars(namespace))
     data_reader = DataReader(options.input_file)
+    output_file = path.join(options.output_dir, "w2v.bin")
     with graph.as_default(), tf.Session() as session:
         model = Word2Vec(session, data_reader, options)
         for _ in range(options.epochs):
             model.train()
-            model.saver.save(session, options.output, global_step=model.global_step)
+            model.saver.save(session, output_file, global_step=model.global_step)
 
 
 def main():
