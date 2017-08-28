@@ -188,7 +188,7 @@ class Word2Vec:
         ])
         self.train_writer.add_summary(summary, current_step)
         progress = (current_step * self.options.batch_size) / self._data.inputs_count % 1 * 100
-        print("epoch: {0}, step: {1}, loss: {2}, progress: {3:.2f}%".format(
+        print("epoch: {0}, step: {1}, loss: {2:7.4f}, progress: {3:.2f}%".format(
             epoch, current_step, loss, progress))
         self._session.run([self.reset_loss, self.reset_temporary_step])
 
