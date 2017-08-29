@@ -1,0 +1,140 @@
+#!/usr/bin/env python
+
+import os
+import os.path as path
+import json
+import subprocess
+from argparse import ArgumentParser
+from collections import namedtuple
+from concurrent.futures import ThreadPoolExecutor
+
+from splinter import Browser
+
+
+class Project:
+    def __init__(self, name, url, cvs=None, repo=None):
+        self.name = name
+        self.url = url
+        self.cvs = cvs
+        self.repo = repo
+
+    @property
+    def cvs_name(self):
+        return path.splitext(path.basename(self.repo))[0]
+
+
+def project_from_elem(elem):
+    return Project(name=elem.html, url=elem["href"])
+
+
+def get_projects_list(browser, retry=3):
+    browser.visit("https://projects.apache.org/projects.html?language")
+    elems = browser.find_by_xpath("//a[@id = 'Java']/../../ul/li/a")
+    if not elems and retry > 0:
+        return get_projects_list(browser, retry=retry - 1)
+    return [project_from_elem(elem) for elem in elems]
+
+
+def find_cvs_link(browser, cvs, retry=3):
+    link = browser.find_by_xpath("//*[text() = '{0} repository:']/../a".format(cvs))
+    if link:
+        return link[0]
+    if retry > 0:
+        return find_cvs_link(browser, cvs, retry=retry - 1)
+
+
+def add_cvs_to_project(browser, project):
+    browser.visit(project.url)
+    for cvs in ["Git", "Subversion"]:
+        link = find_cvs_link(browser, cvs)
+        if link:
+            project.cvs = cvs
+            project.repo = link["href"]
+            break
+
+
+def save_projects_list(browser, output_file):
+    projects = get_projects_list(browser)
+    for project in projects:
+        add_cvs_to_project(browser, project)
+
+    project_dicts = [vars(project) for project in projects]
+    with open(output_file, "w") as f:
+        json.dump(project_dicts, f)
+
+
+def download_svn_project(project, output_dir):
+    subprocess.run(["svn", "co", project.repo, output_dir])
+
+
+def download_git_project(project, output_dir):
+    subprocess.run(["git", "clone", "--depth", "1", project.repo, output_dir])
+
+
+def download_project(project, output_base_dir):
+    try:
+        output_dir = path.join(output_base_dir, project.cvs_name)
+        if path.isdir(output_dir):
+            print("{0} already exists".format(project.name))
+            return
+        if project.cvs == "Git":
+            download_git_project(project, output_dir)
+        elif project.cvs == "Subversion":
+            download_svn_project(project, output_dir)
+    except Exception as e:
+        print("could not download {0}: {1}".format(project.name, e))
+
+
+def download_projects(projects, output_dir):
+    projects_to_download = [project for project in projects if project.cvs and project.repo]
+    with ThreadPoolExecutor() as executor:
+        executor.map(lambda p: download_project(p, output_dir), projects_to_download)
+
+
+def load_projects_from_file(input_file):
+    with open(input_file, "r") as f:
+        return [Project(**project) for project in json.load(f)]
+
+
+def download_projects_command(args):
+    projects = load_projects_from_file(args.input_file)
+    download_projects(projects, args.output_dir)
+
+
+def list_projects_command(args):
+    with Browser() as browser:
+        save_projects_list(browser, args.output_file)
+
+
+def create_parser():
+    parser = ArgumentParser(prog="apache-projects",
+                            description="Fetch and download Apache projects")
+    subparsers = parser.add_subparsers(dest="command")
+
+    list_projects_parser = subparsers.add_parser("list", help="list projects")
+    list_projects_parser.add_argument("-o", "--output", default="projects.json")
+
+    download_projects_parser = subparsers.add_parser("download", help="download projects in list")
+    download_projects_parser.add_argument("-i", "--input-file", default="projects.json")
+    download_projects_parser.add_argument("-o", "--output-dir", default=os.getcwd())
+
+    return parser
+
+
+def run_command(args):
+    if args.command == "list":
+        list_projects_command(args)
+    elif args.command == "download":
+        download_projects_command(args)
+
+
+def main():
+    parser = create_parser()
+    args = parser.parse_args()
+    if not args.command:
+        parser.error("no command provided")
+    run_command(args)
+
+
+if __name__ == "__main__":
+    main()
