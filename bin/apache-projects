@@ -8,63 +8,40 @@ from argparse import ArgumentParser
 from collections import namedtuple
 from concurrent.futures import ThreadPoolExecutor
 
-from splinter import Browser
+import requests
 
 
 class Project:
-    def __init__(self, name, url, cvs=None, repo=None):
+    def __init__(self, name, url, repo=None):
         self.name = name
         self.url = url
-        self.cvs = cvs
         self.repo = repo
 
-    @property
-    def cvs_name(self):
-        return path.splitext(path.basename(self.repo))[0]
+
+def project_from_github_repo(repo):
+    return Project(name=repo["name"], url=repo["html_url"], repo=repo["clone_url"])
 
 
-def project_from_elem(elem):
-    return Project(name=elem.html, url=elem["href"])
-
-
-def get_projects_list(browser, retry=3):
-    browser.visit("https://projects.apache.org/projects.html?language")
-    elems = browser.find_by_xpath("//a[@id = 'Java']/../../ul/li/a")
-    if not elems and retry > 0:
-        return get_projects_list(browser, retry=retry - 1)
-    return [project_from_elem(elem) for elem in elems]
-
-
-def find_cvs_link(browser, cvs, retry=3):
-    link = browser.find_by_xpath("//*[text() = '{0} repository:']/../a".format(cvs))
-    if link:
-        return link[0]
-    if retry > 0:
-        return find_cvs_link(browser, cvs, retry=retry - 1)
-
-
-def add_cvs_to_project(browser, project):
-    browser.visit(project.url)
-    for cvs in ["Git", "Subversion"]:
-        link = find_cvs_link(browser, cvs)
-        if link:
-            project.cvs = cvs
-            project.repo = link["href"]
+def get_projects_list():
+    url = "https://api.github.com/users/apache/repos?per_page=100"
+    projects = []
+    while True:
+        r = requests.get(url)
+        for repo in r.json():
+            projects.append(project_from_github_repo(repo))
+        if "next" in r.links:
+            url = r.links["next"]["url"]
+        else:
             break
+    return projects
 
 
-def save_projects_list(browser, output_file):
-    projects = get_projects_list(browser)
-    for project in projects:
-        add_cvs_to_project(browser, project)
+def save_projects_list(output_file):
+    projects = get_projects_list()
 
     project_dicts = [vars(project) for project in projects]
     with open(output_file, "w") as f:
         json.dump(project_dicts, f)
-
-
-def download_svn_project(project, output_dir):
-    subprocess.run(["svn", "co", project.repo, output_dir])
 
 
 def download_git_project(project, output_dir):
@@ -73,22 +50,18 @@ def download_git_project(project, output_dir):
 
 def download_project(project, output_base_dir):
     try:
-        output_dir = path.join(output_base_dir, project.cvs_name)
+        output_dir = path.join(output_base_dir, project.name)
         if path.isdir(output_dir):
             print("{0} already exists".format(project.name))
             return
-        if project.cvs == "Git":
-            download_git_project(project, output_dir)
-        elif project.cvs == "Subversion":
-            download_svn_project(project, output_dir)
+        download_git_project(project, output_dir)
     except Exception as e:
         print("could not download {0}: {1}".format(project.name, e))
 
 
 def download_projects(projects, output_dir):
-    projects_to_download = [project for project in projects if project.cvs and project.repo]
     with ThreadPoolExecutor() as executor:
-        executor.map(lambda p: download_project(p, output_dir), projects_to_download)
+        executor.map(lambda p: download_project(p, output_dir), projects)
 
 
 def load_projects_from_file(input_file):
@@ -102,8 +75,7 @@ def download_projects_command(args):
 
 
 def list_projects_command(args):
-    with Browser() as browser:
-        save_projects_list(browser, args.output_file)
+    save_projects_list(args.output)
 
 
 def create_parser():
