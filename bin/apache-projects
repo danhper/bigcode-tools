@@ -25,14 +25,11 @@ def project_from_github_repo(repo):
 def get_projects_list():
     url = "https://api.github.com/users/apache/repos?per_page=100"
     projects = []
-    while True:
+    while url:
         r = requests.get(url)
         for repo in r.json():
             projects.append(project_from_github_repo(repo))
-        if "next" in r.links:
-            url = r.links["next"]["url"]
-        else:
-            break
+        url = r.links.get("next", {}).get("url")
     return projects
 
 
