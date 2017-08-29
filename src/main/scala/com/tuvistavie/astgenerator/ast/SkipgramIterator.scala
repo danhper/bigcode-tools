@@ -74,20 +74,12 @@ class SkipgramIterator(vocabulary: Vocabulary, skipgramConfig: SkipgramConfig) e
   }
 
   private def nodesFromNextFile(): List[Node] = {
-    val filepath = filesIterator.next()
-    try {
-      nodesFromFile(filepath)
-    } catch {
-      case e: ParseProblemException =>
-        logger.error(s"failed to parse $filepath: $e")
-        nodesFromNextFile()
-    }
+    nodesFromFile(filesIterator.next()).getOrElse(nodesFromNextFile())
   }
 
-  private def nodesFromFile(filepath: Path): List[Node] = {
+  private def nodesFromFile(filepath: Path): Option[List[Node]] = {
     logger.debug(s"iterating on file $filepath")
-    val root = JavaParser.parse(new FileInputStream(filepath.toFile))
-    VocabularyGenerator.getNodes(root)
+    FileUtils.parseFile(filepath).map(VocabularyGenerator.getNodes)
   }
 
   def generateContextPairs(node: Node): List[(Int, Int)] = {

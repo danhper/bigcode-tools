@@ -21,16 +21,6 @@ class VocabularyGenerator(subgraphDepth: Int) extends LazyLogging {
     generateVocabulary(Paths.get(filepath))
   }
 
-  private def safeParse(filepath: Path): Option[CompilationUnit] = {
-    try {
-      Some(JavaParser.parse(new FileInputStream(filepath.toFile)))
-    } catch {
-      case e: ParseProblemException =>
-        logger.error(s"failed to parse $filepath: $e")
-        None
-    }
-  }
-
   private def generateVocabulary(cu: CompilationUnit): Unit = {
     val nodes = VocabularyGenerator.getNodes(cu)
     nodes.foreach { n =>
@@ -46,7 +36,7 @@ class VocabularyGenerator(subgraphDepth: Int) extends LazyLogging {
   }
 
   def generateVocabulary(filepath: Path): Unit = {
-    safeParse(filepath).foreach(generateVocabulary)
+    FileUtils.parseFile(filepath).foreach(generateVocabulary)
   }
 
   def create(size: Int): Vocabulary = {
