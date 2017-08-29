@@ -3,16 +3,17 @@ package com.tuvistavie.astgenerator.ast
 import java.io.FileInputStream
 import java.nio.file.{Path, Paths}
 
-import com.github.javaparser.JavaParser
-import com.github.javaparser.ast.Node
+import com.github.javaparser.{JavaParser, ParseProblemException}
+import com.github.javaparser.ast.{CompilationUnit, Node}
 import com.tuvistavie.astgenerator.models.{GenerateVocabularyConfig, Subgraph, SubgraphVocabItem, Vocabulary}
 import com.tuvistavie.astgenerator.util.{FileUtils, Serializer}
+import com.typesafe.scalalogging.LazyLogging
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable
 
 
-class VocabularyGenerator(subgraphDepth: Int) {
+class VocabularyGenerator(subgraphDepth: Int) extends LazyLogging {
   private val vocabulary: mutable.Map[Subgraph, Int] = mutable.Map.empty
   private val vocabularyItems: mutable.Map[Int, SubgraphVocabItem] = mutable.Map.empty
 
@@ -20,9 +21,18 @@ class VocabularyGenerator(subgraphDepth: Int) {
     generateVocabulary(Paths.get(filepath))
   }
 
-  def generateVocabulary(filepath: Path): Unit = {
-    val root = JavaParser.parse(new FileInputStream(filepath.toFile))
-    val nodes = VocabularyGenerator.getNodes(root)
+  private def safeParse(filepath: Path): Option[CompilationUnit] = {
+    try {
+      Some(JavaParser.parse(new FileInputStream(filepath.toFile)))
+    } catch {
+      case e: ParseProblemException =>
+        logger.error(s"failed to parse $filepath: $e")
+        None
+    }
+  }
+
+  private def generateVocabulary(cu: CompilationUnit): Unit = {
+    val nodes = VocabularyGenerator.getNodes(cu)
     nodes.foreach { n =>
       val subgraph = VocabularyGenerator.createSubgraph(n, subgraphDepth)
       if (!vocabulary.contains(subgraph)) {
@@ -33,6 +43,10 @@ class VocabularyGenerator(subgraphDepth: Int) {
       val item = vocabularyItems(index)
       vocabularyItems.update(index, item.copy(count = item.count + 1))
     }
+  }
+
+  def generateVocabulary(filepath: Path): Unit = {
+    safeParse(filepath).foreach(generateVocabulary)
   }
 
   def create(size: Int): Vocabulary = {

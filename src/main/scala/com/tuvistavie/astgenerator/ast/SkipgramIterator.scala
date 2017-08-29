@@ -4,13 +4,13 @@ import java.io._
 import java.nio.file.Path
 import java.util.zip.GZIPOutputStream
 
-import resource.managed
-import com.github.javaparser.JavaParser
+import com.github.javaparser.{JavaParser, ParseProblemException}
 import com.github.javaparser.ast.Node
-import com.tuvistavie.astgenerator.models.{SkipgramConfig, Subgraph, UnigramTable, Vocabulary}
+import com.tuvistavie.astgenerator.models.{SkipgramConfig, Subgraph, Vocabulary}
 import com.tuvistavie.astgenerator.util.FileUtils
 import com.tuvistavie.astgenerator.util.JavaConversions._
 import com.typesafe.scalalogging.LazyLogging
+import resource.managed
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ListBuffer
@@ -56,7 +56,7 @@ class SkipgramIterator(vocabulary: Vocabulary, skipgramConfig: SkipgramConfig) e
     if (currentFileNodes.hasNext) {
       currentFileNodes.next()
     } else if (filesIterator.hasNext) {
-      currentFileNodes = nodesFromFile(filesIterator.next()).iterator
+      currentFileNodes = nodesFromNextFile().iterator
       nextNode()
     } else if (currentEpoch < skipgramConfig.epochs) {
       moveToNextEpoch()
@@ -70,7 +70,18 @@ class SkipgramIterator(vocabulary: Vocabulary, skipgramConfig: SkipgramConfig) e
     currentEpoch += 1
     logger.debug(s"iterating on epoch $currentEpoch")
     filesIterator = files.iterator
-    currentFileNodes = nodesFromFile(filesIterator.next()).iterator
+    currentFileNodes = nodesFromNextFile().iterator
+  }
+
+  private def nodesFromNextFile(): List[Node] = {
+    val filepath = filesIterator.next()
+    try {
+      nodesFromFile(filepath)
+    } catch {
+      case e: ParseProblemException =>
+        logger.error(s"failed to parse $filepath: $e")
+        nodesFromNextFile()
+    }
   }
 
   private def nodesFromFile(filepath: Path): List[Node] = {
