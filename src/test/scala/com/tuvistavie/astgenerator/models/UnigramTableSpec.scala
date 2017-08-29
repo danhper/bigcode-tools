@@ -1,5 +1,7 @@
 package com.tuvistavie.astgenerator.models
 
+import java.util.concurrent.atomic.AtomicInteger
+
 import org.nd4j.linalg.api.ndarray.INDArray
 import org.scalatest.{FunSpec, Matchers}
 import org.nd4s.Implicits._
@@ -31,7 +33,7 @@ class UnigramTableSpec extends FunSpec with Matchers {
   }
 
   private def dummyItem(count: Int): SubgraphVocabItem = {
-    SubgraphVocabItem(Subgraph(null), count)
+    SubgraphVocabItem(Subgraph(null), new AtomicInteger(count))
   }
 
   private def arr(v: Int): INDArray = Array(v).asNDArray(1, 1)
