@@ -1,9 +1,8 @@
 package com.tuvistavie.astgenerator.ast
 
-import java.io.FileInputStream
 import java.nio.file.{Path, Paths}
+import java.util.concurrent.ConcurrentHashMap
 
-import com.github.javaparser.{JavaParser, ParseProblemException}
 import com.github.javaparser.ast.{CompilationUnit, Node}
 import com.tuvistavie.astgenerator.models.{GenerateVocabularyConfig, Subgraph, SubgraphVocabItem, Vocabulary}
 import com.tuvistavie.astgenerator.util.{FileUtils, Serializer}
@@ -14,8 +13,8 @@ import scala.collection.mutable
 
 
 class VocabularyGenerator(subgraphDepth: Int) extends LazyLogging {
-  private val vocabulary: mutable.Map[Subgraph, Int] = mutable.Map.empty
-  private val vocabularyItems: mutable.Map[Int, SubgraphVocabItem] = mutable.Map.empty
+  private val vocabulary: mutable.Map[Subgraph, Int] = new ConcurrentHashMap[Subgraph, Int]().asScala
+  private val vocabularyItems: mutable.Map[Int, SubgraphVocabItem] = new ConcurrentHashMap[Int, SubgraphVocabItem]().asScala
 
   def generateVocabulary(filepath: String): Unit = {
     generateVocabulary(Paths.get(filepath))
@@ -25,13 +24,15 @@ class VocabularyGenerator(subgraphDepth: Int) extends LazyLogging {
     val nodes = VocabularyGenerator.getNodes(cu)
     nodes.foreach { n =>
       val subgraph = VocabularyGenerator.createSubgraph(n, subgraphDepth)
-      if (!vocabulary.contains(subgraph)) {
-        vocabulary += (subgraph -> vocabularyItems.size)
-        vocabularyItems += (vocabularyItems.size -> SubgraphVocabItem(subgraph))
+      synchronized {
+        if (!vocabulary.contains(subgraph)) {
+          vocabulary += (subgraph -> vocabularyItems.size)
+          vocabularyItems += (vocabularyItems.size -> SubgraphVocabItem(subgraph))
+        }
       }
       val index = vocabulary(subgraph)
       val item = vocabularyItems(index)
-      vocabularyItems.update(index, item.copy(count = item.count + 1))
+      item.currentCount.getAndIncrement()
     }
   }
 
@@ -43,6 +44,14 @@ class VocabularyGenerator(subgraphDepth: Int) extends LazyLogging {
     val items = vocabularyItems.values.toSeq.sortBy(-_.count).take(size)
     Vocabulary(items, subgraphDepth)
   }
+
+  def generateProjectVocabulary(projectPath: String, vocabularySize: Int): Vocabulary = {
+    val files = FileUtils.findFiles(projectPath, FileUtils.withExtension("java"))
+    files.par.foreach { filepath =>
+      generateVocabulary(filepath)
+    }
+    create(vocabularySize)
+  }
 }
 
 object VocabularyGenerator {
@@ -50,14 +59,10 @@ object VocabularyGenerator {
 
   def generateProjectVocabulary(config: GenerateVocabularyConfig): Vocabulary = {
     val generator = VocabularyGenerator(config.subgraphDepth)
-    val files = FileUtils.findFiles(config.project, FileUtils.withExtension("java"))
-    files.foreach { filepath =>
-      generator.generateVocabulary(filepath)
-    }
-    val extractedVocabulary = generator.create(config.vocabularySize)
+    val extractedVocabulary = generator.generateProjectVocabulary(config.project, config.vocabularySize)
     config.output.foreach(f => Serializer.dumpToFile(extractedVocabulary, f))
     if (!config.silent) {
-      println(s"extracted ${extractedVocabulary.size} letters from ${files.size} files")
+      println(s"extracted ${extractedVocabulary.size} letters")
     }
     extractedVocabulary
   }
