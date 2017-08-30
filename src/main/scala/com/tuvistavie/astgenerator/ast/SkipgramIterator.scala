@@ -4,7 +4,6 @@ import java.io._
 import java.nio.file.Path
 import java.util.zip.GZIPOutputStream
 
-import com.github.javaparser.{JavaParser, ParseProblemException}
 import com.github.javaparser.ast.Node
 import com.tuvistavie.astgenerator.models.{SkipgramConfig, Subgraph, Vocabulary}
 import com.tuvistavie.astgenerator.util.FileUtils

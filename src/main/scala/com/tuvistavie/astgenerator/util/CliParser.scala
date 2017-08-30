@@ -57,14 +57,6 @@ object CliParser {
         c.copy(vocabularyPath = x) } }.text("path of the saved vocabulary"),
       opt[String]('o', "output").required().action { (x, c) => (c: @unchecked) match { case c: SkipgramConfig =>
         c.copy(output = x) } }.text("output file"),
-      opt[Int]("epochs").action { (x, c) => (c: @unchecked) match { case c: SkipgramConfig =>
-        c.copy(epochs = x) } }.text("number of epochs to train"),
-      opt[Int]("batch-size").action { (x, c) => (c: @unchecked) match { case c: SkipgramConfig =>
-        c.copy(batchSize = x) } }.text("batch size"),
-      opt[Double]("learning-rate").action { (x, c) => (c: @unchecked) match { case c: SkipgramConfig =>
-        c.copy(learningRate = x) } }.text("learning rate"),
-      opt[Int]("negative-samples").action { (x, c) => (c: @unchecked) match { case c: SkipgramConfig =>
-        c.copy(negativeSamples = x) } }.text("negative samples"),
       opt[Int]("window-size").action { (x, c) => (c: @unchecked) match { case c: SkipgramConfig =>
         c.copy(windowSize = x) } }.text("window size to train the model"),
       opt[Int]("embedding-size").action { (x, c) => (c: @unchecked) match { case c: SkipgramConfig =>
@@ -73,8 +65,19 @@ object CliParser {
         c.copy(includeSiblings = false) } }.text("do not include siblings in context")
     )
 
+    def trainSkipgramDataChildren = skipgramChildren ++ List(
+      opt[Int]("epochs").action { (x, c) => (c: @unchecked) match { case c: SkipgramConfig =>
+        c.copy(epochs = x) } }.text("number of epochs to train"),
+      opt[Int]("batch-size").action { (x, c) => (c: @unchecked) match { case c: SkipgramConfig =>
+        c.copy(batchSize = x) } }.text("batch size"),
+      opt[Double]("learning-rate").action { (x, c) => (c: @unchecked) match { case c: SkipgramConfig =>
+        c.copy(learningRate = x) } }.text("learning rate"),
+      opt[Int]("negative-samples").action { (x, c) => (c: @unchecked) match { case c: SkipgramConfig =>
+        c.copy(negativeSamples = x) } }.text("negative samples")
+    )
+
     cmd("generate-skipgram-data").action((_, _) => SkipgramConfig(action = "generate-data")).children(skipgramChildren: _*)
-    cmd("train-skipgram").action((_, _) => SkipgramConfig(action = "train")).children(skipgramChildren: _*)
+    cmd("train-skipgram").action((_, _) => SkipgramConfig(action = "train")).children(trainSkipgramDataChildren: _*)
 
     cmd("visualize-embeddings").action((_, _) => VisualizeEmbeddingsConfig()).children(
       opt[String]('v' ,"vocabulary-path").required().action { (x, c) => (c: @unchecked) match { case c: VisualizeEmbeddingsConfig =>
