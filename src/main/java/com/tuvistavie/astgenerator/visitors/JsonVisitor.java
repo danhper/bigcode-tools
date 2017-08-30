@@ -292,13 +292,6 @@ public class JsonVisitor extends GenericVisitorAdapter<JsonNode, Void> {
         return result;
     }
 
-    public JsonNode visit(EmptyMemberDeclaration n, Void arg) {
-        ObjectNode result = enterNode(n, arg);
-        result.set(annotationsKey, n.getAnnotations().accept(this, arg));
-        n.getComment().ifPresent( c -> result.set(commentKey, c.accept(this, arg)));
-        return result;
-    }
-
     public JsonNode visit(EmptyStmt n, Void arg) {
         ObjectNode result = enterNode(n, arg);
         n.getComment().ifPresent( c -> result.set(commentKey, c.accept(this, arg)));
@@ -308,7 +301,7 @@ public class JsonVisitor extends GenericVisitorAdapter<JsonNode, Void> {
     public JsonNode visit(EnclosedExpr n, Void arg) {
         ObjectNode result = enterNode(n, arg);
         ArrayNode children = result.withArray(childrenKey);
-        n.getInner().ifPresent( c -> children.add(c.accept(this, arg)));
+        children.add(n.getInner().accept(this, arg));
         n.getComment().ifPresent( c -> result.set(commentKey, c.accept(this, arg)));
         return result;
     }
@@ -360,7 +353,7 @@ public class JsonVisitor extends GenericVisitorAdapter<JsonNode, Void> {
         ObjectNode result = enterNode(n, arg);
         ArrayNode children = result.withArray(childrenKey);
         children.add(n.getName().accept(this, arg));
-        n.getScope().ifPresent( c -> children.add(c.accept(this, arg)));
+        children.add(n.getScope().accept(this, arg));
         n.getTypeArguments().ifPresent( c -> children.add(c.accept(this, arg)));
         n.getComment().ifPresent( c -> result.set(commentKey, c.accept(this, arg)));
         return result;
@@ -715,7 +708,7 @@ public class JsonVisitor extends GenericVisitorAdapter<JsonNode, Void> {
         children.add(n.getCatchClauses().accept(this, arg));
         n.getFinallyBlock().ifPresent( c -> children.add(c.accept(this, arg)));
         children.add(n.getResources().accept(this, arg));
-        n.getTryBlock().ifPresent( c -> children.add(c.accept(this, arg)));
+        children.add(n.getTryBlock().accept(this, arg));
         n.getComment().ifPresent( c -> result.set(commentKey, c.accept(this, arg)));
         return result;
     }
@@ -802,8 +795,8 @@ public class JsonVisitor extends GenericVisitorAdapter<JsonNode, Void> {
     public JsonNode visit(WildcardType n, Void arg) {
         ObjectNode result = enterNode(n, arg);
         ArrayNode children = result.withArray(childrenKey);
-        n.getExtendedTypes().ifPresent( c -> children.add(c.accept(this, arg)));
-        n.getSuperTypes().ifPresent( c -> children.add(c.accept(this, arg)));
+        n.getExtendedType().ifPresent( c -> children.add(c.accept(this, arg)));
+        n.getSuperType().ifPresent( c -> children.add(c.accept(this, arg)));
         result.set(annotationsKey, n.getAnnotations().accept(this, arg));
         n.getComment().ifPresent( c -> result.set(commentKey, c.accept(this, arg)));
         return result;
