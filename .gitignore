@@ -31,3 +31,4 @@ project/plugins/project/
 
 tmp/*
 !tmp/.keep
+results/
