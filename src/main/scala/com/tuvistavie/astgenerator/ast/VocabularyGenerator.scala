@@ -99,7 +99,12 @@ object VocabularyGenerator {
       fs <- managed(new FileOutputStream(config.output))
       pw <- managed(new PrintWriter(fs))
     } {
-      vocabulary.items.values.foreach(vocabItem => pw.println(vocabItem.subgraph.toString))
+      pw.println("Name\tType")
+      vocabulary.items.values.foreach(vocabItem => {
+        val name = vocabItem.subgraph.toString
+        val tokenType = vocabItem.subgraph.token.tokenType
+        pw.println(f"$name\t$tokenType")
+      })
     }
   }
 }
