@@ -67,7 +67,7 @@ case class VisualizeVocabularyDistributionConfig(
   output: String = "tmp/vocabulary-distribution.html",
   replace: Boolean = false,
   openBrowser: Boolean = true,
-  breakpoints: Seq[Int] = Seq(1, 10, 100, 1000, 5000)
+  breakpoints: Seq[Int] = Seq(1, 10, 100, 1000, 5000, 10000, 50000)
 ) extends Config
 
 object Config {
