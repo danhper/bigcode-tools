@@ -1,12 +1,14 @@
 package com.tuvistavie.astgenerator.ast
 
+import java.io.{FileOutputStream, PrintWriter}
 import java.nio.file.{Path, Paths}
 import java.util.concurrent.ConcurrentHashMap
 
 import com.github.javaparser.ast.{CompilationUnit, Node}
-import com.tuvistavie.astgenerator.models.{GenerateVocabularyConfig, Subgraph, SubgraphVocabItem, Vocabulary}
+import com.tuvistavie.astgenerator.models._
 import com.tuvistavie.astgenerator.util.{FileUtils, Serializer}
 import com.typesafe.scalalogging.LazyLogging
+import resource.managed
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable
@@ -89,5 +91,15 @@ object VocabularyGenerator {
       currentNode.getChildNodes.asScala.foreach(n => queue.enqueue(n))
     }
     nodes.toList
+  }
+
+  def createVocabularyLabels(config: CreateVocabularyLabelsConfig): Unit = {
+    val vocabulary = loadFromFile(config.vocabularyPath)
+    for {
+      fs <- managed(new FileOutputStream(config.output))
+      pw <- managed(new PrintWriter(fs))
+    } {
+      vocabulary.items.values.foreach(vocabItem => pw.println(vocabItem.subgraph.toString))
+    }
   }
 }

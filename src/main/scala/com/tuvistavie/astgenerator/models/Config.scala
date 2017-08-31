@@ -30,6 +30,11 @@ case class GenerateVocabularyConfig(
   silent: Boolean = false
 ) extends Config
 
+case class CreateVocabularyLabelsConfig(
+  vocabularyPath: String = "",
+  output: String = ""
+) extends Config
+
 case class SkipgramConfig(
   action: String = "",
   project: String = "",

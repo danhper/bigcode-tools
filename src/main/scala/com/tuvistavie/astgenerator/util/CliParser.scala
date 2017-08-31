@@ -26,6 +26,13 @@ object CliParser {
         c.copy(project = x) } }.text("project to parse")
     )
 
+    cmd("create-vocabulary-labels").action((_, _) => CreateVocabularyLabelsConfig()).children(
+      opt[String]('v' ,"vocabulary-path").required().action { (x, c) => (c: @unchecked) match { case c: CreateVocabularyLabelsConfig =>
+        c.copy(vocabularyPath = x) } }.text("path of the saved vocabulary"),
+      opt[String]('o', "output").required().action { (x, c) => (c: @unchecked) match { case c: CreateVocabularyLabelsConfig =>
+        c.copy(output = x) } }.text("output file")
+    )
+
     cmd("generate-dot").action((_, _) => GenerateDotConfig()).children(
       arg[String]("<filepath>").action { (x, c) => (c: @unchecked) match { case c: GenerateDotConfig =>
         c.copy(filepath = x) } }.text("file to parse"),

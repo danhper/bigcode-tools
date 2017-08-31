@@ -21,6 +21,8 @@ object Main {
       }
       case Some(config: GenerateVocabularyConfig) =>
         VocabularyGenerator.generateProjectVocabulary(config)
+      case Some(config: CreateVocabularyLabelsConfig) =>
+        VocabularyGenerator.createVocabularyLabels(config)
       case Some(NoConfig) =>
         CliParser.showUsage()
       case Some(config: VisualizeVocabularyDistributionConfig) =>
