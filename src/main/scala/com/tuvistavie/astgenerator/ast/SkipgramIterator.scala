@@ -2,6 +2,7 @@ package com.tuvistavie.astgenerator.ast
 
 import java.io._
 import java.nio.file.Path
+import java.util.concurrent.atomic.AtomicInteger
 import java.util.zip.GZIPOutputStream
 
 import com.github.javaparser.ast.Node
@@ -42,6 +43,26 @@ class SkipgramIterator(vocabulary: Vocabulary, skipgramConfig: SkipgramConfig) e
     case datum => datum
   }
 
+  def outputData(pw: PrintWriter): Unit = {
+    val totalFiles = files.size
+    val doneFiles = new AtomicInteger(0)
+    files.par.foreach { f =>
+      val currentProgress = doneFiles.getAndIncrement()
+      if (currentProgress % 1000 == 0) {
+        val progress = currentProgress.toFloat / totalFiles * 100
+        logger.info(f"$currentProgress / $totalFiles ($progress%.2f%%)")
+      }
+
+      nodesFromFile(f).par.foreach { nodes => nodes.foreach { node =>
+        generateContextPairs(node).foreach {
+          case (word, context) if word != Vocabulary.unk && context != Vocabulary.unk =>
+            pw.println(f"$word,$context")
+          case (_, _) =>
+        }
+      }}
+    }
+  }
+
   private def nextRawDatum(): (Int, Int) = {
     if (currentData.hasNext) {
       currentData.next()
@@ -67,7 +88,6 @@ class SkipgramIterator(vocabulary: Vocabulary, skipgramConfig: SkipgramConfig) e
 
   private def moveToNextEpoch(): Unit = {
     currentEpoch += 1
-    logger.debug(s"iterating on epoch $currentEpoch")
     filesIterator = files.iterator
     currentFileNodes = nodesFromNextFile().iterator
   }
@@ -77,7 +97,6 @@ class SkipgramIterator(vocabulary: Vocabulary, skipgramConfig: SkipgramConfig) e
   }
 
   private def nodesFromFile(filepath: Path): Option[List[Node]] = {
-    logger.debug(s"iterating on file $filepath")
     FileUtils.parseFile(filepath).map(VocabularyGenerator.getNodes)
   }
 
@@ -137,10 +156,7 @@ object SkipgramIterator {
       gs <- managed(new GZIPOutputStream(fs))
       pw <- managed(new PrintWriter(gs))
     } {
-      while (iterator.hasNextBash) {
-        val data = iterator.nextBatch(config.batchSize)
-        data.foreach { case (word, context) => pw.println(f"$word,$context") }
-      }
+      iterator.outputData(pw)
     }
   }
 }
