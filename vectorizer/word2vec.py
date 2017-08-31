@@ -60,6 +60,7 @@ class Word2VecOptions:
         self.threads_count = options["threads_count"]
         self.epochs = options["epochs"]
         self.learning_rate = options["learning_rate"]
+        self.l2_value = options["l2_value"]
 
 
 class Word2Vec:
@@ -111,6 +112,10 @@ class Word2Vec:
                            num_sampled=opts.num_sampled,
                            num_classes=opts.vocab_size)
         )
+
+        if opts.l2_value > 0.0:
+            reguralization_value = opts.l2_value * tf.nn.l2_loss(nce_weights) / opts.batch_size
+            loss += reguralization_value
 
         update_loss = tf.assign_add(total_loss, loss)
 
@@ -200,6 +205,7 @@ def create_parser():
     parser.add_argument("--vocab-size", type=int, required=True)
     parser.add_argument("--emb-size", type=int, default=100)
     parser.add_argument("--batch-size", type=int, default=1024)
+    parser.add_argument("--l2-value", type=float, default=0.0)
     parser.add_argument("--num-sampled", type=int, default=10)
     parser.add_argument("--epochs", type=int, default=5)
     parser.add_argument("--learning-rate", type=float, default=0.01)
