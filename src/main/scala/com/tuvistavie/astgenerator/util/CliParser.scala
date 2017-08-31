@@ -66,8 +66,6 @@ object CliParser {
         c.copy(output = x) } }.text("output file"),
       opt[Int]("window-size").action { (x, c) => (c: @unchecked) match { case c: SkipgramConfig =>
         c.copy(windowSize = x) } }.text("window size to train the model"),
-      opt[Int]("embedding-size").action { (x, c) => (c: @unchecked) match { case c: SkipgramConfig =>
-        c.copy(embeddingSize = x) } }.text("size of the word embedding"),
       opt[Unit]("without-siblings").action { (_, c) => (c: @unchecked) match { case c: SkipgramConfig =>
         c.copy(includeSiblings = false) } }.text("do not include siblings in context")
     )
@@ -80,7 +78,9 @@ object CliParser {
       opt[Double]("learning-rate").action { (x, c) => (c: @unchecked) match { case c: SkipgramConfig =>
         c.copy(learningRate = x) } }.text("learning rate"),
       opt[Int]("negative-samples").action { (x, c) => (c: @unchecked) match { case c: SkipgramConfig =>
-        c.copy(negativeSamples = x) } }.text("negative samples")
+        c.copy(negativeSamples = x) } }.text("negative samples"),
+      opt[Int]("embedding-size").action { (x, c) => (c: @unchecked) match { case c: SkipgramConfig =>
+        c.copy(embeddingSize = x) } }.text("size of the word embedding")
     )
 
     cmd("generate-skipgram-data").action((_, _) => SkipgramConfig(action = "generate-data")).children(skipgramChildren: _*)
