@@ -7,9 +7,10 @@ import com.tuvistavie.astgenerator.models.Token
 
 
 object TokenExtractor {
-  def extractToken(node: Node): Token = node match {
+  def extractToken(node: Node, stripIdentifiers: Boolean = false): Token = node match {
     case n: BinaryExpr => Token(n, n.getOperator.asString)
     case n: BooleanLiteralExpr => Token(n, n.getValue.toString)
+    case n: NodeWithIdentifier[_] if stripIdentifiers => Token(n)
     case n: NodeWithIdentifier[_] => Token(n, n.getIdentifier)
     case n: IntegerLiteralExpr => Token(n, safeNumToString(n.getValue.toInt))
     case n: DoubleLiteralExpr => Token(n, safeNumToString(n.getValue.toDouble))

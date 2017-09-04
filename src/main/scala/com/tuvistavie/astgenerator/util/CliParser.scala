@@ -54,7 +54,9 @@ object CliParser {
       opt[String]('o', "output").action { (x, c) => (c: @unchecked) match { case c: GenerateVocabularyConfig =>
         c.copy(output = Some(x)) } }.text("output file"),
       opt[Unit]("silent").action { (_, c) => (c: @unchecked) match { case c: GenerateVocabularyConfig =>
-        c.copy(silent = true) } }.text("do not output info to stdout")
+        c.copy(silent = true) } }.text("do not output info to stdout"),
+      opt[Unit]("strip-identifiers").action { (_, c) => (c: @unchecked) match { case c: GenerateVocabularyConfig =>
+        c.copy(stripIdentifiers = true) } }.text("remove identifiers from output")
     )
 
     def skipgramChildren = List(
@@ -67,7 +69,9 @@ object CliParser {
       opt[Int]("window-size").action { (x, c) => (c: @unchecked) match { case c: SkipgramConfig =>
         c.copy(windowSize = x) } }.text("window size to train the model"),
       opt[Unit]("without-siblings").action { (_, c) => (c: @unchecked) match { case c: SkipgramConfig =>
-        c.copy(includeSiblings = false) } }.text("do not include siblings in context")
+        c.copy(includeSiblings = false) } }.text("do not include siblings in context"),
+      opt[Unit]("no-shuffle").action { (_, c) => (c: @unchecked) match { case c: SkipgramConfig =>
+        c.copy(noShuffle = true) } }.text("do not shuffle the data")
     )
 
     def trainSkipgramDataChildren = skipgramChildren ++ List(

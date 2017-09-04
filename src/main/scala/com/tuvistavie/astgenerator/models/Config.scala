@@ -27,7 +27,8 @@ case class GenerateVocabularyConfig(
   output: Option[String] = None,
   subgraphDepth: Int = 1,
   vocabularySize: Int = 10000,
-  silent: Boolean = false
+  silent: Boolean = false,
+  stripIdentifiers: Boolean = false
 ) extends Config
 
 case class CreateVocabularyLabelsConfig(
@@ -48,7 +49,8 @@ case class SkipgramConfig(
   batchSize: Int = 64,
   unigramTable: UnigramTable = null,
   vocabularySize: Int = -1,
-  learningRate: Double = 0.1
+  learningRate: Double = 0.1,
+  noShuffle: Boolean = false
 ) extends Config
 
 case class VisualizeEmbeddingsConfig(

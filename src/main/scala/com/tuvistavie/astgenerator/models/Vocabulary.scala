@@ -2,7 +2,8 @@ package com.tuvistavie.astgenerator.models
 
 case class Vocabulary(
   items: Map[Int, SubgraphVocabItem],
-  subgraphDepth: Int
+  subgraphDepth: Int,
+  strippedIdentifiers: Boolean
 ) {
   val size: Int = items.size
 
@@ -18,8 +19,8 @@ case class Vocabulary(
 object Vocabulary {
   val unk: Int = -1
 
-  def apply(items: Seq[SubgraphVocabItem], subgraphDepth: Int): Vocabulary = {
+  def apply(items: Seq[SubgraphVocabItem], subgraphDepth: Int, strippedIdentifiers: Boolean = false): Vocabulary = {
     val mapItems = items.zipWithIndex.map(_.swap).toMap
-    Vocabulary(mapItems, subgraphDepth)
+    Vocabulary(mapItems, subgraphDepth, strippedIdentifiers)
   }
 }

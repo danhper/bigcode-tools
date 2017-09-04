@@ -14,7 +14,7 @@ import scala.collection.JavaConverters._
 import scala.collection.mutable
 
 
-class VocabularyGenerator(subgraphDepth: Int) extends LazyLogging {
+class VocabularyGenerator(config: GenerateVocabularyConfig) extends LazyLogging {
   private val vocabulary: mutable.Map[Subgraph, Int] = new ConcurrentHashMap[Subgraph, Int]().asScala
   private val vocabularyItems: mutable.Map[Int, SubgraphVocabItem] = new ConcurrentHashMap[Int, SubgraphVocabItem]().asScala
 
@@ -25,7 +25,7 @@ class VocabularyGenerator(subgraphDepth: Int) extends LazyLogging {
   private def generateVocabulary(cu: CompilationUnit): Unit = {
     val nodes = VocabularyGenerator.getNodes(cu)
     nodes.foreach { n =>
-      val subgraph = VocabularyGenerator.createSubgraph(n, subgraphDepth)
+      val subgraph = VocabularyGenerator.createSubgraph(n, config.subgraphDepth, config.stripIdentifiers)
       synchronized {
         if (!vocabulary.contains(subgraph)) {
           vocabulary += (subgraph -> vocabularyItems.size)
@@ -44,24 +44,24 @@ class VocabularyGenerator(subgraphDepth: Int) extends LazyLogging {
 
   def create(size: Int): Vocabulary = {
     val items = vocabularyItems.values.toSeq.sortBy(-_.count).take(size)
-    Vocabulary(items, subgraphDepth)
+    Vocabulary(items, config.subgraphDepth, config.stripIdentifiers)
   }
 
-  def generateProjectVocabulary(projectPath: String, vocabularySize: Int): Vocabulary = {
-    val files = FileUtils.findFiles(projectPath, FileUtils.withExtension("java"))
+  def generateProjectVocabulary(config: GenerateVocabularyConfig): Vocabulary = {
+    val files = FileUtils.findFiles(config.project, FileUtils.withExtension("java"))
     files.par.foreach { filepath =>
       generateVocabulary(filepath)
     }
-    create(vocabularySize)
+    create(config.vocabularySize)
   }
 }
 
 object VocabularyGenerator {
-  def apply(subgraphDepth: Int): VocabularyGenerator = new VocabularyGenerator(subgraphDepth)
+  def apply(config: GenerateVocabularyConfig): VocabularyGenerator = new VocabularyGenerator(config)
 
   def generateProjectVocabulary(config: GenerateVocabularyConfig): Vocabulary = {
-    val generator = VocabularyGenerator(config.subgraphDepth)
-    val extractedVocabulary = generator.generateProjectVocabulary(config.project, config.vocabularySize)
+    val generator = VocabularyGenerator(config)
+    val extractedVocabulary = generator.generateProjectVocabulary(config)
     config.output.foreach(f => Serializer.dumpToFile(extractedVocabulary, f))
     if (!config.silent) {
       println(s"extracted ${extractedVocabulary.size} letters")
@@ -73,12 +73,12 @@ object VocabularyGenerator {
     Serializer.loadFromFile[Vocabulary](filepath)
   }
 
-  def createSubgraph(node: Node, depth: Int): Subgraph = {
+  def createSubgraph(node: Node, depth: Int, stripIdentifiers: Boolean = false): Subgraph = {
     if (depth == 1) {
-      return Subgraph(TokenExtractor.extractToken(node))
+      return Subgraph(TokenExtractor.extractToken(node, stripIdentifiers))
     }
     val childSubgraphs = node.getChildNodes.asScala.map(n => createSubgraph(n, depth - 1)).toList
-    val currentSubgraph = createSubgraph(node, depth - 1).copy(children = childSubgraphs)
+    val currentSubgraph = createSubgraph(node, depth - 1, stripIdentifiers).copy(children = childSubgraphs)
     currentSubgraph
   }
 

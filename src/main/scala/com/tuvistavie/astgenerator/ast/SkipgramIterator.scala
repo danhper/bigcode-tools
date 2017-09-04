@@ -14,6 +14,7 @@ import resource.managed
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ListBuffer
+import scala.util.Random
 
 class SkipgramIterator(vocabulary: Vocabulary, skipgramConfig: SkipgramConfig) extends LazyLogging {
   val files: Set[Path] = FileUtils.findFiles(skipgramConfig.project, FileUtils.withExtension("java"))
@@ -46,7 +47,8 @@ class SkipgramIterator(vocabulary: Vocabulary, skipgramConfig: SkipgramConfig) e
   def outputData(pw: PrintWriter): Unit = {
     val totalFiles = files.size
     val doneFiles = new AtomicInteger(0)
-    files.par.foreach { f =>
+    val data = if (skipgramConfig.noShuffle) { files } else { Random.shuffle(files) }
+    data.par.foreach { f =>
       val currentProgress = doneFiles.getAndIncrement()
       if (currentProgress % 1000 == 0) {
         val progress = currentProgress.toFloat / totalFiles * 100
@@ -139,7 +141,7 @@ class SkipgramIterator(vocabulary: Vocabulary, skipgramConfig: SkipgramConfig) e
   }
 
   private def createSubgraph(node: Node): Subgraph = {
-    VocabularyGenerator.createSubgraph(node, vocabulary.subgraphDepth)
+    VocabularyGenerator.createSubgraph(node, vocabulary.subgraphDepth, vocabulary.strippedIdentifiers)
   }
 }
 

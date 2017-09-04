@@ -12,6 +12,12 @@ import tensorflow as tf
 import numpy as np
 
 
+OPTIMIZERS = {
+    "gradient-descent": tf.train.GradientDescentOptimizer,
+    "adam": tf.train.AdamOptimizer
+}
+
+
 class DataReader:
     def __init__(self, input_file):
         with gzip.open(input_file, "rb") as f:
@@ -61,6 +67,7 @@ class Word2VecOptions:
         self.epochs = options["epochs"]
         self.learning_rate = options["learning_rate"]
         self.l2_value = options["l2_value"]
+        self.optimizer = options["optimizer"]
 
 
 class Word2Vec:
@@ -119,9 +126,9 @@ class Word2Vec:
 
         update_loss = tf.assign_add(total_loss, loss)
 
-        lr = opts.learning_rate
+        optimizer_class = OPTIMIZERS[opts.optimizer]
         with tf.control_dependencies([inc_global_step, inc_temporary_step, update_loss]):
-            optimizer = tf.train.GradientDescentOptimizer(learning_rate=lr).minimize(loss)
+            optimizer = optimizer_class(learning_rate=opts.learning_rate).minimize(loss)
 
         tf.summary.scalar("loss", average_loss)
         merged_summary = tf.summary.merge_all()
@@ -207,8 +214,9 @@ def create_parser():
     parser.add_argument("--batch-size", type=int, default=1024)
     parser.add_argument("--l2-value", type=float, default=0.0)
     parser.add_argument("--num-sampled", type=int, default=10)
+    parser.add_argument("--optimizer", default="adam")
     parser.add_argument("--epochs", type=int, default=5)
-    parser.add_argument("--learning-rate", type=float, default=0.01)
+    parser.add_argument("--learning-rate", type=float, default=0.001)
     parser.add_argument("--threads-count", type=int, default=multiprocessing.cpu_count())
     return parser
 
