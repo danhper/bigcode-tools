@@ -68,6 +68,7 @@ class Word2VecOptions:
         self.learning_rate = options["learning_rate"]
         self.l2_value = options["l2_value"]
         self.optimizer = options["optimizer"]
+        self.no_clipping = options["no_clipping"]
 
 
 class Word2Vec:
@@ -121,14 +122,18 @@ class Word2Vec:
         )
 
         if opts.l2_value > 0.0:
-            reguralization_value = opts.l2_value * tf.nn.l2_loss(nce_weights) / opts.batch_size
-            loss += reguralization_value
+            regularization_value = opts.l2_value * tf.nn.l2_loss(nce_weights) / opts.batch_size
+            loss += regularization_value
 
         update_loss = tf.assign_add(total_loss, loss)
 
         optimizer_class = OPTIMIZERS[opts.optimizer]
         with tf.control_dependencies([inc_global_step, inc_temporary_step, update_loss]):
-            optimizer = optimizer_class(learning_rate=opts.learning_rate).minimize(loss)
+            optimizer = optimizer_class(learning_rate=opts.learning_rate)
+            grads_and_vars = optimizer.compute_gradients(loss)
+            if not opts.no_clipping:
+                grads_and_vars = [(g, v) if g is None else (tf.clip_by_value(g, -1., 1.), v) for (g, v) in grads_and_vars]
+            optimization_step = optimizer.apply_gradients(grads_and_vars)
 
         tf.summary.scalar("loss", average_loss)
         merged_summary = tf.summary.merge_all()
@@ -137,7 +142,7 @@ class Word2Vec:
         self.global_step = global_step
         self.loss = loss
         self.embeddings = embeddings
-        self.optimizer = optimizer
+        self.optimization_step = optimization_step
         self.train_inputs = train_inputs
         self.train_labels = train_labels
         self.merged_summary = merged_summary
@@ -190,7 +195,7 @@ class Word2Vec:
 
     def _train_batch(self, inputs, labels, record_results):
         feed_dict = {self.train_inputs: inputs, self.train_labels: labels}
-        _, tmp_step = self._session.run([self.optimizer, self.temporary_step], feed_dict=feed_dict)
+        _, tmp_step = self._session.run([self.optimization_step, self.temporary_step], feed_dict=feed_dict)
         if tmp_step > 10000 and record_results:
             self._record_step()
 
@@ -218,12 +223,12 @@ def create_parser():
     parser.add_argument("--epochs", type=int, default=5)
     parser.add_argument("--learning-rate", type=float, default=0.001)
     parser.add_argument("--threads-count", type=int, default=multiprocessing.cpu_count())
+    parser.add_argument("--no-clipping", action="store_true", default=False)
     return parser
 
 
-def train(namespace):
+def train(options):
     graph = tf.Graph()
-    options = Word2VecOptions(vars(namespace))
     data_reader = DataReader(options.input_file)
     output_file = path.join(options.output_dir, "w2v.bin")
     with graph.as_default(), tf.Session() as session:
@@ -236,7 +241,8 @@ def train(namespace):
 def main():
     parser = create_parser()
     namespace = parser.parse_args()
-    train(namespace)
+    options = Word2VecOptions(vars(namespace))
+    train(options)
 
 
 if __name__ == '__main__':
