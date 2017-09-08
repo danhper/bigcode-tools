@@ -7,6 +7,14 @@ case class Token(tokenType: String, value: Option[String] = None) {
     case Some(v) => v
     case None => tokenType
   }
+
+  def metaType: String = tokenType match {
+    case t if t.endsWith("Stmt") => "Stmt"
+    case t if t.endsWith("Expr") => "Expr"
+    case t if t.endsWith("Type") => "Type"
+    case t if t.endsWith("Declaration") => "Declaration"
+    case _ => "Other"
+  }
 }
 
 object Token {

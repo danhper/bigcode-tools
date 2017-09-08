@@ -28,8 +28,8 @@ class SkipgramIteratorSpec extends FunSpec with Matchers {
     }
 
     it("should have more data when window size increases") {
-      val sizeOneWindowData = makeIterator(baseConfig.copy(windowSize = 1)).nextBatch(someBigNumber)
-      val sizeTwoWindowData = makeIterator(baseConfig.copy(windowSize = 2)).nextBatch(someBigNumber)
+      val sizeOneWindowData = makeIterator(baseConfig.copy(childrenWindowSize = 1)).nextBatch(someBigNumber)
+      val sizeTwoWindowData = makeIterator(baseConfig.copy(childrenWindowSize = 2)).nextBatch(someBigNumber)
       sizeTwoWindowData.size should be > sizeOneWindowData.size
     }
 

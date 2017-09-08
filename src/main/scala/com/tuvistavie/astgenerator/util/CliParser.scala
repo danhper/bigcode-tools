@@ -1,6 +1,7 @@
 package com.tuvistavie.astgenerator.util
 
 import com.tuvistavie.astgenerator.models._
+import scopt.OptionDef
 
 object CliParser {
 
@@ -65,22 +66,24 @@ object CliParser {
         c.copy(stripIdentifiers = true) } }.text("remove identifiers from output")
     )
 
-    def skipgramChildren = List(
+    def skipgramChildren: List[OptionDef[_, Config]] = List(
       arg[String]("<project>").action { (x, c) => (c: @unchecked) match { case c: SkipgramConfig =>
         c.copy(project = x) } }.text("project from which skipgram model should be trained"),
       opt[String]('v' ,"vocabulary-path").required().action { (x, c) => (c: @unchecked) match { case c: SkipgramConfig =>
         c.copy(vocabularyPath = x) } }.text("path of the saved vocabulary"),
       opt[String]('o', "output").required().action { (x, c) => (c: @unchecked) match { case c: SkipgramConfig =>
         c.copy(output = x) } }.text("output file"),
-      opt[Int]("window-size").action { (x, c) => (c: @unchecked) match { case c: SkipgramConfig =>
-        c.copy(windowSize = x) } }.text("window size to train the model"),
+      opt[Int]("children-window-size").action { (x, c) => (c: @unchecked) match { case c: SkipgramConfig =>
+        c.copy(childrenWindowSize = x) } }.text("children window size to train the model"),
+      opt[Int]("ancestors-window-size").action { (x, c) => (c: @unchecked) match { case c: SkipgramConfig =>
+        c.copy(ancestorsWindowSize = x) } }.text("ancestors window size to train the model"),
       opt[Unit]("without-siblings").action { (_, c) => (c: @unchecked) match { case c: SkipgramConfig =>
         c.copy(includeSiblings = false) } }.text("do not include siblings in context"),
       opt[Unit]("no-shuffle").action { (_, c) => (c: @unchecked) match { case c: SkipgramConfig =>
         c.copy(noShuffle = true) } }.text("do not shuffle the data")
     )
 
-    def trainSkipgramDataChildren = skipgramChildren ++ List(
+    def trainSkipgramDataChildren: List[OptionDef[_, Config]] = skipgramChildren ++ List(
       opt[Int]("epochs").action { (x, c) => (c: @unchecked) match { case c: SkipgramConfig =>
         c.copy(epochs = x) } }.text("number of epochs to train"),
       opt[Int]("batch-size").action { (x, c) => (c: @unchecked) match { case c: SkipgramConfig =>

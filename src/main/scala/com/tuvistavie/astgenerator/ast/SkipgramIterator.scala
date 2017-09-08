@@ -109,7 +109,7 @@ class SkipgramIterator(vocabulary: Vocabulary, skipgramConfig: SkipgramConfig) e
   }
 
   def generateContext(node: Node): List[Subgraph] = {
-    findParents(node) ++ findChildren(node) ++ maybeFindSiblings(node)
+    findAncestors(node) ++ findChildren(node) ++ maybeFindSiblings(node)
   }
 
   def maybeFindSiblings(node: Node): List[Subgraph] = if (skipgramConfig.includeSiblings) {
@@ -124,19 +124,19 @@ class SkipgramIterator(vocabulary: Vocabulary, skipgramConfig: SkipgramConfig) e
   }
 
   def findChildren(node: Node, currentDepth: Int = 0): List[Subgraph] = {
-    if (currentDepth == skipgramConfig.windowSize) {
+    if (currentDepth == skipgramConfig.childrenWindowSize) {
       return List.empty
     }
     val children = node.getChildNodes.asScala.toList
     children.map(createSubgraph) ++ children.flatMap(n => findChildren(n, currentDepth + 1))
   }
 
-  def findParents(node: Node, currentDepth: Int = 0): List[Subgraph] = {
-    if (currentDepth == skipgramConfig.windowSize) {
+  def findAncestors(node: Node, currentDepth: Int = 0): List[Subgraph] = {
+    if (currentDepth == skipgramConfig.ancestorsWindowSize) {
       return List.empty
     }
     node.getParentNode.toOption.map(n =>
-      createSubgraph(n) +: findParents(node, currentDepth + 1)
+      createSubgraph(n) +: findAncestors(node, currentDepth + 1)
     ).getOrElse(List.empty)
   }
 
