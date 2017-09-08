@@ -1,4 +1,3 @@
-import math
 import argparse
 import threading
 import multiprocessing
@@ -22,6 +21,7 @@ class DataReader:
     def __init__(self, input_file):
         with gzip.open(input_file, "rb") as f:
             self._raw_data = f.read()
+        self.lines = None
         self.reset_input()
         self._count_inputs()
         self.reset_input()
@@ -87,7 +87,7 @@ class Word2Vec:
             name="embeddings")
         nce_weights = tf.Variable(
             tf.truncated_normal([opts.vocab_size, opts.emb_size],
-                                stddev=1.0 / math.sqrt(opts.emb_size)),
+                                stddev=1.0 / np.sqrt(opts.emb_size)),
             name="nce_weights")
         nce_biases = tf.Variable(tf.zeros([opts.vocab_size]), name="nce_biases")
 
