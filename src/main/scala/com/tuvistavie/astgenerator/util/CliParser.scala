@@ -5,7 +5,11 @@ import com.tuvistavie.astgenerator.models._
 object CliParser {
 
   val parser = new scopt.OptionParser[Config]("ast-transformer") {
+
     head("ast-transformer", Config.version)
+
+    opt[Unit]('h', "help").action((_, _) => ShowHelpConfig).text("shows help")
+    opt[Unit]('v', "version").action((_, _) => ShowVersionConfig).text("shows version")
 
     cmd("generate-ast").action((_, _) => GenerateAstConfig()).children(
       opt[Unit]("pretty").action { (_, c) => (c: @unchecked) match { case c: GenerateAstConfig =>
@@ -38,10 +42,12 @@ object CliParser {
         c.copy(filepath = x) } }.text("file to parse"),
       opt[String]('o', "output").action { (x, c) => (c: @unchecked) match { case c: GenerateDotConfig =>
         c.copy(output = Some(x)) } }.text("output file"),
-      opt[Unit]('s', "silent").action { (_, c) => (c: @unchecked) match { case c: GenerateDotConfig =>
-        c.copy(silent = true) } }.text("do not output dot to stdout"),
+      opt[Unit]("debug").action { (_, c) => (c: @unchecked) match { case c: GenerateDotConfig =>
+        c.copy(debug = true) } }.text("output dot to stdout"),
       opt[Unit]("hide-identifiers").action { (_, c) => (c: @unchecked) match { case c: GenerateDotConfig =>
-        c.copy(hideIdentifiers = true) } }.text("do not show tokens")
+        c.copy(hideIdentifiers = true) } }.text("do not show tokens"),
+      opt[Unit]("no-open").action { (_, c) => (c: @unchecked) match { case c: GenerateDotConfig =>
+        c.copy(view = false) } }.text("do not open generated file")
     )
 
     cmd("generate-vocabulary").action((_, _) => GenerateVocabularyConfig()).children(
@@ -124,6 +130,4 @@ object CliParser {
   def parse(args: Array[String]): Option[Config] = {
     parser.parse(args, NoConfig)
   }
-
-  def showUsage(): Unit = parser.showUsage()
 }

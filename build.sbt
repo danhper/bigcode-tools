@@ -8,6 +8,7 @@ scalaVersion := "2.11.8"
 
 libraryDependencies ++= Seq(
   "com.github.javaparser" % "javaparser-core" % "3.3.3",
+  "org.scalaz" %% "scalaz-core" % "7.2.15",
   "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.8.6",
   "com.github.scopt" %% "scopt" % "3.5.0",
   "org.scalactic" %% "scalactic" % "3.0.1",

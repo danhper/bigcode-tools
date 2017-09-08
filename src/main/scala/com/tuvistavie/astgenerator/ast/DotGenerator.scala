@@ -1,6 +1,7 @@
 package com.tuvistavie.astgenerator.ast
 
-import java.io.{FileInputStream, IOException}
+import java.awt.Desktop
+import java.io.{File, FileInputStream, IOException}
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Path, Paths}
 
@@ -15,11 +16,11 @@ import scala.sys.process._
 class DotGenerator(val filepath: Path) {
   val parsed: CompilationUnit = JavaParser.parse(new FileInputStream(filepath.toFile))
 
-  def generateDot(generateDotConfig: GenerateDotConfig): String = {
+  def generateDot(config: GenerateDotConfig): String = {
     val links = generateLinks(parsed).map { case (n1, n2) =>
       s"${nodeId(n1)} -> ${nodeId(n2)};"
     }
-    val nodes = generateNodes(parsed).map(formatNode(_, generateDotConfig.hideIdentifiers))
+    val nodes = generateNodes(parsed).map(formatNode(_, config.hideIdentifiers))
 
     val dot = s"""digraph ${filepath.getFileName.toString.replace(".", "_")} {
         ${nodes.mkString("\n")}
@@ -27,7 +28,11 @@ class DotGenerator(val filepath: Path) {
     }
     """.stripMargin
 
-    generateDotConfig.output.foreach(outputDot(dot, _))
+    config.fileOutput.foreach { output =>
+      outputDot(dot, output)
+      if (config.view) { openOutput(output) }
+    }
+
     dot
   }
 
@@ -40,6 +45,10 @@ class DotGenerator(val filepath: Path) {
       case _ =>
         System.err.println(s"unsupported format for $output")
     }
+  }
+
+  private def openOutput(filePath: String): Unit = {
+    Desktop.getDesktop.open(new File(filePath))
   }
 
   private def writePng(dot: String, output: String): Unit = {
@@ -102,9 +111,9 @@ object DotGenerator {
 
   def run(config: GenerateDotConfig): Unit = {
     val dotGenerator = DotGenerator(config.filepath)
-    val result = dotGenerator.generateDot(config)
-    if (!config.silent) {
-      println(result)
+    val dot = dotGenerator.generateDot(config)
+    if (config.debug) {
+      println(dot)
     }
   }
 }

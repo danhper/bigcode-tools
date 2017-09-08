@@ -23,12 +23,16 @@ object Main {
         VocabularyGenerator.generateProjectVocabulary(config)
       case Some(config: CreateVocabularyLabelsConfig) =>
         VocabularyGenerator.createVocabularyLabels(config)
-      case Some(NoConfig) =>
-        CliParser.showUsage()
       case Some(config: VisualizeVocabularyDistributionConfig) =>
         VocabularyDistributionVisualizer.visualizeVocabularyDistribution(config)
       case Some(config: VisualizeEmbeddingsConfig) =>
         EmbeddingVisualizer.visualizeEmbeddings(config)
+      case Some(ShowHelpConfig) =>
+        CliParser.parser.showUsage()
+      case Some(ShowVersionConfig) =>
+        CliParser.parser.showHeader()
+      case Some(NoConfig) =>
+        CliParser.parser.showUsageAsError()
       case None =>
     }
   }

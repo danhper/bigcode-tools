@@ -1,8 +1,15 @@
 package com.tuvistavie.astgenerator.models
 
+import java.io.File
+
+import scalaz.syntax.std.boolean._
+
 sealed trait Config
 
 case object NoConfig extends Config
+
+case object ShowHelpConfig extends Config
+case object ShowVersionConfig extends Config
 
 case class GenerateAstConfig(
   pretty: Boolean = false,
@@ -18,9 +25,17 @@ case class ExtractTokensConfig(
 case class GenerateDotConfig(
   filepath: String = "",
   output: Option[String] = None,
-  silent: Boolean = false,
-  hideIdentifiers: Boolean = false
-) extends Config
+  debug: Boolean = false,
+  hideIdentifiers: Boolean = false,
+  view: Boolean = true
+) extends Config {
+  def fileOutput: Option[String] = {
+    output.orElse { view.option(temporaryPath) }
+  }
+  private def temporaryPath: String = {
+    File.createTempFile("ast-", ".png").toString
+  }
+}
 
 case class GenerateVocabularyConfig(
   project: String = "",
