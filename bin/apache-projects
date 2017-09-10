@@ -13,14 +13,20 @@ import requests
 
 
 class Project:
-    def __init__(self, name, url, repo=None):
+    def __init__(self, name, url, repo=None, language=None):
         self.name = name
         self.url = url
         self.repo = repo
+        self.language = language
 
 
 def project_from_github_repo(repo):
-    return Project(name=repo["name"], url=repo["html_url"], repo=repo["clone_url"])
+    return Project(
+        name=repo["name"],
+        url=repo["html_url"],
+        repo=repo["clone_url"],
+        language=repo["language"].lower() if repo["language"] else None
+    )
 
 
 def get_projects_list():
@@ -71,6 +77,8 @@ def download_projects_command(args):
     projects = load_projects_from_file(args.input_file)
     filter_regexp = re.compile(args.matching, flags=re.RegexFlag.IGNORECASE)
     projects = [project for project in projects if filter_regexp.match(project.name)]
+    if args.language:
+        projects = [project for project in projects if project.language == args.language.lower()]
     download_projects(projects, args.output_dir)
 
 
@@ -91,6 +99,8 @@ def create_parser():
     download_projects_parser.add_argument("-o", "--output-dir", default=os.getcwd())
     download_projects_parser.add_argument("--matching", default=".*",
                                           help="only download project matching the passed regexp")
+    download_projects_parser.add_argument("--language",
+                                          help="only download project with the given language")
 
     return parser
 
