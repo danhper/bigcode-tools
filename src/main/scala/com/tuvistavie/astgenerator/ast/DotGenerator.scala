@@ -1,7 +1,7 @@
 package com.tuvistavie.astgenerator.ast
 
 import java.awt.Desktop
-import java.io.{File, FileInputStream, IOException}
+import java.io.{ByteArrayOutputStream, File, FileInputStream, IOException}
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Path, Paths}
 
@@ -77,7 +77,8 @@ class DotGenerator(val filepath: Path) {
   }
 
   private def dotAvailable: Boolean = {
-    "which dot".! == 0
+    val cmd = "which dot" #> new ByteArrayOutputStream()
+    cmd.! == 0
   }
 
   private def writeDot(dot: String, output: String): Unit = writeDot(dot, Paths.get(output))
