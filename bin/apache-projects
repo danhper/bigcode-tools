@@ -74,7 +74,11 @@ def load_projects_from_file(input_file):
 
 
 def download_projects_command(args):
-    projects = load_projects_from_file(args.input_file)
+    if args.input_file:
+        projects = load_projects_from_file(args.input_file)
+    else:
+        projects = get_projects_list()
+
     filter_regexp = re.compile(args.matching, flags=re.RegexFlag.IGNORECASE)
     projects = [project for project in projects if filter_regexp.match(project.name)]
     if args.language:
@@ -95,7 +99,7 @@ def create_parser():
     list_projects_parser.add_argument("-o", "--output", default="projects.json")
 
     download_projects_parser = subparsers.add_parser("download", help="download projects in list")
-    download_projects_parser.add_argument("-i", "--input-file", default="projects.json")
+    download_projects_parser.add_argument("-i", "--input-file")
     download_projects_parser.add_argument("-o", "--output-dir", default=os.getcwd())
     download_projects_parser.add_argument("--matching", default=".*",
                                           help="only download project matching the passed regexp")
