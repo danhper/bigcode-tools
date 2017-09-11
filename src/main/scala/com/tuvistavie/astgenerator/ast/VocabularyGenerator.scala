@@ -100,7 +100,7 @@ object VocabularyGenerator {
       pw <- managed(new PrintWriter(fs))
     } {
       pw.println("Name\tType\tMetaType")
-      vocabulary.items.values.foreach(vocabItem => {
+      vocabulary.items.toList.sortBy(_._1).map(_._2).foreach(vocabItem => {
         val name = vocabItem.subgraph.toString
         val tokenType = vocabItem.subgraph.token.tokenType
         val tokenMetaType = vocabItem.subgraph.token.metaType
