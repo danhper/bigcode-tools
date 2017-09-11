@@ -80,7 +80,9 @@ object CliParser {
       opt[Unit]("without-siblings").action { (_, c) => (c: @unchecked) match { case c: SkipgramConfig =>
         c.copy(includeSiblings = false) } }.text("do not include siblings in context"),
       opt[Unit]("no-shuffle").action { (_, c) => (c: @unchecked) match { case c: SkipgramConfig =>
-        c.copy(noShuffle = true) } }.text("do not shuffle the data")
+        c.copy(noShuffle = true) } }.text("do not shuffle the data"),
+      opt[Unit]("debug").action { (_, c) => (c: @unchecked) match { case c: SkipgramConfig =>
+        c.copy(debug = true) } }.text("activate debug mode")
     )
 
     def trainSkipgramDataChildren: List[OptionDef[_, Config]] = skipgramChildren ++ List(

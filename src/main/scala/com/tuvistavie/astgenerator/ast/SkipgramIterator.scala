@@ -12,12 +12,23 @@ import com.tuvistavie.astgenerator.util.JavaConversions._
 import com.typesafe.scalalogging.LazyLogging
 import resource.managed
 
+import scala.collection.GenIterable
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ListBuffer
 import scala.util.Random
 
 class SkipgramIterator(vocabulary: Vocabulary, skipgramConfig: SkipgramConfig) extends LazyLogging {
   val files: Set[Path] = FileUtils.findFiles(skipgramConfig.project, FileUtils.withExtension("java"))
+
+  private def filesList: GenIterable[Path] = {
+    if (skipgramConfig.debug) {
+      files
+    } else if (skipgramConfig.noShuffle) {
+      files.par
+    } else {
+      Random.shuffle(files).par
+    }
+  }
 
   private var filesIterator: Iterator[Path] = Iterator.empty
   private var currentFileNodes: Iterator[Node] = Iterator.empty
@@ -47,12 +58,15 @@ class SkipgramIterator(vocabulary: Vocabulary, skipgramConfig: SkipgramConfig) e
   def outputData(pw: PrintWriter): Unit = {
     val totalFiles = files.size
     val doneFiles = new AtomicInteger(0)
-    val data = if (skipgramConfig.noShuffle) { files } else { Random.shuffle(files) }
-    data.par.foreach { f =>
+    filesList.foreach { f =>
       val currentProgress = doneFiles.getAndIncrement()
       if (currentProgress % 1000 == 0) {
         val progress = currentProgress.toFloat / totalFiles * 100
         logger.info(f"$currentProgress / $totalFiles ($progress%.2f%%)")
+      }
+
+      if (skipgramConfig.debug) {
+        pw.println(s"# file: $f")
       }
 
       nodesFromFile(f).par.foreach { nodes => nodes.foreach { node =>
@@ -64,6 +78,7 @@ class SkipgramIterator(vocabulary: Vocabulary, skipgramConfig: SkipgramConfig) e
       }}
     }
   }
+
 
   private def nextRawDatum(): (Int, Int) = {
     if (currentData.hasNext) {

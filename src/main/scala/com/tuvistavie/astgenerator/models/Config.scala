@@ -54,6 +54,7 @@ case class CreateVocabularyLabelsConfig(
 case class SkipgramConfig(
   action: String = "",
   project: String = "",
+  debug: Boolean = false,
   vocabularyPath: String = "",
   output: String = "",
   epochs: Int = 5,
