@@ -31,6 +31,11 @@ saver.restore(sess, "./results/tf-logs/ap-nid-nsib-anc2-chd0-adam0001-100d/w2v.b
 
 embeddings_arr = sess.run(embeddings.value())
 
+norms = np.linalg.norm(embeddings_arr, axis=1)
+without_outliers_indexes = np.abs(norms - np.mean(norms)) <= (np.std(norms) * 2)
+without_outliers = embeddings_arr[without_outliers_indexes]
+
+
 scores = [KMeans(n_clusters=i).fit(embeddings_arr).score(embeddings_arr) for i in range(1, 15)]
 plt.plot(list(range(1, 15)), scores)
 plt.show()
