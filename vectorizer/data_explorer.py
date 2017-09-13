@@ -5,6 +5,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
+import plotly
+import plotly.graph_objs as go
+
 
 
 embeddings = tf.get_variable("embeddings", [82, 100])
@@ -50,3 +53,18 @@ for i in range(CLUSTERS_COUNT):
 
 plt.show()
 fig.savefig('clusters.png')
+
+svg_colors = ["purple", "blue", "green", "red", "brown", "black"]
+
+data = []
+for i in range(CLUSTERS_COUNT):
+    indexes = labels[labels.Cluster == i].index.values
+    trace = go.Scatter(
+        x=embeddings_2d[indexes, 0],
+        y=embeddings_2d[indexes, 1],
+        mode='markers',
+        text=labels.loc[indexes].Name.values,
+        marker={"color": svg_colors[i]}
+    )
+    data.append(trace)
+plotly.offline.plot(data, filename='tmp/basic-scatter.html')
