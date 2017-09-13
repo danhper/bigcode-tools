@@ -1,0 +1,10 @@
+#!/usr/bin/env python
+
+from os import path
+import sys
+
+sys.path.append(path.realpath(path.join(__file__, "../..")))
+
+from vectorizer import data_explorer
+
+data_explorer.main()
