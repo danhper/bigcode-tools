@@ -1,12 +1,11 @@
 #!/usr/bin/env python
 
 import os
-import re
 import os.path as path
+import re
 import json
 import subprocess
 from argparse import ArgumentParser
-from collections import namedtuple
 from concurrent.futures import ThreadPoolExecutor
 
 import requests
