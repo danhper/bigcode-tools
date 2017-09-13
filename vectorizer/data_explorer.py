@@ -1,6 +1,3 @@
-import argparse
-from os import path
-
 import pandas as pd
 
 import tensorflow as tf
@@ -8,18 +5,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
-
-
-DATA_FILE = "tmp/apc-nid-nsib-anc2-chd0-debug.txt.gz"
-LABELS_FILE = "tmp/vocab-nid-apc-labels.tsv"
-
-data = pd.read_csv(DATA_FILE, names=["input", "context"], comment="#")
-
-data
-
-labels = pd.read_csv(LABELS_FILE, delimiter="\t")
-
-labels.loc[[18, 42, 43]]
 
 
 embeddings = tf.get_variable("embeddings", [82, 100])
@@ -36,41 +21,32 @@ without_outliers_indexes = np.abs(norms - np.mean(norms)) <= (np.std(norms) * 2)
 without_outliers = embeddings_arr[without_outliers_indexes]
 
 
-scores = [KMeans(n_clusters=i).fit(embeddings_arr).score(embeddings_arr) for i in range(1, 15)]
+scores = [KMeans(n_clusters=i).fit(without_outliers).score(without_outliers) for i in range(1, 15)]
 plt.plot(list(range(1, 15)), scores)
 plt.show()
 
 
-clusters = KMeans(n_clusters=5).fit_predict(embeddings_arr)
-
-
 labels = pd.read_csv("./results/data/ap-nid-vocab-labels.tsv", sep="\t")
+labels = labels.iloc[labels.index[without_outliers_indexes]].reset_index(drop=True)
+
+pca = PCA(n_components=2)
+embeddings_2d = pca.fit_transform(without_outliers)
+
+CLUSTERS_COUNT = 6
+
+clusters = KMeans(n_clusters=CLUSTERS_COUNT, max_iter=30000).fit_predict(without_outliers)
+
 labels["Cluster"] = clusters
-labels[labels.Cluster == 4]
 
+colors = "bgrcmky"
 
-normalized_embeddings = embeddings_arr[:]
-normalized_embeddings = np.delete(normalized_embeddings, 75, axis=0)
-normalized_embeddings = np.delete(normalized_embeddings, 73, axis=0)
+fig = plt.figure(figsize=(30, 30))
+ax = fig.add_subplot(111)
+for i in range(CLUSTERS_COUNT):
+    indexes = labels[labels.Cluster == i].index.values
+    ax.scatter(embeddings_2d[indexes, 0], embeddings_2d[indexes, 1], c=colors[i])
+    for j in indexes:
+        ax.annotate(labels.loc[j].Name, (embeddings_2d[j, 0], embeddings_2d[j, 1]))
 
-normalized_clusters = KMeans(n_clusters=5).fit_predict(normalized_embeddings)
-
-normalized_labels = labels.copy()
-normalized_labels.drop([normalized_labels.index[75], normalized_labels.index[73]], inplace=True)
-normalized_labels = normalized_labels.reset_index(drop=True)
-normalized_labels["Cluster"] = normalized_clusters
-normalized_labels[normalized_labels.Cluster == 4]
-
-
-
-embeddings_2d = pca.fit_transform(normalized_embeddings)
-colors = "bgrcm"
-clusters = ["expr", "type&expr", "decl", "stmt", "decl&comment"]
-
-fig, ax = plt.subplots()
-for i in range(5):
-    indexes = normalized_labels[normalized_labels.Cluster == i].index.values
-    ax.scatter(embeddings_2d[indexes, 0], embeddings_2d[indexes, 1], c=colors[i], label=clusters[i])
-
-ax.legend()
 plt.show()
+fig.savefig('clusters.png')
