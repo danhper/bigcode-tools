@@ -63,7 +63,9 @@ object CliParser {
       opt[Unit]("silent").action { (_, c) => (c: @unchecked) match { case c: GenerateVocabularyConfig =>
         c.copy(silent = true) } }.text("do not output info to stdout"),
       opt[Unit]("strip-identifiers").action { (_, c) => (c: @unchecked) match { case c: GenerateVocabularyConfig =>
-        c.copy(stripIdentifiers = true) } }.text("remove identifiers from output")
+        c.copy(stripIdentifiers = true) } }.text("remove identifiers from output"),
+      opt[Unit]("include-types").action { (_, c) => (c: @unchecked) match { case c: GenerateVocabularyConfig =>
+        c.copy(includeTypes = true) } }.text("remove identifiers from output")
     )
 
     def skipgramChildren: List[OptionDef[_, Config]] = List(

@@ -26,16 +26,24 @@ class VocabularyGenerator(config: GenerateVocabularyConfig) extends LazyLogging 
     val nodes = VocabularyGenerator.getNodes(cu)
     nodes.foreach { n =>
       val subgraph = VocabularyGenerator.createSubgraph(n, config.subgraphDepth, config.stripIdentifiers)
-      synchronized {
-        if (!vocabulary.contains(subgraph)) {
-          vocabulary += (subgraph -> vocabularyItems.size)
-          vocabularyItems += (vocabularyItems.size -> SubgraphVocabItem(subgraph))
-        }
+      addSubgraphToVocabulary(subgraph)
+      if (!config.stripIdentifiers && config.includeTypes) {
+        val typesSubgraph = VocabularyGenerator.createSubgraph(n, config.subgraphDepth, stripIdentifiers = true)
+        addSubgraphToVocabulary(typesSubgraph)
       }
-      val index = vocabulary(subgraph)
-      val item = vocabularyItems(index)
-      item.currentCount.getAndIncrement()
     }
+  }
+
+  private def addSubgraphToVocabulary(subgraph: Subgraph): Unit = {
+    synchronized {
+      if (!vocabulary.contains(subgraph)) {
+        vocabulary += (subgraph -> vocabularyItems.size)
+        vocabularyItems += (vocabularyItems.size -> SubgraphVocabItem(subgraph))
+      }
+    }
+    val index = vocabulary(subgraph)
+    val item = vocabularyItems(index)
+    item.currentCount.getAndIncrement()
   }
 
   def generateVocabulary(filepath: Path): Unit = {

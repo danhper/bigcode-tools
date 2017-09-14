@@ -43,7 +43,8 @@ case class GenerateVocabularyConfig(
   subgraphDepth: Int = 1,
   vocabularySize: Int = 10000,
   silent: Boolean = false,
-  stripIdentifiers: Boolean = false
+  stripIdentifiers: Boolean = false,
+  includeTypes: Boolean = false
 ) extends Config
 
 case class CreateVocabularyLabelsConfig(
