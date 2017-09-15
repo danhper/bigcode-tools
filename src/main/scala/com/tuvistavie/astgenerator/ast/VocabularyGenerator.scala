@@ -3,6 +3,7 @@ package com.tuvistavie.astgenerator.ast
 import java.io.{FileOutputStream, PrintWriter}
 import java.nio.file.{Path, Paths}
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicInteger
 
 import com.github.javaparser.ast.{CompilationUnit, Node}
 import com.tuvistavie.astgenerator.models._
@@ -57,7 +58,13 @@ class VocabularyGenerator(config: GenerateVocabularyConfig) extends LazyLogging 
 
   def generateProjectVocabulary(config: GenerateVocabularyConfig): Vocabulary = {
     val files = FileUtils.findFiles(config.project, FileUtils.withExtension("java"))
+    val counter = new AtomicInteger()
     files.par.foreach { filepath =>
+      val currentCount = counter.getAndIncrement()
+      if (currentCount % 1000 == 0) {
+        val progress = currentCount.toFloat / files.size * 100
+        logger.info(f"$currentCount / ${files.size} ($progress%.2f%%)")
+      }
       generateVocabulary(filepath)
     }
     create(config.vocabularySize)
