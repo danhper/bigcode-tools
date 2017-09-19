@@ -69,6 +69,7 @@ class Word2VecOptions:
         self.l2_value = options["l2_value"]
         self.optimizer = options["optimizer"]
         self.no_clipping = options["no_clipping"]
+        self.checkpoint = options["checkpoint"]
 
 
 class Word2Vec:
@@ -76,8 +77,15 @@ class Word2Vec:
         self.options = options
         self._session = session
         self._create_graph()
+        self._initialize()
         self._data = data
         self._data_queue = queue.Queue(maxsize=options.threads_count * 2)
+
+    def _initialize(self):
+        if self.options.checkpoint:
+            self.saver.restore(self._session, self.options.checkpoint)
+        else:
+            self._session.run(tf.global_variables_initializer())
 
     def _create_graph(self):
         opts = self.options
@@ -153,9 +161,6 @@ class Word2Vec:
         self.reset_temporary_step = reset_temporary_step
         self.epoch = epoch
         self.inc_epoch = inc_epoch
-
-        self._session.run(tf.global_variables_initializer())
-
         self.saver = tf.train.Saver()
 
     def _produce_data(self):
@@ -224,6 +229,7 @@ def create_parser():
     parser.add_argument("--learning-rate", type=float, default=0.001)
     parser.add_argument("--threads-count", type=int, default=multiprocessing.cpu_count())
     parser.add_argument("--no-clipping", action="store_true", default=False)
+    parser.add_argument("--checkpoint", default=None)
     return parser
 
 
@@ -233,7 +239,8 @@ def train(options):
     output_file = path.join(options.output_dir, "w2v.bin")
     with graph.as_default(), tf.Session() as session:
         model = Word2Vec(session, data_reader, options)
-        for _ in range(options.epochs):
+        current_epoch = session.run(model.epoch)
+        while current_epoch < options.epochs:
             model.train()
             model.saver.save(session, output_file, global_step=model.global_step)
 
