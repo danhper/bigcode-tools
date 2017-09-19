@@ -243,6 +243,7 @@ def train(options):
         while current_epoch < options.epochs:
             model.train()
             model.saver.save(session, output_file, global_step=model.global_step)
+            current_epoch = session.run(model.epoch)
 
 
 def main():
