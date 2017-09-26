@@ -13,7 +13,7 @@ import com.typesafe.scalalogging.LazyLogging
 import scala.collection.JavaConverters._
 
 object FileUtils extends LazyLogging {
-  def findFiles(root: Path): Set[Path] = findFiles(root,  tautology[Path] _)
+  def findFiles(root: Path): Set[Path] = findFiles(root, tautology _)
   def findFiles(root: String): Set[Path] = findFiles(Paths.get(root))
   def findFiles(root: String, condition: Function[Path, Boolean]): Set[Path] = findFiles(Paths.get(root), condition)
 

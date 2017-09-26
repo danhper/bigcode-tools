@@ -17,7 +17,7 @@ class ASTLoader(array: Array[Map[String, Any]]) {
   def generateSubgraph(index: Int = 0): Option[Subgraph] = {
     def generateSubgraph0(index: Int): Option[Subgraph] = {
       for {
-        node <- (index < array.length).option(array(index))
+        node <- array.isDefinedAt(index).option(array(index))
         token <- generateToken(node)
         children <- generateChildren(node.getOrElse("children", List.empty))
       } yield {

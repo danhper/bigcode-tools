@@ -23,6 +23,10 @@ class VocabularyGenerator(config: GenerateVocabularyConfig) extends LazyLogging 
     generateVocabulary(Paths.get(filepath))
   }
 
+  def generateVocabulary(filepath: Path): Unit = {
+    FileUtils.parseFile(filepath).foreach(generateVocabulary)
+  }
+
   private def generateVocabulary(cu: CompilationUnit): Unit = {
     val nodes = VocabularyGenerator.getNodes(cu)
     nodes.foreach { n =>
@@ -47,9 +51,6 @@ class VocabularyGenerator(config: GenerateVocabularyConfig) extends LazyLogging 
     item.currentCount.getAndIncrement()
   }
 
-  def generateVocabulary(filepath: Path): Unit = {
-    FileUtils.parseFile(filepath).foreach(generateVocabulary)
-  }
 
   def create(size: Int): Vocabulary = {
     val items = vocabularyItems.values.toSeq.sortBy(-_.count).take(size)
