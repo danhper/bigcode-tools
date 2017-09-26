@@ -33,7 +33,7 @@ class UnigramTableSpec extends FunSpec with Matchers {
   }
 
   private def dummyItem(count: Int): SubgraphVocabItem = {
-    SubgraphVocabItem(Subgraph(null), new AtomicInteger(count))
+    SubgraphVocabItem(Subgraph(Token("dummy")), new AtomicInteger(count))
   }
 
   private def arr(v: Int): INDArray = Array(v).asNDArray(1, 1)

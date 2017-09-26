@@ -5,7 +5,6 @@ import java.nio.file.{Path, Paths}
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
 
-import com.github.javaparser.ast.{CompilationUnit, Node}
 import com.tuvistavie.astgenerator.models._
 import com.tuvistavie.astgenerator.util.{FileUtils, Serializer}
 import com.typesafe.scalalogging.LazyLogging
@@ -24,11 +23,11 @@ class VocabularyGenerator(config: GenerateVocabularyConfig) extends LazyLogging 
   }
 
   def generateVocabulary(filepath: Path): Unit = {
-    FileUtils.parseFile(filepath).foreach(generateVocabulary)
+    FileUtils.parseFileToSubgraph(filepath).foreach(generateGraphVocabulary)
   }
 
-  private def generateVocabulary(cu: CompilationUnit): Unit = {
-    val nodes = VocabularyGenerator.getNodes(cu)
+  private def generateGraphVocabulary(root: Subgraph): Unit = {
+    val nodes = VocabularyGenerator.getNodes(root)
     nodes.foreach { n =>
       val subgraph = VocabularyGenerator.createSubgraph(n, config.subgraphDepth, config.stripIdentifiers)
       addSubgraphToVocabulary(subgraph)
@@ -89,22 +88,23 @@ object VocabularyGenerator {
     Serializer.loadFromFile[Vocabulary](filepath)
   }
 
-  def createSubgraph(node: Node, depth: Int, stripIdentifiers: Boolean = false): Subgraph = {
+  def createSubgraph(node: Subgraph, depth: Int, stripIdentifiers: Boolean = false): Subgraph = {
     if (depth == 1) {
-      return Subgraph(TokenExtractor.extractToken(node, stripIdentifiers))
+      val token = if (stripIdentifiers) { Token(node.token.tokenType) } else { node.token }
+      return Subgraph(token)
     }
-    val childSubgraphs = node.getChildNodes.asScala.map(n => createSubgraph(n, depth - 1)).toList
+    val childSubgraphs = node.children.map(n => createSubgraph(n, depth - 1))
     val currentSubgraph = createSubgraph(node, depth - 1, stripIdentifiers).copy(children = childSubgraphs)
     currentSubgraph
   }
 
-  def getNodes(root: Node): List[Node] = {
+  def getNodes(root: Subgraph): List[Subgraph] = {
     val queue = mutable.Queue(root)
-    val nodes: mutable.MutableList[Node] = mutable.MutableList.empty
+    val nodes: mutable.MutableList[Subgraph] = mutable.MutableList.empty
     while (queue.nonEmpty) {
       val currentNode = queue.dequeue()
       nodes += currentNode
-      currentNode.getChildNodes.asScala.foreach(n => queue.enqueue(n))
+      currentNode.children.foreach(n => queue.enqueue(n))
     }
     nodes.toList
   }

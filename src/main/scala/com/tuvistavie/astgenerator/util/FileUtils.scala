@@ -45,12 +45,13 @@ object FileUtils extends LazyLogging {
 
   def parseFileToSubgraph(filepath: String): Option[Subgraph] = parseFileToSubgraph(Paths.get(filepath))
   def parseFileToSubgraph(filepath: Path): Option[Subgraph] = {
-    parseFile(filepath).map(nodeToSubgraph)
+    parseFile(filepath).map(nodeToSubgraph(_))
   }
 
   def nodeToSubgraph(node: Node): Subgraph = {
     val children = node.getChildNodes.asScala.map(nodeToSubgraph).toList
-    Subgraph(TokenExtractor.extractToken(node), children)
+    val subgraph = Subgraph(TokenExtractor.extractToken(node), children)
+    subgraph.copy(children = subgraph.children.map(c => c.copy(parent = Some(subgraph))))
   }
 
   def withExtension(extension: String): Function[Path, Boolean] = {
