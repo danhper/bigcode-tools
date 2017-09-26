@@ -1,28 +1,51 @@
 package com.tuvistavie.astgenerator.ast
 
 import java.awt.Desktop
-import java.io.{ByteArrayOutputStream, File, FileInputStream, IOException}
+import java.io.{ByteArrayOutputStream, File, IOException}
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Path, Paths}
 
-import com.github.javaparser.JavaParser
-import com.github.javaparser.ast.{CompilationUnit, Node}
-import com.tuvistavie.astgenerator.models.GenerateDotConfig
+import com.tuvistavie.astgenerator.models.{GenerateDotConfig, Subgraph, Token}
+import com.tuvistavie.astgenerator.util.FileUtils
+import com.typesafe.scalalogging.LazyLogging
+import org.apache.commons.io.FilenameUtils
 
-import scala.collection.JavaConverters._
 import scala.sys.process._
 
+object DotGenerator {
+  def generateDot(config: GenerateDotConfig): Unit = {
+    new DotGenerator(config).generateDot()
+  }
+}
 
-class DotGenerator(val filepath: Path) {
-  val parsed: CompilationUnit = JavaParser.parse(new FileInputStream(filepath.toFile))
+class DotGenerator(config: GenerateDotConfig) extends LazyLogging {
+  private lazy val parsedSubgraph: Option[Subgraph] = {
+    if (FilenameUtils.getExtension(config.filepath) == "json") {
+      ASTLoader.loadOne(config.filepath, config.index)
+    } else {
+      FileUtils.parseFileToSubgraph(config.filepath)
+    }
+  }
 
-  def generateDot(config: GenerateDotConfig): String = {
+  def generateDot(): Unit = {
+    parsedSubgraph match {
+      case Some(graph) =>
+        val dot = generateDot(graph)
+        if (config.debug) {
+          println(dot)
+        }
+      case None => logger.error(s"could not parse ${config.filepath}")
+    }
+  }
+
+  def generateDot(parsed: Subgraph): String = {
     val links = generateLinks(parsed).map { case (n1, n2) =>
       s"${nodeId(n1)} -> ${nodeId(n2)};"
     }
     val nodes = generateNodes(parsed).map(formatNode(_, config.hideIdentifiers))
 
-    val dot = s"""digraph ${filepath.getFileName.toString.replace(".", "_")} {
+    val filename = Paths.get(config.filepath).getFileName.toString
+    val dot = s"""digraph ${filename.replace(".", "_")} {
         ${nodes.mkString("\n")}
         ${links.mkString("\n")}
     }
@@ -35,6 +58,7 @@ class DotGenerator(val filepath: Path) {
 
     dot
   }
+
 
   private def outputDot(dot: String, output: String): Unit = {
     output match {
@@ -86,35 +110,25 @@ class DotGenerator(val filepath: Path) {
     Files.write(output, dot.getBytes(StandardCharsets.UTF_8))
   }
 
-  private def formatNode(node: Node, hideIdentifiers: Boolean): String = {
+  private def formatNode(node: Subgraph, hideIdentifiers: Boolean): String = {
     s"""${nodeId(node)} [label = "${formatLabel(node, hideIdentifiers)}"];"""
   }
 
-  private def formatLabel(node: Node, hideIdentifiers: Boolean) = {
-    val token = TokenExtractor.extractToken(node)
+  private def formatLabel(node: Subgraph, hideIdentifiers: Boolean) = {
+    formatToken(node.token, hideIdentifiers)
+  }
+
+  private def formatToken(token: Token, hideIdentifiers: Boolean) = {
     if (hideIdentifiers) { token.tokenType } else { token.label }
   }
 
-  private def nodeId(node: Node): Int = System.identityHashCode(node)
+  private def nodeId(node: Subgraph): Int = System.identityHashCode(node)
 
-  private def generateNodes(node: Node): List[Node] = {
-    { node +: node.getChildNodes.asScala.flatMap(generateNodes) }.toList
+  private def generateNodes(node: Subgraph): List[Subgraph] = {
+    node +: node.children.flatMap(generateNodes)
   }
 
-  private def generateLinks(node: Node): List[(Node, Node)] = {
-    node.getChildNodes.asScala.flatMap { n: Node => (node, n) +: generateLinks(n) }.toList
-  }
-}
-
-object DotGenerator {
-  def apply(filepath: String): DotGenerator = DotGenerator(Paths.get(filepath))
-  def apply(filepath: Path): DotGenerator = new DotGenerator(filepath)
-
-  def run(config: GenerateDotConfig): Unit = {
-    val dotGenerator = DotGenerator(config.filepath)
-    val dot = dotGenerator.generateDot(config)
-    if (config.debug) {
-      println(dot)
-    }
+  private def generateLinks(node: Subgraph): List[(Subgraph, Subgraph)] = {
+    node.children.flatMap { n: Subgraph => (node, n) +: generateLinks(n) }
   }
 }

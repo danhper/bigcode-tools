@@ -1,11 +1,11 @@
 package com.tuvistavie.astgenerator.util
 
 import com.tuvistavie.astgenerator.models._
-import scopt.OptionDef
+import scopt.{OptionDef, OptionParser}
 
 object CliParser {
 
-  val parser = new scopt.OptionParser[Config]("ast-transformer") {
+  val parser: OptionParser[Config] = new scopt.OptionParser[Config]("ast-transformer") {
 
     head("ast-transformer", Config.version)
 
@@ -48,7 +48,9 @@ object CliParser {
       opt[Unit]("hide-identifiers").action { (_, c) => (c: @unchecked) match { case c: GenerateDotConfig =>
         c.copy(hideIdentifiers = true) } }.text("do not show tokens"),
       opt[Unit]("no-open").action { (_, c) => (c: @unchecked) match { case c: GenerateDotConfig =>
-        c.copy(view = false) } }.text("do not open generated file")
+        c.copy(view = false) } }.text("do not open generated file"),
+      opt[Int]('i', "index").action { (v, c) => (c: @unchecked) match { case c: GenerateDotConfig =>
+        c.copy(index = v) } }.text("the index of the AST to output (only useful when working with .json AST files")
     )
 
     cmd("generate-vocabulary").action((_, _) => GenerateVocabularyConfig()).children(

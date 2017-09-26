@@ -1,12 +1,16 @@
 package com.tuvistavie.astgenerator.util
 
 import java.io.FileInputStream
-import java.nio.file.attribute.BasicFileAttributes
 import java.nio.file._
+import java.nio.file.attribute.BasicFileAttributes
 
+import com.github.javaparser.ast.{CompilationUnit, Node}
 import com.github.javaparser.{JavaParser, ParseProblemException}
-import com.github.javaparser.ast.CompilationUnit
+import com.tuvistavie.astgenerator.ast.TokenExtractor
+import com.tuvistavie.astgenerator.models.Subgraph
 import com.typesafe.scalalogging.LazyLogging
+
+import scala.collection.JavaConverters._
 
 object FileUtils extends LazyLogging {
   def findFiles(root: Path): Set[Path] = findFiles(root,  tautology[Path] _)
@@ -37,6 +41,16 @@ object FileUtils extends LazyLogging {
         logger.error(s"stack overflow on $filepath")
         None
     }
+  }
+
+  def parseFileToSubgraph(filepath: String): Option[Subgraph] = parseFileToSubgraph(Paths.get(filepath))
+  def parseFileToSubgraph(filepath: Path): Option[Subgraph] = {
+    parseFile(filepath).map(nodeToSubgraph)
+  }
+
+  def nodeToSubgraph(node: Node): Subgraph = {
+    val children = node.getChildNodes.asScala.map(nodeToSubgraph).toList
+    Subgraph(TokenExtractor.extractToken(node), children)
   }
 
   def withExtension(extension: String): Function[Path, Boolean] = {

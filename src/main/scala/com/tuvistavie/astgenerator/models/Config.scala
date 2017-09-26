@@ -27,7 +27,8 @@ case class GenerateDotConfig(
   output: Option[String] = None,
   debug: Boolean = false,
   hideIdentifiers: Boolean = false,
-  view: Boolean = true
+  view: Boolean = true,
+  index: Int = 0
 ) extends Config {
   def fileOutput: Option[String] = {
     output.orElse { view.option(temporaryPath) }
