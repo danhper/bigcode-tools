@@ -9,6 +9,7 @@ import com.tuvistavie.astgenerator.models.{GenerateDotConfig, Subgraph, Token}
 import com.tuvistavie.astgenerator.util.FileUtils
 import com.typesafe.scalalogging.LazyLogging
 import org.apache.commons.io.FilenameUtils
+import org.apache.commons.lang3.StringEscapeUtils
 
 import scala.sys.process._
 
@@ -19,6 +20,9 @@ object DotGenerator {
 }
 
 class DotGenerator(config: GenerateDotConfig) extends LazyLogging {
+  private val imageExtensions = Set("png", "jpg", "svg")
+
+
   private lazy val parsedSubgraph: Option[Subgraph] = {
     if (FilenameUtils.getExtension(config.filepath) == "json") {
       ASTLoader.loadOne(config.filepath, config.index)
@@ -44,8 +48,8 @@ class DotGenerator(config: GenerateDotConfig) extends LazyLogging {
     }
     val nodes = generateNodes(parsed).map(formatNode(_, config.hideIdentifiers))
 
-    val filename = Paths.get(config.filepath).getFileName.toString
-    val dot = s"""digraph ${filename.replace(".", "_")} {
+    val filename = Paths.get(config.filepath).getFileName.toString.replaceAll("[. -]", "_")
+    val dot = s"""digraph $filename {
         ${nodes.mkString("\n")}
         ${links.mkString("\n")}
     }
@@ -59,31 +63,35 @@ class DotGenerator(config: GenerateDotConfig) extends LazyLogging {
     dot
   }
 
-
   private def outputDot(dot: String, output: String): Unit = {
     output match {
       case name if name.endsWith(".dot") =>
         writeDot(dot, name)
-      case name if name.endsWith(".png") =>
-        writePng(dot, name)
+      case name if imageExtensions.contains(FilenameUtils.getExtension(name)) =>
+        writeImage(dot, name)
       case _ =>
         System.err.println(s"unsupported format for $output")
     }
   }
 
   private def openOutput(filePath: String): Unit = {
-    Desktop.getDesktop.open(new File(filePath))
+    try {
+      Desktop.getDesktop.open(new File(filePath))
+    } catch {
+      case _: IOException => println(s"could not open $filePath")
+    }
   }
 
-  private def writePng(dot: String, output: String): Unit = {
+  private def writeImage(dot: String, output: String): Unit = {
     if (!dotAvailable) {
-      throw new IOException("dot (from graphviz) must be available on the path to output png")
+      throw new IOException("dot (from graphviz) must be available on the path to output images")
     }
 
     var file: Option[Path] = None
     try {
-      file = Some(Files.createTempFile("dot.png", System.nanoTime().toString))
-      file.foreach(runDot(dot, _, output) match {
+      val extension = FilenameUtils.getExtension(output)
+      file = Some(Files.createTempFile(s"dot.$extension", System.nanoTime().toString))
+      file.foreach(runDot(dot, _, extension, output) match {
         case (_, 0) =>
         case (commandOutput, exitValue) =>
           throw new IOException(s"failed to run dot with exit code $exitValue: $commandOutput")
@@ -93,9 +101,9 @@ class DotGenerator(config: GenerateDotConfig) extends LazyLogging {
     }
   }
 
-  private def runDot(dot: String, tempFile: Path, output: String): (String, Int) = {
+  private def runDot(dot: String, tempFile: Path, extension: String, output: String): (String, Int) = {
     writeDot(dot, tempFile)
-    val processBuilder = Process(Seq("dot", "-Tpng", tempFile.toString, "-o", output))
+    val processBuilder = Process(Seq("dot", s"-T$extension", tempFile.toString, "-o", output))
     val result = processBuilder.run()
     (processBuilder.lineStream.mkString("\n"), result.exitValue())
   }
@@ -115,7 +123,7 @@ class DotGenerator(config: GenerateDotConfig) extends LazyLogging {
   }
 
   private def formatLabel(node: Subgraph, hideIdentifiers: Boolean) = {
-    formatToken(node.token, hideIdentifiers)
+    StringEscapeUtils.escapeJson(formatToken(node.token, hideIdentifiers))
   }
 
   private def formatToken(token: Token, hideIdentifiers: Boolean) = {
