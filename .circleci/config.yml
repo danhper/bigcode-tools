@@ -1,0 +1,65 @@
+version: 2
+
+references:
+  workspace_root: &workspace_root
+    /tmp/workspace
+
+  attach_workspace: &attach_workspace
+    attach_workspace:
+      at: *workspace_root
+
+  load_code: &load_code
+    run:
+      name: load code from workspace
+      command: |
+        mv /tmp/workspace/bigcode-tools/* /tmp/workspace/bigcode-tools/.[!.]* .
+
+jobs:
+  fetch_project:
+    docker:
+      - image: circleci/node:6
+
+    working_directory: ~/bigcode-tools
+
+    steps:
+      - checkout
+      - run:
+          command: |
+            mkdir -p /tmp/workspace/bigcode-tools
+            mv * .[!.]* /tmp/workspace/bigcode-tools/
+      - persist_to_workspace:
+          root: *workspace_root
+          paths:
+            - bigcode-tools
+
+  test_nodejs:
+    docker:
+      - image: circleci/node:6
+    working_directory: ~/bigcode-tools
+    steps:
+      - *attach_workspace
+      - *load_code
+      - run: cd ast-generators/javascript && yarn
+      - run: cd ast-generators/javascript && yarn test
+
+  test_scala:
+    docker:
+      - image: tuvistavie/sbt:1.0
+    working_directory: ~/bigcode-tools
+    steps:
+      - *attach_workspace
+      - *load_code
+      - run: sbt test:compile
+      - run: sbt test:test
+
+workflows:
+  version: 2
+  test_all:
+    jobs:
+      - fetch_project
+      - test_nodejs:
+          requires:
+            - fetch_project
+      - test_scala:
+          requires:
+            - fetch_project
