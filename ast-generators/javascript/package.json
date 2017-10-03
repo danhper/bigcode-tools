@@ -6,7 +6,10 @@
     "js-bigcode-ast": "./bin/bigcode-ast.js"
   },
   "dependencies": {
-    "acorn": "^5.1.2"
+    "acorn": "^5.1.2",
+    "async": "^2.5.0",
+    "glob": "^7.1.2",
+    "yargs": "^9.0.1"
   },
   "devDependencies": {
     "chai": "^4.1.2",

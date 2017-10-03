@@ -1,9 +1,25 @@
 #!/usr/bin/env node
 
 const astGenerator = require('..');
+const yargs = require('yargs');
 
-const filepath = process.argv[2];
+const argv = yargs
+    .alias('f', 'files')
+    .alias('o', 'output-dir')
+    .demandOption(['files', 'output-dir'])
+    .usage('Usage: $0 -f <files> -o <output-dir>')
+    .example('$0 -f src/**/*.js -o result',
+             'parse all JS files in src dir and output ASTs in result dir')
+    .describe('files', 'Get distance between IP addresses')
+    .describe('output-dir', 'The directory where to put the results')
+    .help('h')
+    .alias('h', 'help')
+    .argv;
 
-astGenerator.fromFile(filepath, (err, result) => {
-  require('fs').writeFileSync('test.json', JSON.stringify(result, null, 2));
+astGenerator(argv, (err, count) => {
+  if (err !== null) {
+    console.error('failed: ' + err);
+  } else {
+    console.log(`generated ASTs for ${count} files`);
+  }
 });

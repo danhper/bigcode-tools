@@ -1,4 +1,7 @@
 const fs     = require('fs');
+const path   = require('path');
+const glob   = require('glob');
+const async  = require('async');
 const parser = require('acorn/dist/acorn_loose');
 
 
@@ -170,26 +173,99 @@ function createAST(astNode, nodes) {
   return node.id;
 }
 
-exports.fromProgram = function(program) {
+function generateAndOuputFileAST(filepath, streams, callback) {
+  bigcodeAST.fromFile(filepath, function(err, ast) {
+    if (err) {
+      return callback(err);
+    }
+    streams.asts.write(JSON.stringify(ast));
+    streams.asts.write('\n');
+    streams.files.write(filepath + '\n');
+    callback(null);
+  });
+}
+
+
+function makeStreamCallbacks(streams, callback) {
+  let callbackCalled = false;
+  let successCount = 0;
+
+  const successCallback = function() {
+    successCount += 1;
+    if (successCount >= 2 && !callbackCalled) {
+      callbackCalled = true;
+      return callback(null, streams);
+    }
+  };
+
+  const errorCallback = function(err) {
+    if (!callbackCalled) {
+      callbackCalled = true;
+      return callback(err);
+    }
+  };
+
+  return {success: successCallback, error: errorCallback};
+}
+
+function createStreams(outputDir, callback) {
+  const streams = {
+    asts: fs.createWriteStream(path.join(outputDir, 'asts.json')),
+    files: fs.createWriteStream(path.join(outputDir, 'files.txt')),
+  };
+  const callbacks = makeStreamCallbacks(streams, callback);
+  Object.keys(streams).forEach((key) => {
+    streams[key].on('open', callbacks.success);
+    streams[key].on('error', callbacks.error);
+  });
+}
+
+function processFiles(files, streams, callback) {
+  const f = (filepath, cb) => generateAndOuputFileAST(filepath, streams, cb);
+  async.each(files, f, function(err) {
+    streams.asts.end();
+    streams.files.end();
+    callback(err, files.length);
+  });
+}
+
+function bigcodeAST(options, callback) {
+  glob(options.files, function(err, files) {
+    if (err) {
+      return callback(err);
+    }
+
+    createStreams(options.outputDir, function(err, streams) {
+      if (err) {
+        return callback(err);
+      }
+      processFiles(files, streams, callback);
+    });
+  });
+}
+
+module.exports = bigcodeAST;
+
+bigcodeAST.fromNode = function(root) {
   const nodes = [];
-  createAST(program, nodes);
+  createAST(root, nodes);
   return nodes;
 };
 
-exports.fromString = function(content) {
+bigcodeAST.fromString = function(content) {
   if (typeof content !== 'string') {
     throw new Error('bad argument passed to fromString: ' + content);
   }
 
-  const program = parser.parse_dammit(content);
-  return exports.fromProgram(program);
+  const root = parser.parse_dammit(content);
+  return bigcodeAST.fromNode(root);
 };
 
-exports.fromFile = function(path, callback) {
+bigcodeAST.fromFile = function(path, callback) {
   fs.readFile(path, 'utf-8', (err, content) => {
     if (err !== null) {
       return callback(err);
     }
-    callback(null, exports.fromString(content));
+    callback(null, bigcodeAST.fromString(content));
   });
 };
