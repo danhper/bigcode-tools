@@ -173,7 +173,7 @@ function createAST(astNode, nodes) {
   return node.id;
 }
 
-function generateAndOuputFileAST(filepath, streams, callback) {
+function generateAndOuputAST(filepath, streams, callback) {
   bigcodeAST.fromFile(filepath, function(err, ast) {
     if (err) {
       return callback(err);
@@ -221,11 +221,15 @@ function createStreams(outputDir, callback) {
 }
 
 function processFiles(files, streams, callback) {
-  const f = (filepath, cb) => generateAndOuputFileAST(filepath, streams, cb);
-  async.each(files, f, function(err) {
-    streams.asts.end();
-    streams.files.end();
-    callback(err, files.length);
+  const processFile = (file, cb) => generateAndOuputAST(file, streams, cb);
+  async.each(files, processFile, (err) => {
+    if (err) {
+      return callback(err);
+    }
+
+    async.each(streams, (stream, cb) => stream.end(cb), (err) => {
+      callback(err, files.length);
+    });
   });
 }
 

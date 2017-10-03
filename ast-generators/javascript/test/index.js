@@ -2,6 +2,7 @@ const fs     = require('fs');
 const path   = require('path');
 const expect = require('chai').expect;
 const temp   = require('temp').track();
+const async  = require('async');
 
 const bigcodeAST = require('..');
 
@@ -70,8 +71,30 @@ describe('bigcodeAST', function() {
     it('should process all files in the directory', function(cb) {
       const pattern = path.join(FIXTURES_PATH, 'sources/*.js');
       bigcodeAST({outputDir: resultsDir, files: pattern}, function(err, count) {
+        expect(err).to.be.null;
         expect(count).to.equal(4);
-        cb(err);
+
+        async.parallel([
+          fs.readFile.bind(null, path.join(resultsDir, 'files.txt'), 'utf8'),
+          fs.readFile.bind(null, path.join(resultsDir, 'asts.json'), 'utf8'),
+        ], function(err, results) {
+          expect(err).to.be.null;
+
+          const files = results[0].split('\n').filter((f) => f.length > 0);
+          const parsedAsts = results[1].split('\n')
+                                       .filter((f) => f.length > 0)
+                                       .map(JSON.parse);
+
+          expect(files.length).to.eq(4);
+          expect(parsedAsts.length).to.eq(4);
+
+          files.forEach((filepath, i) => {
+            const fileKey = stripExtension(path.basename(filepath));
+            expect(parsedAsts[i]).to.deep.eq(asts[fileKey]);
+          });
+
+          cb();
+        });
       });
     });
 
