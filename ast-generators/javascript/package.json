@@ -15,7 +15,8 @@
     "chai": "^4.1.2",
     "eslint": "^4.7.2",
     "eslint-config-google": "^0.9.1",
-    "mocha": "^3.5.3"
+    "mocha": "^3.5.3",
+    "temp": "^0.8.3"
   },
   "scripts": {
     "lint": "eslint .",
