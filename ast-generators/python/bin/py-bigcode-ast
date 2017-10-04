@@ -1,0 +1,21 @@
+#!/usr/bin/env python
+
+import argparse
+import logging
+
+from bigcode_ast import ast_bulk_processor
+
+
+def main():
+    parser = argparse.ArgumentParser("py-bigcode-ast")
+    parser.add_argument("-f", "--files", help="glob pattern of files to parse", required=True)
+    parser.add_argument("-o", "--output-dir", help="output directory", required=True)
+    parser.add_argument("-v", "--verbose", help="increase verbosity", action="count", default=0)
+    args = parser.parse_args()
+    loglevel = logging.INFO - (10 * args.verbose)
+    logging.basicConfig(level=loglevel)
+    ast_bulk_processor.process_files(args.files, args.output_dir)
+
+
+if __name__ == '__main__':
+    main()
