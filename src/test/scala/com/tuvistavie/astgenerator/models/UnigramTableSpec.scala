@@ -1,10 +1,8 @@
 package com.tuvistavie.astgenerator.models
 
-import java.util.concurrent.atomic.AtomicInteger
-
 import org.nd4j.linalg.api.ndarray.INDArray
-import org.scalatest.{FunSpec, Matchers}
 import org.nd4s.Implicits._
+import org.scalatest.{FunSpec, Matchers}
 
 class UnigramTableSpec extends FunSpec with Matchers {
   val vocabularyItems = Seq(dummyItem(3), dummyItem(8), dummyItem(1), dummyItem(4))
@@ -33,7 +31,7 @@ class UnigramTableSpec extends FunSpec with Matchers {
   }
 
   private def dummyItem(count: Int): SubgraphVocabItem = {
-    SubgraphVocabItem(Subgraph(Token("dummy")), new AtomicInteger(count))
+    SubgraphVocabItem(Subgraph(Token("dummy")), count)
   }
 
   private def arr(v: Int): INDArray = Array(v).asNDArray(1, 1)

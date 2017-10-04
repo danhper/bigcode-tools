@@ -40,17 +40,12 @@ case class GenerateDotConfig(
 
 case class GenerateVocabularyConfig(
   project: String = "",
-  output: Option[String] = None,
+  output: String = "",
   subgraphDepth: Int = 1,
   vocabularySize: Int = 10000,
   silent: Boolean = false,
   stripIdentifiers: Boolean = false,
   includeTypes: Boolean = false
-) extends Config
-
-case class CreateVocabularyLabelsConfig(
-  vocabularyPath: String = "",
-  output: String = ""
 ) extends Config
 
 case class SkipgramConfig(
