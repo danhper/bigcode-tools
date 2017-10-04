@@ -5,15 +5,12 @@ import java.nio.file.Path
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.zip.GZIPOutputStream
 
-import com.github.javaparser.ast.Node
 import com.tuvistavie.astgenerator.models.{SkipgramConfig, Subgraph, Vocabulary}
 import com.tuvistavie.astgenerator.util.FileUtils
-import com.tuvistavie.astgenerator.util.JavaConversions._
 import com.typesafe.scalalogging.LazyLogging
 import resource.managed
 
 import scala.collection.GenIterable
-import scala.collection.JavaConverters._
 import scala.collection.mutable.ListBuffer
 import scala.util.Random
 
@@ -31,7 +28,7 @@ class SkipgramIterator(vocabulary: Vocabulary, skipgramConfig: SkipgramConfig) e
   }
 
   private var filesIterator: Iterator[Path] = Iterator.empty
-  private var currentFileNodes: Iterator[Node] = Iterator.empty
+  private var currentFileNodes: Iterator[Subgraph] = Iterator.empty
   private var currentData: Iterator[(Int, Int)] = Iterator.empty
   private var currentEpoch: Int = 0
 
@@ -89,7 +86,7 @@ class SkipgramIterator(vocabulary: Vocabulary, skipgramConfig: SkipgramConfig) e
     }
   }
 
-  def nextNode(): Node = {
+  def nextNode(): Subgraph = {
     if (currentFileNodes.hasNext) {
       currentFileNodes.next()
     } else if (filesIterator.hasNext) {
@@ -109,53 +106,51 @@ class SkipgramIterator(vocabulary: Vocabulary, skipgramConfig: SkipgramConfig) e
     currentFileNodes = nodesFromNextFile().iterator
   }
 
-  private def nodesFromNextFile(): List[Node] = {
+  private def nodesFromNextFile(): List[Subgraph] = {
     nodesFromFile(filesIterator.next()).getOrElse(nodesFromNextFile())
   }
 
-  private def nodesFromFile(filepath: Path): Option[List[Node]] = {
-    FileUtils.parseFile(filepath).map(VocabularyGenerator.getNodes)
+  private def nodesFromFile(filepath: Path): Option[List[Subgraph]] = {
+    FileUtils.parseFileToSubgraph(filepath).map(VocabularyGenerator.getNodes)
   }
 
-  def generateContextPairs(node: Node): List[(Int, Int)] = {
+  def generateContextPairs(node: Subgraph): List[(Int, Int)] = {
     val context = generateContext(node)
     val nodeIndex = vocabulary.indexFor(createSubgraph(node))
     context.map(sg => nodeIndex -> vocabulary.indexFor(sg))
   }
 
-  def generateContext(node: Node): List[Subgraph] = {
+  def generateContext(node: Subgraph): List[Subgraph] = {
     findAncestors(node) ++ findChildren(node) ++ maybeFindSiblings(node)
   }
 
-  def maybeFindSiblings(node: Node): List[Subgraph] = if (skipgramConfig.includeSiblings) {
+  def maybeFindSiblings(node: Subgraph): List[Subgraph] = if (skipgramConfig.includeSiblings) {
     findSiblings(node)
   } else {
     List.empty
   }
 
-  def findSiblings(node: Node): List[Subgraph] = {
-    val makeSubgraphs = (n: Node)=> n.getChildNodes.asScala.map(createSubgraph).toList
-    node.getParentNode.toOption.map(makeSubgraphs).getOrElse(List.empty)
+  def findSiblings(node: Subgraph): List[Subgraph] = {
+    node.parent.map(_.children.map(createSubgraph)).getOrElse(List.empty)
   }
 
-  def findChildren(node: Node, currentDepth: Int = 0): List[Subgraph] = {
+  def findChildren(node: Subgraph, currentDepth: Int = 0): List[Subgraph] = {
     if (currentDepth == skipgramConfig.childrenWindowSize) {
       return List.empty
     }
-    val children = node.getChildNodes.asScala.toList
-    children.map(createSubgraph) ++ children.flatMap(n => findChildren(n, currentDepth + 1))
+    node.children.map(createSubgraph) ++ node.children.flatMap(n => findChildren(n, currentDepth + 1))
   }
 
-  def findAncestors(node: Node, currentDepth: Int = 0): List[Subgraph] = {
+  def findAncestors(node: Subgraph, currentDepth: Int = 0): List[Subgraph] = {
     if (currentDepth == skipgramConfig.ancestorsWindowSize) {
       return List.empty
     }
-    node.getParentNode.toOption.map(n =>
+    node.parent.map(n =>
       createSubgraph(n) +: findAncestors(node, currentDepth + 1)
     ).getOrElse(List.empty)
   }
 
-  private def createSubgraph(node: Node): Subgraph = {
+  private def createSubgraph(node: Subgraph): Subgraph = {
     VocabularyGenerator.createSubgraph(node, vocabulary.subgraphDepth, vocabulary.strippedIdentifiers)
   }
 }

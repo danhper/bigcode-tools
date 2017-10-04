@@ -1,6 +1,7 @@
 package com.tuvistavie.astgenerator.visualizers
 
 
+import com.tuvistavie.astgenerator.ast.VocabularyGenerator
 import com.tuvistavie.astgenerator.models.{VisualizeEmbeddingsConfig, Vocabulary}
 import com.tuvistavie.astgenerator.util.Serializer
 import org.nd4j.linalg.api.ndarray.INDArray
@@ -33,7 +34,7 @@ class EmbeddingVisualizer(vocabulary: Vocabulary, embeddings: INDArray) {
 object EmbeddingVisualizer {
   def visualizeEmbeddings(config: VisualizeEmbeddingsConfig): Unit = {
     val embeddings = Serializer.loadINDArrayFromFile(config.embeddingsPath)
-    val vocabulary = Serializer.loadFromFile[Vocabulary](config.vocabularyPath)
+    val vocabulary = VocabularyGenerator.loadFromFile(config.vocabularyPath)
     val visualizer = new EmbeddingVisualizer(vocabulary, embeddings)
     val plot = visualizer.visualize(config.dimensions)
     val layout = Layout(title=config.title)

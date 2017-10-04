@@ -20,9 +20,7 @@ object Main {
         case "generate-data" => SkipgramIterator.generateData(config)
       }
       case Some(config: GenerateVocabularyConfig) =>
-        VocabularyGenerator.generateProjectVocabulary(config)
-      case Some(config: CreateVocabularyLabelsConfig) =>
-        VocabularyGenerator.createVocabularyLabels(config)
+        VocabularyGenerator.outputProjectVocabulary(config)
       case Some(config: VisualizeVocabularyDistributionConfig) =>
         VocabularyDistributionVisualizer.visualizeVocabularyDistribution(config)
       case Some(config: VisualizeEmbeddingsConfig) =>

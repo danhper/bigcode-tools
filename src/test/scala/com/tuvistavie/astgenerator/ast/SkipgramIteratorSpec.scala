@@ -10,7 +10,7 @@ class SkipgramIteratorSpec extends FunSpec with Matchers {
   val baseConfig: SkipgramConfig = SkipgramConfig(project = root.toString)
 
   val vocabularyConfig: GenerateVocabularyConfig = GenerateVocabularyConfig(project = root.toString, silent = true)
-  val vocabulary: Vocabulary = VocabularyGenerator.generateProjectVocabulary(vocabularyConfig)
+  val vocabulary: Vocabulary = VocabularyGenerator(vocabularyConfig).generateProjectVocabulary()
 
   val someBigNumber: Int = 1000000
 

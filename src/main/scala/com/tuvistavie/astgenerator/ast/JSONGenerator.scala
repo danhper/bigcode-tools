@@ -9,7 +9,7 @@ import com.github.javaparser.JavaParser
 import com.github.javaparser.ast.CompilationUnit
 import com.tuvistavie.astgenerator.util.FileUtils
 import com.tuvistavie.astgenerator.models.{Config, GenerateAstConfig}
-import com.tuvistavie.astgenerator.visitors.{DependencyVisitor, IdentifierReplacementVisitor, JsonVisitor}
+import com.tuvistavie.astgenerator.visitors.{IdentifierReplacementVisitor, JsonVisitor}
 
 class JSONGenerator(val compilationUnit: CompilationUnit, val config: GenerateAstConfig) {
   import com.tuvistavie.astgenerator.util.JavaConversions._
@@ -17,12 +17,6 @@ class JSONGenerator(val compilationUnit: CompilationUnit, val config: GenerateAs
   val packageName: String = compilationUnit.getPackageDeclaration.toOption.map(_.getName.toString).getOrElse("")
 
   override def toString: String = compilationUnit.toString
-
-  def findDependencies(): Set[String] = {
-    val dependencyVisitor = new DependencyVisitor(packageName)
-    dependencyVisitor.visit(compilationUnit, null)
-    dependencyVisitor.dependencies
-  }
 
   def run() {
     if (!config.keepIdentifiers) {

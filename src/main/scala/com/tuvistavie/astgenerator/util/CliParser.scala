@@ -31,12 +31,6 @@ object CliParser {
         c.copy(project = x) } }.text("project to parse")
     )
 
-    cmd("create-vocabulary-labels").action((_, _) => CreateVocabularyLabelsConfig()).children(
-      opt[String]('v' ,"vocabulary-path").required().action { (x, c) => (c: @unchecked) match { case c: CreateVocabularyLabelsConfig =>
-        c.copy(vocabularyPath = x) } }.text("path of the saved vocabulary"),
-      opt[String]('o', "output").required().action { (x, c) => (c: @unchecked) match { case c: CreateVocabularyLabelsConfig =>
-        c.copy(output = x) } }.text("output file")
-    )
 
     cmd("generate-dot").action((_, _) => GenerateDotConfig()).children(
       arg[String]("<filepath>").action { (x, c) => (c: @unchecked) match { case c: GenerateDotConfig =>
@@ -56,12 +50,12 @@ object CliParser {
     cmd("generate-vocabulary").action((_, _) => GenerateVocabularyConfig()).children(
       arg[String]("<project>").action { (x, c) => (c: @unchecked) match { case c: GenerateVocabularyConfig =>
         c.copy(project = x) } }.text("project from which vocabulary should be generated"),
+      opt[String]('o', "output").required().action { (x, c) => (c: @unchecked) match { case c: GenerateVocabularyConfig =>
+        c.copy(output = x) } }.text("output file"),
       opt[Int]('d', "depth").valueName("<depth1>,<depth2>").action { (x, c) => (c: @unchecked) match { case c: GenerateVocabularyConfig =>
         c.copy(subgraphDepth = x) } }.text("the depth of the extracted subgraphs"),
       opt[Int]('s', "size").action { (x, c) => (c: @unchecked) match { case c: GenerateVocabularyConfig =>
         c.copy(vocabularySize = x) } }.text("the maximum size of the vocabulary"),
-      opt[String]('o', "output").action { (x, c) => (c: @unchecked) match { case c: GenerateVocabularyConfig =>
-        c.copy(output = Some(x)) } }.text("output file"),
       opt[Unit]("silent").action { (_, c) => (c: @unchecked) match { case c: GenerateVocabularyConfig =>
         c.copy(silent = true) } }.text("do not output info to stdout"),
       opt[Unit]("strip-identifiers").action { (_, c) => (c: @unchecked) match { case c: GenerateVocabularyConfig =>

@@ -1,13 +1,12 @@
 package com.tuvistavie.astgenerator.ast
 
 import java.io.{FileOutputStream, PrintWriter}
-import java.nio.file.{Path, Paths}
+import java.nio.file.{Files, Path, Paths}
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
 
-import com.github.javaparser.ast.{CompilationUnit, Node}
 import com.tuvistavie.astgenerator.models._
-import com.tuvistavie.astgenerator.util.{FileUtils, Serializer}
+import com.tuvistavie.astgenerator.util.FileUtils
 import com.typesafe.scalalogging.LazyLogging
 import resource.managed
 
@@ -16,19 +15,19 @@ import scala.collection.mutable
 
 
 class VocabularyGenerator(config: GenerateVocabularyConfig) extends LazyLogging {
-  private val vocabulary: mutable.Map[Subgraph, Int] = new ConcurrentHashMap[Subgraph, Int]().asScala
-  private val vocabularyItems: mutable.Map[Int, SubgraphVocabItem] = new ConcurrentHashMap[Int, SubgraphVocabItem]().asScala
+  private val vocabulary: mutable.Map[Subgraph, AtomicInteger] = new ConcurrentHashMap[Subgraph, AtomicInteger]().asScala
+
 
   def generateVocabulary(filepath: String): Unit = {
     generateVocabulary(Paths.get(filepath))
   }
 
   def generateVocabulary(filepath: Path): Unit = {
-    FileUtils.parseFile(filepath).foreach(generateVocabulary)
+    FileUtils.parseFileToSubgraph(filepath).foreach(generateGraphVocabulary)
   }
 
-  private def generateVocabulary(cu: CompilationUnit): Unit = {
-    val nodes = VocabularyGenerator.getNodes(cu)
+  private def generateGraphVocabulary(root: Subgraph): Unit = {
+    val nodes = VocabularyGenerator.getNodes(root)
     nodes.foreach { n =>
       val subgraph = VocabularyGenerator.createSubgraph(n, config.subgraphDepth, config.stripIdentifiers)
       addSubgraphToVocabulary(subgraph)
@@ -41,23 +40,20 @@ class VocabularyGenerator(config: GenerateVocabularyConfig) extends LazyLogging 
 
   private def addSubgraphToVocabulary(subgraph: Subgraph): Unit = {
     synchronized {
-      if (!vocabulary.contains(subgraph)) {
-        vocabulary += (subgraph -> vocabularyItems.size)
-        vocabularyItems += (vocabularyItems.size -> SubgraphVocabItem(subgraph))
-      }
+      vocabulary.getOrElseUpdate(subgraph, new AtomicInteger(0))
     }
-    val index = vocabulary(subgraph)
-    val item = vocabularyItems(index)
-    item.currentCount.getAndIncrement()
+    vocabulary(subgraph).getAndIncrement()
   }
 
 
   def create(size: Int): Vocabulary = {
-    val items = vocabularyItems.values.toSeq.sortBy(-_.count).take(size)
+    val items = vocabulary.toList.sortBy { case (_, count) => -count.get() }.take(size).map { case (subgraph, count) =>
+      SubgraphVocabItem(subgraph, count.get())
+    }
     Vocabulary(items, config.subgraphDepth, config.stripIdentifiers)
   }
 
-  def generateProjectVocabulary(config: GenerateVocabularyConfig): Vocabulary = {
+  def generateProjectVocabulary(): Vocabulary = {
     val files = FileUtils.findFiles(config.project, FileUtils.withExtension("java"))
     val counter = new AtomicInteger()
     files.par.foreach { filepath =>
@@ -75,53 +71,45 @@ class VocabularyGenerator(config: GenerateVocabularyConfig) extends LazyLogging 
 object VocabularyGenerator {
   def apply(config: GenerateVocabularyConfig): VocabularyGenerator = new VocabularyGenerator(config)
 
-  def generateProjectVocabulary(config: GenerateVocabularyConfig): Vocabulary = {
+  def outputProjectVocabulary(config: GenerateVocabularyConfig): Vocabulary = {
     val generator = VocabularyGenerator(config)
-    val extractedVocabulary = generator.generateProjectVocabulary(config)
-    config.output.foreach(f => Serializer.dumpToFile(extractedVocabulary, f))
-    if (!config.silent) {
-      println(s"extracted ${extractedVocabulary.size} letters")
-    }
-    extractedVocabulary
-  }
-
-  def loadFromFile(filepath: String): Vocabulary = {
-    Serializer.loadFromFile[Vocabulary](filepath)
-  }
-
-  def createSubgraph(node: Node, depth: Int, stripIdentifiers: Boolean = false): Subgraph = {
-    if (depth == 1) {
-      return Subgraph(TokenExtractor.extractToken(node, stripIdentifiers))
-    }
-    val childSubgraphs = node.getChildNodes.asScala.map(n => createSubgraph(n, depth - 1)).toList
-    val currentSubgraph = createSubgraph(node, depth - 1, stripIdentifiers).copy(children = childSubgraphs)
-    currentSubgraph
-  }
-
-  def getNodes(root: Node): List[Node] = {
-    val queue = mutable.Queue(root)
-    val nodes: mutable.MutableList[Node] = mutable.MutableList.empty
-    while (queue.nonEmpty) {
-      val currentNode = queue.dequeue()
-      nodes += currentNode
-      currentNode.getChildNodes.asScala.foreach(n => queue.enqueue(n))
-    }
-    nodes.toList
-  }
-
-  def createVocabularyLabels(config: CreateVocabularyLabelsConfig): Unit = {
-    val vocabulary = loadFromFile(config.vocabularyPath)
+    val vocabulary = generator.generateProjectVocabulary()
     for {
       fs <- managed(new FileOutputStream(config.output))
       pw <- managed(new PrintWriter(fs))
     } {
-      pw.println("Name\tType\tMetaType")
-      vocabulary.items.toList.sortBy(_._1).map(_._2).foreach(vocabItem => {
-        val name = vocabItem.subgraph.toString
-        val tokenType = vocabItem.subgraph.token.tokenType
-        val tokenMetaType = vocabItem.subgraph.token.metaType
-        pw.println(f"$name\t$tokenType\t$tokenMetaType")
-      })
+      pw.println(vocabulary.toTSV)
     }
+
+    if (!config.silent) {
+      println(s"extracted ${vocabulary.size} letters")
+    }
+    vocabulary
+  }
+
+  def loadFromFile(filepath: String): Vocabulary = {
+    val fileContent = new String(Files.readAllBytes(Paths.get(filepath)))
+    Vocabulary.fromTSV(fileContent)
+  }
+
+  def createSubgraph(node: Subgraph, depth: Int, stripIdentifiers: Boolean = false): Subgraph = {
+    if (depth == 1) {
+      val token = if (stripIdentifiers) { Token(node.token.tokenType) } else { node.token }
+      return Subgraph(token)
+    }
+    val childSubgraphs = node.children.map(n => createSubgraph(n, depth - 1))
+    val currentSubgraph = createSubgraph(node, depth - 1, stripIdentifiers).copy(children = childSubgraphs)
+    currentSubgraph
+  }
+
+  def getNodes(root: Subgraph): List[Subgraph] = {
+    val queue = mutable.Queue(root)
+    val nodes: mutable.MutableList[Subgraph] = mutable.MutableList.empty
+    while (queue.nonEmpty) {
+      val currentNode = queue.dequeue()
+      nodes += currentNode
+      currentNode.children.foreach(n => queue.enqueue(n))
+    }
+    nodes.toList
   }
 }
