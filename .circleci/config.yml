@@ -52,6 +52,16 @@ jobs:
       - run: sbt test:compile
       - run: sbt test:test
 
+  test_python:
+    docker:
+      - image: circleci/python:3.6
+    working_directory: ~/bigcode-tools
+    steps:
+      - *attach_workspace
+      - *load_code
+      - run: cd ast-generators/python && pip install --user -r requirements.txt
+      - run: cd ast-generators/python && python -m tox
+
 workflows:
   version: 2
   test_all:
@@ -61,5 +71,8 @@ workflows:
           requires:
             - fetch_project
       - test_scala:
+          requires:
+            - fetch_project
+      - test_python:
           requires:
             - fetch_project
