@@ -6,7 +6,7 @@ const parser = require('acorn/dist/acorn_loose');
 
 
 function capitalizeFirstLetter(string) {
-    return string.charAt(0).toUpperCase() + string.slice(1);
+  return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
 const mappers = {
@@ -135,42 +135,54 @@ const getValue = get('value');
 const getChildren = get('children');
 
 
-function computeChildrenIds(astNode, nodes) {
-  const children = getChildren(astNode);
-
-  if (!children || children.length === 0) {
-    return [];
+class ASTGenerator {
+  constructor(root) {
+    this.root = root;
   }
 
-  const childrenIds = [];
-  for (const child of children) {
-    const childId = createAST(child, nodes);
-    if (childId) {
-      childrenIds.push(childId);
+  createAST() {
+    this.nodes = [];
+    this.traverse(this.root);
+    return this.nodes;
+  }
+
+  computeChildrenIds(astNode) {
+    const children = getChildren(astNode);
+
+    if (!children || children.length === 0) {
+      return [];
     }
-  }
-  return childrenIds;
-}
 
-function createAST(astNode, nodes) {
-  if (!astNode) {
-    return;
-  }
-
-  const node = {id: nodes.length, type: getType(astNode)};
-  nodes.push(node);
-
-  const value = getValue(astNode);
-  if (value !== null) {
-    node.value = value;
+    const childrenIds = [];
+    for (const child of children) {
+      const childId = this.traverse(child);
+      if (childId) {
+        childrenIds.push(childId);
+      }
+    }
+    return childrenIds;
   }
 
-  const childrenIds = computeChildrenIds(astNode, nodes);
-  if (childrenIds.length > 0) {
-    node.children = childrenIds;
-  }
+  traverse(astNode) {
+    if (!astNode) {
+      return;
+    }
 
-  return node.id;
+    const node = {id: this.nodes.length, type: getType(astNode)};
+    this.nodes.push(node);
+
+    const value = getValue(astNode);
+    if (value !== null) {
+      node.value = value;
+    }
+
+    const childrenIds = this.computeChildrenIds(astNode);
+    if (childrenIds.length > 0) {
+      node.children = childrenIds;
+    }
+
+    return node.id;
+  }
 }
 
 function generateAndOuputAST(filepath, streams, callback) {
@@ -185,27 +197,8 @@ function generateAndOuputAST(filepath, streams, callback) {
   });
 }
 
-
-function makeStreamCallbacks(streams, callback) {
-  let callbackCalled = false;
-  let successCount = 0;
-
-  const successCallback = function() {
-    successCount += 1;
-    if (successCount >= 2 && !callbackCalled) {
-      callbackCalled = true;
-      return callback(null, streams);
-    }
-  };
-
-  const errorCallback = function(err) {
-    if (!callbackCalled) {
-      callbackCalled = true;
-      return callback(err);
-    }
-  };
-
-  return {success: successCallback, error: errorCallback};
+function waitForStream(stream, callback) {
+  stream.on('open', () => callback()).on('error', (err) => callback(err));
 }
 
 function createStreams(outputDir, callback) {
@@ -213,11 +206,7 @@ function createStreams(outputDir, callback) {
     asts: fs.createWriteStream(path.join(outputDir, 'asts.json')),
     files: fs.createWriteStream(path.join(outputDir, 'files.txt')),
   };
-  const callbacks = makeStreamCallbacks(streams, callback);
-  Object.keys(streams).forEach((key) => {
-    streams[key].on('open', callbacks.success);
-    streams[key].on('error', callbacks.error);
-  });
+  async.each(streams, waitForStream, (err) => callback(err, streams));
 }
 
 function processFiles(files, streams, callback) {
@@ -251,9 +240,7 @@ function bigcodeAST(options, callback) {
 module.exports = bigcodeAST;
 
 bigcodeAST.fromNode = function(root) {
-  const nodes = [];
-  createAST(root, nodes);
-  return nodes;
+  return new ASTGenerator(root).createAST();
 };
 
 bigcodeAST.fromString = function(content) {
