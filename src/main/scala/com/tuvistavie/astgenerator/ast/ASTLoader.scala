@@ -58,7 +58,7 @@ object ASTLoader {
     Source.fromFile(filepath).getLines().flatMap(parseLine)
   }
 
-  private def parseLine(line: String): Option[Subgraph] = {
+  def parseLine(line: String): Option[Subgraph] = {
     // NOTE: for some reason, js150 array has the format [node1, node2,..., 0]
     val result = (mapper.readValue(line, classOf[Array[Any]]) match {
       case parsed if parsed.last == 0 => parsed.dropRight(1)

@@ -2,11 +2,12 @@ package com.tuvistavie.astgenerator.ast
 
 import java.io.{FileOutputStream, PrintWriter}
 import java.nio.file.{Files, Path, Paths}
-import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent._
 import java.util.concurrent.atomic.AtomicInteger
 
+import com.tuvistavie.astgenerator.data.ASTConsumer
 import com.tuvistavie.astgenerator.models._
-import com.tuvistavie.astgenerator.util.FileUtils
+import com.tuvistavie.astgenerator.util.{ASTProducerConsumerRunner, FileUtils}
 import com.typesafe.scalalogging.LazyLogging
 import resource.managed
 
@@ -17,6 +18,11 @@ import scala.collection.mutable
 class VocabularyGenerator(config: GenerateVocabularyConfig) extends LazyLogging {
   private val vocabulary: mutable.Map[Subgraph, AtomicInteger] = new ConcurrentHashMap[Subgraph, AtomicInteger]().asScala
 
+  class VocabularyGeneratorConsumer(queue: BlockingQueue[String]) extends ASTConsumer(queue) {
+    override protected def processRoot(subgraph: Subgraph): Unit = {
+      generateGraphVocabulary(subgraph)
+    }
+  }
 
   def generateVocabulary(filepath: String): Unit = {
     generateVocabulary(Paths.get(filepath))
@@ -39,10 +45,10 @@ class VocabularyGenerator(config: GenerateVocabularyConfig) extends LazyLogging 
   }
 
   private def addSubgraphToVocabulary(subgraph: Subgraph): Unit = {
-    synchronized {
+    val letter = vocabulary.synchronized {
       vocabulary.getOrElseUpdate(subgraph, new AtomicInteger(0))
     }
-    vocabulary(subgraph).getAndIncrement()
+    letter.getAndIncrement()
   }
 
 
@@ -53,8 +59,13 @@ class VocabularyGenerator(config: GenerateVocabularyConfig) extends LazyLogging 
     Vocabulary(items, config.subgraphDepth, config.stripIdentifiers)
   }
 
+  def generateVocabularyFromASTFile(): Vocabulary = {
+    ASTProducerConsumerRunner.run(config.input, queue => new VocabularyGeneratorConsumer(queue))
+    create(config.vocabularySize)
+  }
+
   def generateProjectVocabulary(): Vocabulary = {
-    val files = FileUtils.findFiles(config.project, FileUtils.withExtension("java"))
+    val files = FileUtils.findFiles(config.input, FileUtils.withExtension("java"))
     val counter = new AtomicInteger()
     files.par.foreach { filepath =>
       val currentCount = counter.getAndIncrement()
@@ -73,7 +84,12 @@ object VocabularyGenerator {
 
   def outputProjectVocabulary(config: GenerateVocabularyConfig): Vocabulary = {
     val generator = VocabularyGenerator(config)
-    val vocabulary = generator.generateProjectVocabulary()
+    val vocabulary = if (config.input.endsWith(".json")) {
+      generator.generateVocabularyFromASTFile()
+    } else {
+      generator.generateProjectVocabulary()
+    }
+
     for {
       fs <- managed(new FileOutputStream(config.output))
       pw <- managed(new PrintWriter(fs))

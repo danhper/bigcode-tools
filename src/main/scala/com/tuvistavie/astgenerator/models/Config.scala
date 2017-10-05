@@ -39,7 +39,7 @@ case class GenerateDotConfig(
 }
 
 case class GenerateVocabularyConfig(
-  project: String = "",
+  input: String = "",
   output: String = "",
   subgraphDepth: Int = 1,
   vocabularySize: Int = 10000,

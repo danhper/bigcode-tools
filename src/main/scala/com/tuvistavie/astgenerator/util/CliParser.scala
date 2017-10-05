@@ -49,7 +49,7 @@ object CliParser {
 
     cmd("generate-vocabulary").action((_, _) => GenerateVocabularyConfig()).children(
       arg[String]("<project>").action { (x, c) => (c: @unchecked) match { case c: GenerateVocabularyConfig =>
-        c.copy(project = x) } }.text("project from which vocabulary should be generated"),
+        c.copy(input = x) } }.text("project from which vocabulary should be generated"),
       opt[String]('o', "output").required().action { (x, c) => (c: @unchecked) match { case c: GenerateVocabularyConfig =>
         c.copy(output = x) } }.text("output file"),
       opt[Int]('d', "depth").valueName("<depth1>,<depth2>").action { (x, c) => (c: @unchecked) match { case c: GenerateVocabularyConfig =>
