@@ -1,24 +1,25 @@
 package com.tuvistavie.astgenerator.data
 
-import java.util.concurrent.{BlockingQueue, TimeUnit}
+import java.util.concurrent.BlockingQueue
 
 import com.tuvistavie.astgenerator.ast.ASTLoader
 import com.tuvistavie.astgenerator.models.Subgraph
+import com.typesafe.scalalogging.LazyLogging
 
-abstract class ASTConsumer(queue: BlockingQueue[String]) extends Runnable {
+
+abstract class ASTConsumer(queue: BlockingQueue[QueueItem[(Int, String)]]) extends Runnable with LazyLogging {
   def run(): Unit = {
-    while (true) {
-      val line = queue.poll(100, TimeUnit.MILLISECONDS)
-      if (line != null) {
-        processLine(line)
-      } else {
-        return
-      }
+    queue.take() match {
+      case Item((index, line)) =>
+        processLine(index, line)
+        run()
+      case Stop =>
+        logger.info(s"consumer stopped")
     }
   }
 
-  protected def processLine(line: String): Unit = {
-    ASTLoader.parseLine(line).foreach(processRoot)
+  protected def processLine(index: Int, line: String): Unit = {
+    ASTLoader.parseLine(index, line).foreach(processRoot)
   }
 
   protected def processRoot(subgraph: Subgraph)

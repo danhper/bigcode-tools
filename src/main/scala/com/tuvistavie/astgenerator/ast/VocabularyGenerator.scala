@@ -5,7 +5,7 @@ import java.nio.file.{Files, Path, Paths}
 import java.util.concurrent._
 import java.util.concurrent.atomic.AtomicInteger
 
-import com.tuvistavie.astgenerator.data.ASTConsumer
+import com.tuvistavie.astgenerator.data.{ASTConsumer, QueueItem}
 import com.tuvistavie.astgenerator.models._
 import com.tuvistavie.astgenerator.util.{ASTProducerConsumerRunner, FileUtils}
 import com.typesafe.scalalogging.LazyLogging
@@ -18,7 +18,7 @@ import scala.collection.mutable
 class VocabularyGenerator(config: GenerateVocabularyConfig) extends LazyLogging {
   private val vocabulary: mutable.Map[Subgraph, AtomicInteger] = new ConcurrentHashMap[Subgraph, AtomicInteger]().asScala
 
-  class VocabularyGeneratorConsumer(queue: BlockingQueue[String]) extends ASTConsumer(queue) {
+  class VocabularyGeneratorConsumer(queue: BlockingQueue[QueueItem[(Int, String)]]) extends ASTConsumer(queue) {
     override protected def processRoot(subgraph: Subgraph): Unit = {
       generateGraphVocabulary(subgraph)
     }

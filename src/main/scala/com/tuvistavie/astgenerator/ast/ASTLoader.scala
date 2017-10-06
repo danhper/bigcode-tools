@@ -5,6 +5,7 @@ import java.nio.file.Path
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import com.tuvistavie.astgenerator.models.{Subgraph, Token}
+import com.typesafe.scalalogging.LazyLogging
 
 import scala.io.Source
 import scalaz.syntax.std.boolean._
@@ -45,8 +46,8 @@ class ASTLoader(array: Array[Map[String, Any]]) {
   }
 }
 
-object ASTLoader {
-  private val mapper: ObjectMapper = new ObjectMapper().registerModule(DefaultScalaModule)
+object ASTLoader extends LazyLogging {
+  val mapper: ObjectMapper = new ObjectMapper().registerModule(DefaultScalaModule)
 
   def loadOne(filepath: Path, index: Int): Option[Subgraph] = loadOne(filepath.toString, index)
   def loadOne(filepath: String, index: Int): Option[Subgraph] = {
@@ -55,16 +56,23 @@ object ASTLoader {
 
   def loadAll(filepath: Path): Iterator[Subgraph] = loadAll(filepath.toString)
   def loadAll(filepath: String): Iterator[Subgraph] = {
-    Source.fromFile(filepath).getLines().flatMap(parseLine)
+    Source.fromFile(filepath).getLines().flatMap(line => parseLine(line))
   }
 
-  def parseLine(line: String): Option[Subgraph] = {
+  def parseLine(line: String): Option[Subgraph] = parseLine(0, line)
+  def parseLine(index: Int, line: String): Option[Subgraph] = {
     // NOTE: for some reason, js150 array has the format [node1, node2,..., 0]
     val result = (mapper.readValue(line, classOf[Array[Any]]) match {
       case parsed if parsed.last == 0 => parsed.dropRight(1)
       case parsed => parsed
     }).map(v => v.asInstanceOf[Map[String, Any]])
 
-    new ASTLoader(result).generateSubgraph()
+    try {
+      new ASTLoader(result).generateSubgraph()
+    } catch {
+      case e: Throwable =>
+        logger.error(s"failed to parse entry $index: $e")
+        None
+    }
   }
 }
