@@ -5,7 +5,7 @@ import java.nio.file.{Files, Path, Paths}
 import java.util.concurrent._
 import java.util.concurrent.atomic.AtomicInteger
 
-import com.tuvistavie.astgenerator.data.{ASTConsumer, QueueItem}
+import com.tuvistavie.astgenerator.data._
 import com.tuvistavie.astgenerator.models._
 import com.tuvistavie.astgenerator.util.{ASTProducerConsumerRunner, FileUtils}
 import com.typesafe.scalalogging.LazyLogging
@@ -18,18 +18,16 @@ import scala.collection.mutable
 class VocabularyGenerator(config: GenerateVocabularyConfig) extends LazyLogging {
   private val vocabulary: mutable.Map[Subgraph, AtomicInteger] = new ConcurrentHashMap[Subgraph, AtomicInteger]().asScala
 
-  class VocabularyGeneratorConsumer(queue: BlockingQueue[QueueItem[(Int, String)]]) extends ASTConsumer(queue) {
-    override protected def processRoot(subgraph: Subgraph): Unit = {
-      generateGraphVocabulary(subgraph)
-    }
-  }
-
   def generateVocabulary(filepath: String): Unit = {
     generateVocabulary(Paths.get(filepath))
   }
 
   def generateVocabulary(filepath: Path): Unit = {
     FileUtils.parseFileToSubgraph(filepath).foreach(generateGraphVocabulary)
+  }
+
+  private def processSubgraphItem(item: Item[Option[Subgraph]]): Unit = {
+    item.content.foreach(generateGraphVocabulary)
   }
 
   private def generateGraphVocabulary(root: Subgraph): Unit = {
@@ -60,7 +58,8 @@ class VocabularyGenerator(config: GenerateVocabularyConfig) extends LazyLogging 
   }
 
   def generateVocabularyFromASTFile(): Vocabulary = {
-    ASTProducerConsumerRunner.run(config.input, queue => new VocabularyGeneratorConsumer(queue))
+    val processor = QueueItemProcessor.stringToSubgraph _ andThen processSubgraphItem
+    ASTProducerConsumerRunner.run(config.input, processor)
     create(config.vocabularySize)
   }
 

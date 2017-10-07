@@ -7,7 +7,7 @@ import com.typesafe.scalalogging.LazyLogging
 
 import scala.io.{Codec, Source}
 
-class StringProducer(val filepath: String, queue: BlockingQueue[QueueItem[(Int, String)]], progressStep: Int = 1000) extends Runnable with LazyLogging {
+class StringProducer(val filepath: String, queue: BlockingQueue[QueueItem[String]], progressStep: Int = 1000) extends Runnable with LazyLogging {
   // NOTE: js150 is not valid utf-8
   private implicit val codec: Codec = Codec("UTF-8")
   codec.onMalformedInput(CodingErrorAction.REPLACE)
@@ -25,7 +25,7 @@ class StringProducer(val filepath: String, queue: BlockingQueue[QueueItem[(Int, 
   override def run(): Unit = {
     lines.zipWithIndex.foreach { case (line, index) =>
       _currentCount += 1
-      queue.put(Item((index, line)))
+      queue.put(Item(index, line))
       showProgress()
     }
   }
