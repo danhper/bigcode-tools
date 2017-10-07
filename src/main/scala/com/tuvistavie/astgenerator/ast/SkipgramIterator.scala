@@ -5,8 +5,9 @@ import java.nio.file.Path
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.zip.GZIPOutputStream
 
+import com.tuvistavie.astgenerator.data.{Item, QueueItemProcessor}
 import com.tuvistavie.astgenerator.models.{SkipgramConfig, Subgraph, Vocabulary}
-import com.tuvistavie.astgenerator.util.FileUtils
+import com.tuvistavie.astgenerator.util.{ASTProducerConsumerRunner, FileUtils}
 import com.typesafe.scalalogging.LazyLogging
 import resource.managed
 
@@ -15,7 +16,7 @@ import scala.collection.mutable.ListBuffer
 import scala.util.Random
 
 class SkipgramIterator(vocabulary: Vocabulary, skipgramConfig: SkipgramConfig) extends LazyLogging {
-  val files: Set[Path] = FileUtils.findFiles(skipgramConfig.project, FileUtils.withExtension("java"))
+  val files: Set[Path] = FileUtils.findFiles(skipgramConfig.input, FileUtils.withExtension("java"))
 
   private def filesList: GenIterable[Path] = {
     if (skipgramConfig.debug) {
@@ -52,7 +53,7 @@ class SkipgramIterator(vocabulary: Vocabulary, skipgramConfig: SkipgramConfig) e
     case datum => datum
   }
 
-  def outputData(pw: PrintWriter): Unit = {
+  def processJavaFiles(pw: PrintWriter): Unit = {
     val totalFiles = files.size
     val doneFiles = new AtomicInteger(0)
     filesList.foreach { f =>
@@ -66,16 +67,25 @@ class SkipgramIterator(vocabulary: Vocabulary, skipgramConfig: SkipgramConfig) e
         pw.println(s"# file: $f")
       }
 
-      nodesFromFile(f).par.foreach { nodes => nodes.foreach { node =>
-        generateContextPairs(node).foreach {
-          case (word, context) if word != Vocabulary.unk && context != Vocabulary.unk =>
-            pw.println(f"$word,$context")
-          case (_, _) =>
-        }
-      }}
+      FileUtils.parseFileToSubgraph(f).foreach { subgraph => processSubgraph(subgraph, pw) }
     }
   }
 
+  def processJSONFile(pw: PrintWriter): Unit = {
+    val process = (item: Item[Option[Subgraph]]) => item.content.foreach(processSubgraph(_, pw))
+    val processor = QueueItemProcessor.stringToSubgraph _ andThen process
+    ASTProducerConsumerRunner.run(skipgramConfig.input, processor)
+  }
+
+  def processSubgraph(subgraph: Subgraph, pw: PrintWriter): Unit = {
+    VocabularyGenerator.getNodes(subgraph).par.foreach { node =>
+      generateContextPairs(node).foreach {
+        case (word, context) if word != Vocabulary.unk && context != Vocabulary.unk =>
+          pw.println(f"$word,$context")
+        case (_, _) =>
+      }
+    }
+  }
 
   private def nextRawDatum(): (Int, Int) = {
     if (currentData.hasNext) {
@@ -168,7 +178,11 @@ object SkipgramIterator {
       gs <- managed(new GZIPOutputStream(fs))
       pw <- managed(new PrintWriter(gs))
     } {
-      iterator.outputData(pw)
+      if (config.input.endsWith(".json")) {
+        iterator.processJSONFile(pw)
+      } else {
+        iterator.processJavaFiles(pw)
+      }
     }
   }
 }

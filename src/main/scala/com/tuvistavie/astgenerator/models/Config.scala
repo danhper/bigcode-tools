@@ -50,7 +50,7 @@ case class GenerateVocabularyConfig(
 
 case class SkipgramConfig(
   action: String = "",
-  project: String = "",
+  input: String = "",
   debug: Boolean = false,
   vocabularyPath: String = "",
   output: String = "",

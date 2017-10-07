@@ -66,7 +66,7 @@ object CliParser {
 
     def skipgramChildren: List[OptionDef[_, Config]] = List(
       arg[String]("<project>").action { (x, c) => (c: @unchecked) match { case c: SkipgramConfig =>
-        c.copy(project = x) } }.text("project from which skipgram model should be trained"),
+        c.copy(input = x) } }.text("project from which skipgram model should be trained"),
       opt[String]('v' ,"vocabulary-path").required().action { (x, c) => (c: @unchecked) match { case c: SkipgramConfig =>
         c.copy(vocabularyPath = x) } }.text("path of the saved vocabulary"),
       opt[String]('o', "output").required().action { (x, c) => (c: @unchecked) match { case c: SkipgramConfig =>

@@ -14,7 +14,7 @@ class Consumer[T](
     var run = true
     while (run) {
       queue.take() match {
-        case item@Item(_, _) =>
+        case item: Item[T] =>
           safeProcessLine(item)
         case Stop =>
           logger.info(s"consumer stopped")

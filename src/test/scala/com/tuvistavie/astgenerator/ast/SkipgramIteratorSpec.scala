@@ -7,7 +7,7 @@ import org.scalatest.{FunSpec, Matchers}
 
 class SkipgramIteratorSpec extends FunSpec with Matchers {
   val root: Path = Paths.get(getClass.getResource("/fixtures/dummy_project/src/main").getPath)
-  val baseConfig: SkipgramConfig = SkipgramConfig(project = root.toString)
+  val baseConfig: SkipgramConfig = SkipgramConfig(input = root.toString)
 
   val vocabularyConfig: GenerateVocabularyConfig = GenerateVocabularyConfig(input = root.toString, silent = true)
   val vocabulary: Vocabulary = VocabularyGenerator(vocabularyConfig).generateProjectVocabulary()
