@@ -1,5 +1,7 @@
 package com.tuvistavie.astgenerator.models
 
+import org.apache.commons.lang3.StringEscapeUtils
+
 import scalaz.syntax.std.boolean._
 
 case class Vocabulary(
@@ -24,7 +26,8 @@ case class Vocabulary(
     val rows = items.toList.sortBy(_._1).map { case (index, item) =>
       val token = item.subgraph.token
       val baseRow = List(index.toString, token.tokenType, token.metaType, item.count.toString)
-      val row = strippedIdentifiers.option(baseRow).getOrElse(baseRow :+ token.value.getOrElse(""))
+      val row = strippedIdentifiers.option(baseRow).getOrElse(
+        baseRow :+ StringEscapeUtils.escapeJson(token.value.getOrElse("")))
       row.mkString("\t")
     }
 
