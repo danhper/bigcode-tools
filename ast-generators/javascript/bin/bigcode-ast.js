@@ -10,7 +10,7 @@ const argv = yargs
     .usage('Usage: $0 -f <files> -o <output-dir>')
     .example('$0 -f src/**/*.js -o result',
              'parse all JS files in src dir and output ASTs in result dir')
-    .describe('files', 'Get distance between IP addresses')
+    .describe('files', 'Glob pattern of files to parse')
     .describe('output-dir', 'The directory where to put the results')
     .help('h')
     .alias('h', 'help')
