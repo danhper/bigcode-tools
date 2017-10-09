@@ -53,3 +53,11 @@ class DownlaoderTest(TestCase):
         self.assertEqual(2, self.subprocess.run.call_count)
         self.subprocess.run.assert_any_call(expected_arg1)
         self.subprocess.run.assert_any_call(expected_arg2)
+
+    def test_full_download_projects(self):
+        expected_arg = ["git", "clone", self.project.clone_url,
+                        path.join("output_dir", self.project.full_name)]
+
+        downloader.download_projects(fixtures.PROJECTS, "output_dir", full_fetch=True)
+        self.assertEqual(2, self.subprocess.run.call_count)
+        self.subprocess.run.assert_any_call(expected_arg)
