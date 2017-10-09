@@ -69,6 +69,7 @@ jobs:
     steps:
       - *attach_workspace
       - *load_code
+      - run: sudo apt install python-dev
       - run: cd ast-generators/python && pip install --user -r requirements.txt
       - run: cd ast-generators/python && python -m tox
 
