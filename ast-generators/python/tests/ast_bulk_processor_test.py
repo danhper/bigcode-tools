@@ -18,14 +18,14 @@ class ASTBulkProcessorTest(TestCase):
 
     def test_process_files(self):
         pattern = path.join(self.fixtures_path, "sources/*.py")
-        ast_bulk_processor.process_files(pattern, self.output_dir)
-        expected_files = {"files.txt", "asts.json"}
+        ast_bulk_processor.process_files(pattern, path.join(self.output_dir, "files"))
+        expected_files = {"files.txt", "files.json", "files_failed.txt"}
         self.assertEqual(set(os.listdir(self.output_dir)), expected_files)
         with open(path.join(self.output_dir, "files.txt"), "r") as f:
             files = [filename for filename in f.read().split("\n") if filename]
         self.assertEqual(len(files), 2)
 
-        with open(path.join(self.output_dir, "asts.json"), "r") as f:
+        with open(path.join(self.output_dir, "files.json"), "r") as f:
             asts = [json.loads(ast) for ast in f.read().split("\n") if ast]
         self.assertEqual(len(asts), 2)
 

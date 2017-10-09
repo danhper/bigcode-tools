@@ -7,11 +7,12 @@ The code is mostly copied from [150k Python Dataset][1] and adapted to work with
 ## CLI usage
 
 ```
-py-bigcode-ast -f <files> -o <output-dir>
+py-bigcode-ast -f <files> -o <output>
 ```
 
-`<files>` should be a file, or a glob expression to files, and `output-dir`
-should be an existing directory where the result should be outputted.
+`<files>` should be a file, or a glob expression to files, and `output`
+should be a filename prefix in an existing directory where the result should be outputted.
+`output.txt` and `output.json` will be created.
 
 ### Example
 
@@ -48,7 +49,7 @@ Process all the files matched with the `files_pattern` and output the results in
 Args:
 
 * `files_pattern`: a glob pattern containing python files
-* `output_dir`: the path to a directory where to output results
+* `output`: the filename (without extension) where to output results
 
 ## License
 

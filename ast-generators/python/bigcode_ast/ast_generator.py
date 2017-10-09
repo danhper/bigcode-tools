@@ -79,6 +79,8 @@ class ASTGenerator:
             json_node["value"] = node.id
         elif isinstance(node, ast.Num):
             json_node["value"] = unicode(node.n)
+        elif hasattr(ast, "arg") and isinstance(node, ast.arg):
+            json_node["value"] = unicode(node.arg)
         elif isinstance(node, ast.Str):
             json_node["value"] = decode_utf8(node.s)
         elif isinstance(node, ast.alias):
@@ -132,15 +134,18 @@ class ASTGenerator:
         elif isinstance(node, ast.arguments):
             children.append(self.traverse_list(node.args, "args"))
             children.append(self.traverse_list(node.defaults, "defaults"))
-            if node.vararg:
+            if node.vararg and isinstance(node.vararg, str):
                 children.append(self.gen_identifier(node.vararg, "vararg"))
-            if node.kwarg:
+            if node.kwarg and isinstance(node.kwarg, str):
                 children.append(self.gen_identifier(node.kwarg, "kwarg"))
         elif isinstance(node, ast.ExceptHandler):
             if node.type:
                 children.append(self.traverse_list([node.type], "type"))
             if node.name:
-                children.append(self.traverse_list([node.name], "name"))
+                name = node.name
+                if isinstance(node.name, str):
+                    name = ast.Name(node.name, None)
+                children.append(self.traverse_list([name], "name"))
             children.append(self.traverse_list(node.body, "body"))
         elif isinstance(node, ast.ClassDef):
             children.append(self.traverse_list(node.bases, "bases"))
