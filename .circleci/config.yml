@@ -32,7 +32,7 @@ jobs:
           paths:
             - bigcode-tools
 
-  test_nodejs:
+  test_nodejs_ast:
     docker:
       - image: circleci/node:6
     working_directory: ~/bigcode-tools
@@ -42,7 +42,17 @@ jobs:
       - run: cd ast-generators/javascript && yarn
       - run: cd ast-generators/javascript && yarn test
 
-  test_scala:
+  test_java_ast:
+    docker:
+      - image: java:8-jdk
+    working_directory: ~/bigcode-tools
+    steps:
+      - *attach_workspace
+      - *load_code
+      - run: cd ast-generators/java && ./gradlew assemble
+      - run: cd ast-generators/java && ./gradlew test
+
+  test_ast_tools:
     docker:
       - image: tuvistavie/sbt:1.0
     working_directory: ~/bigcode-tools
@@ -52,7 +62,7 @@ jobs:
       - run: sbt test:compile
       - run: sbt test:test
 
-  test_python:
+  test_python_ast:
     docker:
       - image: circleci/python:3.6
     working_directory: ~/bigcode-tools
@@ -67,12 +77,15 @@ workflows:
   test_all:
     jobs:
       - fetch_project
-      - test_nodejs:
+      - test_ast_tools:
           requires:
             - fetch_project
-      - test_scala:
+      - test_nodejs_ast:
           requires:
             - fetch_project
-      - test_python:
+      - test_python_ast:
+          requires:
+            - fetch_project
+      - test_java_ast:
           requires:
             - fetch_project
