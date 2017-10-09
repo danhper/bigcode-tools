@@ -29,7 +29,7 @@ public class AstGeneratorTest {
     @Test
     public void testParseSimpleFile() throws IOException {
         Path path = Paths.get(srcRoot.toString(), "Main.java");
-        List<Map<String, Object>> nodes = new AstGenerator().parseFile(path);
+        List<Map<String, Object>> nodes = AstGenerator.parseFile(path);
         assertEquals("CompilationUnit", nodes.get(0).get(JsonVisitor.typeKey));
         assertEquals("ClassOrInterfaceDeclaration", nodes.get(1).get(JsonVisitor.typeKey));
         assertEquals("SimpleName", nodes.get(2).get(JsonVisitor.typeKey));
@@ -39,7 +39,7 @@ public class AstGeneratorTest {
     @Test
     public void testParseFile() throws IOException {
         Path path = Paths.get(srcRoot.toString(), "MyClass.java");
-        List<Map<String, Object>> nodes = new AstGenerator().parseFile(path);
+        List<Map<String, Object>> nodes = AstGenerator.parseFile(path);
         assertEquals("CompilationUnit", nodes.get(0).get(JsonVisitor.typeKey));
     }
 
@@ -49,7 +49,7 @@ public class AstGeneratorTest {
         ObjectMapper mapper = new ObjectMapper();
 
         Path pattern = Paths.get(srcRoot.toString(), "*.java");
-        new AstGenerator().processAllFiles(pattern, tempdir);
+        AstGenerator.processAllFiles(pattern, tempdir);
         Set<Path> generatedFiles = Files.list(tempdir).map(Path::getFileName).collect(Collectors.toSet());
         Set<Path> expected = new HashSet<>(Arrays.asList(Paths.get("asts.json"), Paths.get("files.txt")));
         assertEquals(expected, generatedFiles);

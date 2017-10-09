@@ -15,6 +15,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * This class implements a Visitor which visits the AST and
+ * returns a serializable object
+ */
 public class JsonVisitor extends GenericVisitorAdapter<Integer, List<Map<String, Object>>> {
     public static String idKey = "id";
     public static String typeKey = "type";

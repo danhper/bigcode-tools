@@ -27,7 +27,7 @@ public class Cli {
         Path outputDir = Paths.get(cmd.getOptionValue("output-dir"));
 
         try {
-            new AstGenerator().processAllFiles(files, outputDir);
+            AstGenerator.processAllFiles(files, outputDir);
         } catch (IOException e) {
             System.out.println("failed to process files: " + e.getMessage());
         }

@@ -15,4 +15,4 @@ include 'api'
 include 'services:webservice'
 */
 
-rootProject.name = 'bigcode-astgen'
+rootProject.name = 'bigcode-ast'
