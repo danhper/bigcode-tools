@@ -62,6 +62,16 @@ jobs:
       - run: sbt test:compile
       - run: sbt test:test
 
+  test_code_fetcher:
+    docker:
+      - image: circleci/python:3.6
+    working_directory: ~/bigcode-tools
+    steps:
+      - *attach_workspace
+      - *load_code
+      - run: cd code-fetcher && pip install --user -r requirements.txt
+      - run: cd code-fetcher && python -m nose
+
   test_python_ast:
     docker:
       - image: circleci/python:3.6
@@ -88,5 +98,8 @@ workflows:
           requires:
             - fetch_project
       - test_java_ast:
+          requires:
+            - fetch_project
+      - test_code_fetcher:
           requires:
             - fetch_project
