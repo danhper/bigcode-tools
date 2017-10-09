@@ -3,7 +3,7 @@
   "repository": "https://github.com/tuvistavie/bigcode-tools.git",
   "license": "MIT",
   "bin": {
-    "js-bigcode-ast": "./bin/bigcode-ast.js"
+    "js-bigcode-ast": "./bin/js-bigcode-ast"
   },
   "dependencies": {
     "acorn": "^5.1.2",

@@ -5,16 +5,17 @@ Generate JavaScript files AST in a format compatible with [150k JavaScript Datas
 ## CLI usage
 
 ```
-bigcode-ast -f <files> -o <output-dir>
+./bin/js-bigcode-ast -f <files> -o <output-dir>
 ```
 
 `<files>` should be a file, or a glob expression to files, and `output-dir`
 should be an existing directory where the result should be outputted.
+Quote your glob pattern so that it is not expanded by your shell.
 
 ### Example
 
 ```
-bigcode-ast -f src/**/*.js -o result
+bigcode-ast -f 'src/**/*.js' -o result
 ```
 
 parse all JS files in `src` directory and output results in the `result` directory
