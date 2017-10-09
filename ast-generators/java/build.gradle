@@ -24,6 +24,7 @@ dependencies {
     compile 'commons-cli:commons-cli:1.2'
 
     testCompile 'junit:junit:4.12'
+    testCompile 'commons-io:commons-io:2.5'
 }
 
 javadoc {

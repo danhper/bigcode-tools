@@ -3,6 +3,8 @@ package com.tuvistavie.bigcode.astgen;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tuvistavie.bigcode.astgen.visitors.JsonVisitor;
+import org.apache.commons.io.FileUtils;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -31,6 +33,11 @@ public class AstGeneratorTest {
     @Before
     public void setUp() throws IOException {
         tempdir = Files.createTempDirectory("java-bigcode-ast");
+    }
+
+    @After
+    public void tearDown() throws IOException {
+        FileUtils.deleteDirectory(tempdir.toFile());
     }
 
     @Test
