@@ -31,7 +31,6 @@ javadoc {
     exclude 'com/tuvistavie/bigcode/astgen/Cli.java'
 }
 
-
 test {
     testLogging {
         events TestLogEvent.FAILED, TestLogEvent.PASSED, TestLogEvent.SKIPPED,
@@ -41,6 +40,7 @@ test {
         showExceptions true
         showStackTraces true
     }
+    systemProperty 'org.slf4j.simpleLogger.defaultLogLevel', System.getProperty('org.slf4j.simpleLogger.defaultLogLevel', 'WARN')
 }
 
 mainClassName = 'com.tuvistavie.bigcode.astgen.Cli'

@@ -24,10 +24,10 @@ public class Cli {
         }
 
         Path files = Paths.get(cmd.getOptionValue("files"));
-        Path outputDir = Paths.get(cmd.getOptionValue("output-dir"));
+        Path output = Paths.get(cmd.getOptionValue("output"));
 
         try {
-            AstGenerator.processAllFiles(files, outputDir);
+            AstGenerator.processAllFiles(files, output);
         } catch (IOException e) {
             System.out.println("failed to process files: " + e.getMessage());
         }
@@ -39,7 +39,7 @@ public class Cli {
         fileOption.setRequired(true);
         options.addOption(fileOption);
 
-        Option outputOption = new Option("o", "output-dir", true, "Directory where to put the results");
+        Option outputOption = new Option("o", "output", true, "Directory where to put the results");
         outputOption.setRequired(true);
         options.addOption(outputOption);
 

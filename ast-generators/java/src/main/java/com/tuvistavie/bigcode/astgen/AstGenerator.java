@@ -11,10 +11,11 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * This class contains static methods to transform files in their
@@ -53,27 +54,41 @@ public class AstGenerator {
     public static void processAllFiles(Path pattern, Path output) throws IOException {
         FileFinder.Result filesResult = FileFinder.findFiles(pattern);
 
-        String jsonOutput = Paths.get(output.toString(), "asts.json").toString();
-        String filesOutput = Paths.get(output.toString(), "files.txt").toString();
+        Set<Path> files = filesResult.getFiles();
+        int totalCount = files.size();
+        logger.info("starting to process " + totalCount + " files");
+
+        String jsonOutput = output.toString() + ".json";
+        String filesOutput = output.toString() + ".txt";
+        String failedOutput = output.toString() + "_failed.txt";
 
         final Object writeLock = new Object();
 
         try(PrintWriter jsonWriter = new PrintWriter(jsonOutput, "UTF-8");
-            PrintWriter astWriter = new PrintWriter(filesOutput, "UTF-8")) {
+            PrintWriter astWriter = new PrintWriter(filesOutput, "UTF-8");
+            PrintWriter failedWriter = new PrintWriter(failedOutput, "UTF-8")) {
+
+            AtomicInteger counter = new AtomicInteger(0);
 
             filesResult.getFiles().parallelStream().forEach(file -> {
+                Path relativePath = filesResult.getRoot().relativize(file);
                 try {
                     List<Map<String, Object>> parsed = parseFile(file);
 
                     String jsonAST = mapper.writeValueAsString(parsed);
-                    Path relativePath = filesResult.getRoot().relativize(file);
 
                     synchronized(writeLock) {
                         jsonWriter.println(jsonAST);
                         astWriter.println(relativePath);
                     }
+
+                    int currentCount = counter.getAndIncrement();
+                    if (currentCount % 1000 == 0) {
+                        logger.info("progress: " + currentCount + "/" + totalCount);
+                    }
                 } catch (Exception e) {
-                    logger.error("failed to parse " + file + ": " + e.getMessage());
+                    logger.debug("failed to parse " + file + ": " + e.getMessage());
+                    failedWriter.println(relativePath);
                 }
             });
         }

@@ -4,7 +4,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tuvistavie.bigcode.astgen.visitors.JsonVisitor;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
+import org.slf4j.event.Level;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -20,6 +22,11 @@ public class AstGeneratorTest {
     private Path srcRoot = Paths.get(root.toString(), "src", "main", "java", "my", "package");
 
     private Path tempdir;
+
+    @BeforeClass
+    public static void setUpClass() {
+        System.setProperty(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, Level.WARN.name());
+    }
 
     @Before
     public void setUp() throws IOException {
@@ -48,13 +55,15 @@ public class AstGeneratorTest {
     public void testProcessAllFiles() throws IOException {
         ObjectMapper mapper = new ObjectMapper();
 
+        Path output = Paths.get(tempdir.toString(), "asts");
         Path pattern = Paths.get(srcRoot.toString(), "*.java");
-        AstGenerator.processAllFiles(pattern, tempdir);
+        AstGenerator.processAllFiles(pattern, output);
         Set<Path> generatedFiles = Files.list(tempdir).map(Path::getFileName).collect(Collectors.toSet());
-        Set<Path> expected = new HashSet<>(Arrays.asList(Paths.get("asts.json"), Paths.get("files.txt")));
+        Set<Path> expected = new HashSet<>(
+                Arrays.asList(Paths.get("asts.json"), Paths.get("asts.txt"), Paths.get("asts_failed.txt")));
         assertEquals(expected, generatedFiles);
         List<String> astLines = Files.readAllLines(Paths.get(tempdir.toString(), "asts.json"));
-        List<String> fileLines = Files.readAllLines(Paths.get(tempdir.toString(), "files.txt"));
+        List<String> fileLines = Files.readAllLines(Paths.get(tempdir.toString(), "asts.txt"));
 
         assertEquals(2, astLines.size());
         assertEquals(2, fileLines.size());
