@@ -70,13 +70,16 @@ describe('bigcodeAST', function() {
 
     it('should process all files in the directory', function(cb) {
       const pattern = path.join(FIXTURES_PATH, 'sources/*.js');
-      bigcodeAST({outputDir: resultsDir, files: pattern}, function(err, count) {
+      const output = path.join(resultsDir, 'files');
+      bigcodeAST({output: output, files: pattern}, function(err, count) {
         expect(err).to.be.null;
         expect(count).to.equal(4);
 
+        const failedFile = path.join(resultsDir, 'files_failed.txt');
         async.parallel([
-          fs.readFile.bind(null, path.join(resultsDir, 'files.txt'), 'utf8'),
-          fs.readFile.bind(null, path.join(resultsDir, 'asts.json'), 'utf8'),
+          (cb) => fs.readFile(path.join(resultsDir, 'files.txt'), 'utf8', cb),
+          (cb) => fs.readFile(path.join(resultsDir, 'files.json'), 'utf8', cb),
+          (cb) => fs.readFile(failedFile, 'utf8', cb),
         ], function(err, results) {
           expect(err).to.be.null;
 

@@ -5,20 +5,22 @@ Generate JavaScript files AST in a format compatible with [150k JavaScript Datas
 ## CLI usage
 
 ```
-./bin/js-bigcode-ast -f <files> -o <output-dir>
+./bin/js-bigcode-ast -f <files> -o <output>
 ```
 
-`<files>` should be a file, or a glob expression to files, and `output-dir`
-should be an existing directory where the result should be outputted.
+`<files>` should be a file, or a glob expression to files, and `output`
+should be a file basename (without extension) inside existing directory
+where the result should be outputted.
 Quote your glob pattern so that it is not expanded by your shell.
 
 ### Example
 
 ```
-bigcode-ast -f 'src/**/*.js' -o result
+bigcode-ast -f 'src/**/*.js' -o result/asts
 ```
 
 parse all JS files in `src` directory and output results in the `result` directory
+as `asts.json`, `asts.txt` and `asts_failed.txt`.
 
 ## NodeJS API
 
@@ -28,7 +30,7 @@ parse all JS files in `src` directory and output results in the `result` directo
 
 * `options` `{Object}` - should contain the following properties
   * `files` `{String}` - glob expression of the files to process
-  * `outputDir` `{String}` - path where results should be saved
+  * `output` `{String}` - file basename to save the data
 * `callback` `{Function}`
   * `err` `{Error | null}`
   * `count` `{Number}` - the number of files processed

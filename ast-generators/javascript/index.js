@@ -1,5 +1,4 @@
 const fs     = require('fs');
-const path   = require('path');
 const glob   = require('glob');
 const async  = require('async');
 const parser = require('acorn/dist/acorn_loose');
@@ -12,6 +11,9 @@ function capitalizeFirstLetter(string) {
 const mappers = {
   type: {
     Literal: (node) => {
+      if (node.value === undefined) {
+        return 'LiteralUndefined';
+      }
       if (node.value === null) {
         return 'LiteralNull';
       }
@@ -188,7 +190,8 @@ class ASTGenerator {
 function generateAndOuputAST(filepath, streams, callback) {
   bigcodeAST.fromFile(filepath, function(err, ast) {
     if (err) {
-      return callback(err);
+      streams.failedFiles.write(filepath + '\n');
+      return callback(null);
     }
     streams.asts.write(JSON.stringify(ast));
     streams.asts.write('\n');
@@ -201,17 +204,25 @@ function waitForStream(stream, callback) {
   stream.on('open', () => callback()).on('error', (err) => callback(err));
 }
 
-function createStreams(outputDir, callback) {
+function createStreams(output, callback) {
   const streams = {
-    asts: fs.createWriteStream(path.join(outputDir, 'asts.json')),
-    files: fs.createWriteStream(path.join(outputDir, 'files.txt')),
+    asts: fs.createWriteStream(output + '.json'),
+    files: fs.createWriteStream(output + '.txt'),
+    failedFiles: fs.createWriteStream(output + '_failed.txt'),
   };
   async.each(streams, waitForStream, (err) => callback(err, streams));
 }
 
 function processFiles(files, streams, callback) {
-  const processFile = (file, cb) => generateAndOuputAST(file, streams, cb);
-  async.each(files, processFile, (err) => {
+  console.log(`starting to process ${files.length} files`);
+
+  const processFile = (file, index, cb) => {
+    if (index % 1000 === 0) {
+      console.log(`progress: ${index}/${files.length}`);
+    }
+    generateAndOuputAST(file, streams, cb);
+  };
+  async.eachOfLimit(files, 30, processFile, (err) => {
     if (err) {
       return callback(err);
     }
@@ -223,12 +234,12 @@ function processFiles(files, streams, callback) {
 }
 
 function bigcodeAST(options, callback) {
-  glob(options.files, function(err, files) {
+  glob(options.files, {nodir: true}, function(err, files) {
     if (err) {
       return callback(err);
     }
 
-    createStreams(options.outputDir, function(err, streams) {
+    createStreams(options.output, function(err, streams) {
       if (err) {
         return callback(err);
       }
@@ -257,6 +268,10 @@ bigcodeAST.fromFile = function(path, callback) {
     if (err !== null) {
       return callback(err);
     }
-    callback(null, bigcodeAST.fromString(content));
+    try {
+      callback(null, bigcodeAST.fromString(content));
+    } catch (e) {
+      callback(e);
+    }
   });
 };
