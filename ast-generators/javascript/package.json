@@ -1,9 +1,10 @@
 {
   "name": "bigcode-ast",
+  "version": "0.1.0",
   "repository": "https://github.com/tuvistavie/bigcode-tools.git",
   "license": "MIT",
   "bin": {
-    "js-bigcode-ast": "./bin/js-bigcode-ast"
+    "bigcode-ast-js": "./bin/bigcode-ast-js"
   },
   "dependencies": {
     "acorn": "^5.1.2",

@@ -2,10 +2,25 @@
 
 Generate JavaScript files AST in a format compatible with [150k JavaScript Dataset][1].
 
+## Installation
+
+This package can be with npm by running
+
+```
+npm i -g bigcode-ast
+```
+
+or by fetching this repository and running
+
+```
+cd ast-generators/javascript
+npm i -g .
+```
+
 ## CLI usage
 
 ```
-./bin/js-bigcode-ast -f <files> -o <output>
+bigcode-ast-js -f <files> -o <output>
 ```
 
 `<files>` should be a file, or a glob expression to files, and `output`
@@ -16,7 +31,7 @@ Quote your glob pattern so that it is not expanded by your shell.
 ### Example
 
 ```
-bigcode-ast -f 'src/**/*.js' -o result/asts
+bigcode-ast-js -f 'src/**/*.js' -o result/asts
 ```
 
 parse all JS files in `src` directory and output results in the `result` directory
