@@ -2,7 +2,7 @@ import sys
 from os import path
 from tests import TestCase
 
-from bigcode_ast import ast_generator
+from bigcode_astgen import ast_generator
 
 
 FIXTURES_PATH = path.realpath(path.join(__file__, "../fixtures"))

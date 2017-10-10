@@ -1,4 +1,4 @@
-# bigcode-ast-py
+# bigcode-astgen-py
 
 Generate Python files AST in a format compatible with [150k Python Dataset][1].
 
@@ -12,7 +12,7 @@ as it is internally using Python `ast` module, which uses the current Python par
 This tool can be installed by running
 
 ```
-pip install bigcode-ast
+pip install bigcode-astgen
 ```
 
 or by fetching this repository and running
@@ -25,7 +25,7 @@ pip install .
 ## CLI usage
 
 ```
-bigcode-ast-py -f <files> -o <output>
+bigcode-astgen-py -f <files> -o <output>
 ```
 
 `<files>` should be a file, or a glob expression to files, and `output`
@@ -35,7 +35,7 @@ should be a filename prefix in an existing directory where the result should be 
 ### Example
 
 ```
-bigcode-ast-py -f "src/**/*.py" -o result
+bigcode-astgen-py -f "src/**/*.py" -o result
 ```
 
 parse all `.py` files in `src` directory and output results in the `result` directory
@@ -43,7 +43,7 @@ parse all `.py` files in `src` directory and output results in the `result` dire
 
 ## Python API
 
-### `bigcode_ast.ast_generator.parse_string`
+### `bigcode_astgen.ast_generator.parse_string`
 
 Returns the AST nodes of the given string
 
@@ -52,7 +52,7 @@ Args:
 * `content`: string containing a Python program
 
 
-### `bigcode_ast.ast_generator.parse_file`
+### `bigcode_astgen.ast_generator.parse_file`
 
 Returns the AST nodes of the given file
 
@@ -60,7 +60,7 @@ Args:
 
 * `filename`: path to a file containing a Python program
 
-### `bigcode_ast.ast_bulk_processor.process_files`
+### `bigcode_astgen.ast_bulk_processor.process_files`
 
 Process all the files matched with the `files_pattern` and output the results in `output_dir`
 
@@ -72,7 +72,7 @@ Args:
 ## License
 
 I could not find the license of [150k Python Dataset][1] source code from which
-`bigcode_ast/ast_generator.py` is copied.
+`bigcode_astgen/ast_generator.py` is copied.
 Therefore, until further notice, this project does not follow the MIT license as the rest of the repository.
 
 

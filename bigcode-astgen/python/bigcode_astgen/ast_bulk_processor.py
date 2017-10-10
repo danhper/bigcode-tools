@@ -2,8 +2,8 @@ import logging
 import json
 from multiprocessing import Queue, Pool, Process, queues
 
-from bigcode_ast import glob
-from bigcode_ast import ast_generator
+from bigcode_astgen import glob
+from bigcode_astgen import ast_generator
 
 
 def process_file_init(queue):

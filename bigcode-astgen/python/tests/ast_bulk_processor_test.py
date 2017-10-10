@@ -5,7 +5,7 @@ from os import path
 import shutil
 from tests import TestCase
 
-from bigcode_ast import ast_bulk_processor
+from bigcode_astgen import ast_bulk_processor
 
 
 

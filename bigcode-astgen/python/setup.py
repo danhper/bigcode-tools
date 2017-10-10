@@ -14,18 +14,18 @@ def compute_install_requires():
 
 
 setup(
-    name="bigcode-ast",
+    name="bigcode-astgen",
     version="0.1.0",
     description="Tool to search and fetch code from GitHub",
     long_description=LONG_DESCRIPTION,
     author="Daniel Perez",
     author_email="tuvistavie@gmail.com",
-    url="https://github.com/tuvistavie/bigcode-tools/tree/master/ast-generators/python",
+    url="https://github.com/tuvistavie/bigcode-tools/tree/master/bigcode-astgen/python",
     download_url="https://github.com/tuvistavie/bigcode-tools/archive/master.zip",
     include_package_data=True,
     zip_safe=True,
     packages=find_packages(exclude=["tests"]),
-    scripts=["bin/bigcode-ast-py"],
+    scripts=["bin/bigcode-astgen-py"],
     install_requires=compute_install_requires(),
     extras_require={
         "test": ["tox", "nose"]

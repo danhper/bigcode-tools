@@ -3,7 +3,7 @@
 import argparse
 import logging
 
-from bigcode_ast import ast_bulk_processor
+from bigcode_astgen import ast_bulk_processor
 
 
 def main():
