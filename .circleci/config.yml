@@ -39,8 +39,8 @@ jobs:
     steps:
       - *attach_workspace
       - *load_code
-      - run: cd ast-generators/javascript && yarn
-      - run: cd ast-generators/javascript && yarn test
+      - run: cd bigcode-astgen/javascript && yarn
+      - run: cd bigcode-astgen/javascript && yarn test
 
   test_java_ast:
     docker:
@@ -49,8 +49,8 @@ jobs:
     steps:
       - *attach_workspace
       - *load_code
-      - run: cd ast-generators/java && ./gradlew assemble
-      - run: cd ast-generators/java && ./gradlew test
+      - run: cd bigcode-astgen/java && ./gradlew assemble
+      - run: cd bigcode-astgen/java && ./gradlew test
 
   test_ast_tools:
     docker:
@@ -59,8 +59,8 @@ jobs:
     steps:
       - *attach_workspace
       - *load_code
-      - run: sbt test:compile
-      - run: sbt test:test
+      - run: cd bigcode-ast-tools && sbt test:compile
+      - run: cd bigcode-ast-tools && sbt test:test
 
   test_code_fetcher:
     docker:
@@ -69,8 +69,8 @@ jobs:
     steps:
       - *attach_workspace
       - *load_code
-      - run: cd code-fetcher && pip install --user -r requirements.txt
-      - run: cd code-fetcher && python -m nose
+      - run: cd bigcode-fetcher && pip install --user -r requirements.txt
+      - run: cd bigcode-fetcher && python -m nose
 
   test_python_ast:
     docker:
@@ -80,8 +80,8 @@ jobs:
       - *attach_workspace
       - *load_code
       - run: sudo apt install python-dev
-      - run: cd ast-generators/python && pip install --user -r requirements.txt
-      - run: cd ast-generators/python && python -m tox
+      - run: cd bigcode-astgen/python && pip install --user -r requirements.txt
+      - run: cd bigcode-astgen/python && python -m tox
 
 workflows:
   version: 2
