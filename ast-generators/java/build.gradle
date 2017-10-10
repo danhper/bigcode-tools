@@ -2,10 +2,13 @@ import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 
 plugins {
-    id 'com.github.johnrengelman.shadow' version '2.0.1'
     id 'java'
     id 'application'
     id 'idea'
+    id 'maven-publish'
+
+    id 'com.github.johnrengelman.shadow' version '2.0.1'
+    id 'com.jfrog.bintray' version '1.7.3'
 }
 
 repositories {
@@ -30,6 +33,43 @@ dependencies {
 javadoc {
     source = sourceSets.main.allJava
     exclude 'com/tuvistavie/bigcode/astgen/Cli.java'
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+bintray {
+    user = property('bintray.username')
+    key = property('bintray.apikey')
+    publications = ['MyPublication']
+    pkg {
+        repo = 'maven'
+        name = 'bigcode-ast'
+        licenses = ['MIT']
+        vcsUrl = 'https://github.com/tuvistavie/bigcode-tools.git'
+        publish = true
+
+        version {
+            name = '0.1.0'
+            desc = 'bigcode-ast first release'
+            released  = new Date()
+            vcsTag = '0.1.0'
+        }
+    }
+}
+
+publishing {
+    publications {
+        MyPublication(MavenPublication) {
+            from components.java
+            artifact javadocJar
+            groupId 'com.tuvistavie.bigcode'
+            artifactId 'astgen'
+            version '0.1.0'
+        }
+    }
 }
 
 test {
