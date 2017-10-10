@@ -2,6 +2,10 @@ import sys
 from setuptools import setup, find_packages
 
 
+with open("README.md", "r") as f:
+    LONG_DESCRIPTION = f.read()
+
+
 def compute_install_requires():
     if sys.version_info[0] == 2:
         return ["scandir"]
@@ -10,12 +14,29 @@ def compute_install_requires():
 
 
 setup(
-    name="bigcode_ast",
+    name="bigcode-ast",
     version="0.1.0",
-    packages=find_packages(),
+    description="Tool to search and fetch code from GitHub",
+    long_description=LONG_DESCRIPTION,
+    author="Daniel Perez",
+    author_email="tuvistavie@gmail.com",
+    url="https://github.com/tuvistavie/bigcode-tools/tree/master/ast-generators/python",
+    download_url="https://github.com/tuvistavie/bigcode-tools/archive/master.zip",
+    include_package_data=True,
+    zip_safe=True,
+    packages=find_packages(exclude=["tests"]),
+    scripts=["bin/bigcode-ast-py"],
     install_requires=compute_install_requires(),
     extras_require={
         "test": ["tox", "nose"]
     },
-    test_suite="tests"
+    test_suite="tests",
+    classifiers=[
+        "Development Status :: 4 - Beta",
+        "Intended Audience :: Developers",
+        "License :: OSI Approved :: MIT License",
+        "Operating System :: OS Independent",
+        "Programming Language :: Python :: 2",
+        "Programming Language :: Python :: 3"
+    ],
 )

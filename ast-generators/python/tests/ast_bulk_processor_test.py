@@ -11,7 +11,7 @@ from bigcode_ast import ast_bulk_processor
 
 class ASTBulkProcessorTest(TestCase):
     def setUp(self):
-        self.output_dir = tempfile.mkdtemp(prefix="py-bigcode-ast")
+        self.output_dir = tempfile.mkdtemp(prefix="bigcode-ast-py")
 
     def tearDown(self):
         shutil.rmtree(self.output_dir)

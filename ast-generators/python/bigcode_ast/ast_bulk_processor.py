@@ -65,5 +65,5 @@ def write_results(queue, output, total_count):
                     logging.info("progress: %s/%s", current_count, total_count)
             except queues.Empty:
                 break
-            except Exception as e:
+            except Exception as e: # pylint: disable=broad-except
                 logging.error("failed to write %s: %s", filename, e)

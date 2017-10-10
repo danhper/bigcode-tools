@@ -7,7 +7,7 @@ from bigcode_ast import ast_bulk_processor
 
 
 def main():
-    parser = argparse.ArgumentParser("py-bigcode-ast")
+    parser = argparse.ArgumentParser("bigcode-ast-py")
     parser.add_argument("-f", "--files", help="glob pattern of files to parse", required=True)
     parser.add_argument("-o", "--output", help="output file without extension", required=True)
     parser.add_argument("-v", "--verbose", help="increase verbosity", action="count", default=0)
