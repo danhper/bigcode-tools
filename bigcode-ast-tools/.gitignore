@@ -25,10 +25,3 @@ project/plugins/project/
 
 .idea/
 .idea_modules/
-
-*.png
-*.bin
-
-tmp/*
-!tmp/.keep
-results/
