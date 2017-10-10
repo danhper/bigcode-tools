@@ -41,8 +41,12 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
 }
 
 bintray {
-    user = property('bintray.username')
-    key = property('bintray.apikey')
+    if (hasProperty('bintray.username')) {
+        user = property('bintray.username')
+    }
+    if (hasProperty('bintray.apiKey')) {
+        key = property('bintray.apikey')
+    }
     publications = ['MyPublication']
     pkg {
         repo = 'maven'
