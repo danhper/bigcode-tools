@@ -188,7 +188,7 @@ class ASTGenerator {
 }
 
 function generateAndOuputAST(filepath, streams, callback) {
-  bigcodeAST.fromFile(filepath, function(err, ast) {
+  bigcodeASTGen.fromFile(filepath, function(err, ast) {
     if (err) {
       streams.failedFiles.write(filepath + '\n');
       return callback(null);
@@ -233,7 +233,7 @@ function processFiles(files, streams, callback) {
   });
 }
 
-function bigcodeAST(options, callback) {
+function bigcodeASTGen(options, callback) {
   glob(options.files, {nodir: true}, function(err, files) {
     if (err) {
       return callback(err);
@@ -248,28 +248,28 @@ function bigcodeAST(options, callback) {
   });
 }
 
-module.exports = bigcodeAST;
+module.exports = bigcodeASTGen;
 
-bigcodeAST.fromNode = function(root) {
+bigcodeASTGen.fromNode = function(root) {
   return new ASTGenerator(root).createAST();
 };
 
-bigcodeAST.fromString = function(content) {
+bigcodeASTGen.fromString = function(content) {
   if (typeof content !== 'string') {
     throw new Error('bad argument passed to fromString: ' + content);
   }
 
   const root = parser.parse_dammit(content);
-  return bigcodeAST.fromNode(root);
+  return bigcodeASTGen.fromNode(root);
 };
 
-bigcodeAST.fromFile = function(path, callback) {
+bigcodeASTGen.fromFile = function(path, callback) {
   fs.readFile(path, 'utf-8', (err, content) => {
     if (err !== null) {
       return callback(err);
     }
     try {
-      callback(null, bigcodeAST.fromString(content));
+      callback(null, bigcodeASTGen.fromString(content));
     } catch (e) {
       callback(e);
     }

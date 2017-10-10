@@ -1,4 +1,4 @@
-# bigcode-ast
+# bigcode-astgen-js
 
 Generate JavaScript files AST in a format compatible with [150k JavaScript Dataset][1].
 
@@ -7,20 +7,20 @@ Generate JavaScript files AST in a format compatible with [150k JavaScript Datas
 This package can be with npm by running
 
 ```
-npm i -g bigcode-ast
+npm i -g bigcode-astgen
 ```
 
 or by fetching this repository and running
 
 ```
-cd ast-generators/javascript
+cd bigcode-astgen/javascript
 npm i -g .
 ```
 
 ## CLI usage
 
 ```
-bigcode-ast-js -f <files> -o <output>
+bigcode-astgen-js -f <files> -o <output>
 ```
 
 `<files>` should be a file, or a glob expression to files, and `output`
@@ -31,7 +31,7 @@ Quote your glob pattern so that it is not expanded by your shell.
 ### Example
 
 ```
-bigcode-ast-js -f 'src/**/*.js' -o result/asts
+bigcode-astgen-js -f 'src/**/*.js' -o result/asts
 ```
 
 parse all JS files in `src` directory and output results in the `result` directory
@@ -39,9 +39,9 @@ as `asts.json`, `asts.txt` and `asts_failed.txt`.
 
 ## NodeJS API
 
-`bigcode-ast` exports the following functions
+`bigcode-astgen` exports the following functions
 
-### `bigcodeAST(options, callback)`
+### `bigcodeASTGen(options, callback)`
 
 * `options` `{Object}` - should contain the following properties
   * `files` `{String}` - glob expression of the files to process
@@ -50,19 +50,19 @@ as `asts.json`, `asts.txt` and `asts_failed.txt`.
   * `err` `{Error | null}`
   * `count` `{Number}` - the number of files processed
 
-### `bigcodeAST.fromFile`
+### `bigcodeASTGen.fromFile`
 
 * `path` `{String}` - path of the file to process
 * `callback` `{Function}`
   * `err` `{Error | null}`
   * `ast` `{Array}` - the nodes of the AST in the 150k JavaScript dataset format
 
-### `bigcodeAST.fromString`
+### `bigcodeASTGen.fromString`
 
 * `content` `{String}` - a JavaScript program
 * return: `{Array}` the nodes of the AST in the 150k JavaScript dataset format
 
-### `bigcodeAST.fromNode`
+### `bigcodeASTGen.fromNode`
 
 * `root` `{Node}` - the root of the AST parsed by [acorn][2]
 * return: `{Array}` the nodes of the AST in the 150k JavaScript dataset format
