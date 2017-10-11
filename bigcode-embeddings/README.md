@@ -8,10 +8,19 @@ AST nodes.
 
 ## Install
 
-To install the package, clone the repository and run
+This project should be used with Python 3.
+
+To install the package either run
+
+```
+pip install bigcode-embeddings
+```
+
+or clone the repository and run
 
 ```
 cd bigcode-embeddings
+pip install -r requirements.txt
 python setup.py install
 ```
 
