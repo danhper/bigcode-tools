@@ -8,4 +8,12 @@ This repository contains multiple tools to fetch source code,
 transform source code into AST, visualize generated ASTs or
 learn embedding for AST nodes.
 
+The repository is currently composed of the current subprojects
+
+* [bigcode-fetcher](./bigcode-fetcher): Search and fetch source code
+* [bigcode-astgen](./bigcode-astgen): Transform source code into JSON ASTs
+* [bigcode-ast-tools](./bigcode-ast-tools): Toolset to work with JSON ASTs
+* [bigcode-embeddings](./bigcode-embeddings): Generate [distributed vector embeddings][2] from ASTs
+
 [1]: http://learnbigcode.github.io/
+[2]: https://en.wikipedia.org/wiki/Word_embedding
