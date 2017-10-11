@@ -23,7 +23,7 @@ def create_train_parser(subparsers):
 
 
 def create_visualize_clusters_parser(subparsers):
-    parser = subparsers.add_parser("visualize-clusters", help="displays the clustered data in 2D")
+    parser = subparsers.add_parser("clusters", help="displays the clustered data in 2D")
     parser.add_argument(
         "-m", "--model-path", required=True, help="path of the trained model")
     parser.add_argument(
@@ -85,5 +85,5 @@ def run():
         parser.error("no command provided")
     elif args.command == "visualize":
         run_visualize(parser, args)
-    elif args.subcommand == "train":
+    elif args.command == "train":
         word2vec.run(args)

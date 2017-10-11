@@ -94,7 +94,8 @@ def create_scatter_plot(embeddings_2d, labels, output=None):
         indexes = labels[labels.Cluster == i].index.values
         ax.scatter(embeddings_2d[indexes, 0], embeddings_2d[indexes, 1], c=f"C{i}")
         for j in indexes:
-            ax.annotate(labels.loc[j].Name, (embeddings_2d[j, 0], embeddings_2d[j, 1]), fontsize=8)
+            label = labels.loc[j].value if "value" in labels.columns else labels.loc[j].type
+            ax.annotate(label, (embeddings_2d[j, 0], embeddings_2d[j, 1]), fontsize=8)
 
     if output:
         fig.savefig(output)

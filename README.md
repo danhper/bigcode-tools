@@ -15,5 +15,8 @@ The repository is currently composed of the current subprojects
 * [bigcode-ast-tools](./bigcode-ast-tools): Toolset to work with JSON ASTs
 * [bigcode-embeddings](./bigcode-embeddings): Generate [distributed vector embeddings][2] from ASTs
 
+Take a look at [the tutorial][3] to get started.
+
 [1]: http://learnbigcode.github.io/
 [2]: https://en.wikipedia.org/wiki/Word_embedding
+[3]: ./doc/tutorial.md

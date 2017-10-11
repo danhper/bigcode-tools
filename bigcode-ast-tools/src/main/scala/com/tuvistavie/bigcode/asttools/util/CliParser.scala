@@ -27,7 +27,7 @@ object CliParser {
     )
 
     cmd("generate-vocabulary").action((_, _) => GenerateVocabularyConfig()).children(
-      arg[String]("<project>").action { (x, c) => (c: @unchecked) match { case c: GenerateVocabularyConfig =>
+      arg[String]("<input>").action { (x, c) => (c: @unchecked) match { case c: GenerateVocabularyConfig =>
         c.copy(input = x) } }.text("project from which vocabulary should be generated"),
       opt[String]('o', "output").required().action { (x, c) => (c: @unchecked) match { case c: GenerateVocabularyConfig =>
         c.copy(output = x) } }.text("output file"),

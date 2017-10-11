@@ -2,8 +2,8 @@ FROM ubuntu:16.04
 
 RUN apt-get update -qq
 RUN apt-get install -y openjdk-8-jdk git build-essential curl wget apt-transport-https \
-                       libncursesw5-dev libreadline-dev libssl-dev libgdbm-dev\
-                       libc-dev libsqlite3-dev tk-dev libbz2-dev
+                       libncursesw5-dev libreadline-dev libssl-dev libgdbm-dev \
+                       libc-dev libsqlite3-dev tk-dev libbz2-dev graphviz
 
 RUN echo "deb https://dl.bintray.com/sbt/debian /" >> /etc/apt/sources.list.d/sbt.list
 RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 2EE0EA64E40A89B84B2DF73499E82A75642AC823
@@ -31,6 +31,10 @@ RUN rm /root/.asdf/installs/nodejs/6.11.4/.npm/lib/node_modules/.hooks/postinsta
 COPY .tool-versions .tool-versions
 
 RUN pip install tensorflow
+
+# matplotlib will not work in Docker with TkAgg backend
+RUN mkdir -p /root/.config/matplotlib
+RUN echo "backend: Agg" > /root/.config/matplotlib/matplotlibrc
 
 COPY . /bigcode-tools
 
