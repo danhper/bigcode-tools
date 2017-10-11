@@ -33,6 +33,8 @@ parse all `.java` files in `src` directory and output results in the `result` di
 
 ## Java API
 
+The project is available on JCenter as `com.tuvistavie.bigcode:astgen:0.1.1`.
+
 Javadoc can be generated to `build/docs` by running
 
 ```

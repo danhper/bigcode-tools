@@ -134,7 +134,7 @@ distribution should look something like this
 
 ![Vocabulary distribution][5]
 
-Next, we will generate [skipgram data like][6] to train our model. To speedup
+Next, we will generate [skipgram][6]-like data to train our model. To speedup
 the process, we will use only two ancestors as the context for each node and ignore
 children and siblings.
 
@@ -160,9 +160,9 @@ We will now learn 50 dimensions embeddings on this data using `bigcode-embedding
 docker-bigcode bigcode-embeddings train -i workspace/apache-commons-skipgram-data.txt.gz -o workspace/java-simple-embeddings --vocab-size=$(tail -n+2 $BIGCODE_WORKSPACE/java-vocabulary-no-ids.tsv | wc -l) --emb-size=50 --optimizer=gradient-descent --batch-size=64
 ```
 
-This might take a while (probably a few minutes dependings on the computer),
+This might take a while (probably a few minutes depending on the computer),
 and for some reason stdout seems not to be flushed when using Docker,
-so there might be no output until the commands finishes.
+so there might be no output until the command finishes.
 
 When the training finishes, there will be a bunch of generated files in `$BIGCODE_WORKSPACE/java-simple-embeddings`. These are Tensorflow files
 and can be visualized using [tensorboard][7]
@@ -184,11 +184,11 @@ The projector output should look something like this
 
 ![3D embeddings][9]
 
-Although we did not train with much data, the result should hopefully make some sense,
-for example the closest letters from `DoubleLiteralExpr` are `IntegerLiteralExpr` and
+Although we did not train with much data, the result should hopefully a little sense.
+For example the closest letters from `DoubleLiteralExpr` are `IntegerLiteralExpr` and
 `StringLiteralExpr`.
 
-We can try to cluster the nodes in 5 clusters, and generate a 2D visualization
+We can try to cluster the nodes in 5 clusters and generate a 2D visualization
 of the result using
 
 ```
@@ -203,7 +203,7 @@ will look something like this
 ![2D embeddings][10]
 
 The results are not great given the few amount of data we used,
-but the same process can easily be used with much bigger dataset
+but the same process can easily be used a with much bigger dataset
 to hopefully give better results.
 
 This is the end of the tutorial, take a look at each module documentation
