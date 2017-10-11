@@ -4,7 +4,7 @@ import com.tuvistavie.bigcode.asttools.models._
 import scopt.OptionParser
 
 object CliParser {
-  val parser: OptionParser[Config] = new scopt.OptionParser[Config]("ast-transformer") {
+  val parser: OptionParser[Config] = new scopt.OptionParser[Config]("bigcode-ast-tools") {
 
     head("ast-transformer", Config.version)
 

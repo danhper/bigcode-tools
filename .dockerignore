@@ -1,0 +1,9 @@
+.git
+**/target
+**/build
+**/node_modules
+**/.tox
+**/.venv
+**/.gradle
+**/.idea
+Dockerfile
