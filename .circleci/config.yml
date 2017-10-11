@@ -98,6 +98,8 @@ jobs:
           docker build -t tuvistavie/bigcode-tools:$TAG .
           docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
           docker push tuvistavie/bigcode-tools:$TAG
+          docker tag tuvistavie/bigcode-tools:$TAG tuvistavie/bigcode-tools:latest
+          docker push tuvistavie/bigcode-tools:latest
 
 
 workflows:
