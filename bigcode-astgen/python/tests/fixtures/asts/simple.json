@@ -1,1 +1,121 @@
-[{"type":"Module","children":[1,3,6,9,20]},{"type":"Import","children":[2]},{"type":"alias","value":"sys"},{"type":"Assign","children":[4,5]},{"type":"NameStore","value":"n"},{"type":"Num","value":"1"},{"type":"Assign","children":[7,8]},{"type":"NameStore","value":"i"},{"type":"Num","value":"1"},{"type":"While","children":[10,13]},{"type":"CompareLtE","children":[11,12]},{"type":"NameLoad","value":"i"},{"type":"Num","value":"5"},{"type":"body","children":[14,17]},{"type":"AugAssignMult","children":[15,16]},{"type":"NameStore","value":"n"},{"type":"NameLoad","value":"i"},{"type":"AugAssignAdd","children":[18,19]},{"type":"NameStore","value":"i"},{"type":"Num","value":"1"},{"type":"Expr","children":[21]},{"type":"Call","children":[22,27]},{"type":"AttributeLoad","children":[23,26]},{"type":"AttributeLoad","children":[24,25]},{"type":"NameLoad","value":"sys"},{"type":"attr","value":"stdout"},{"type":"attr","value":"write"},{"type":"Call","children":[28,29]},{"type":"NameLoad","value":"str"},{"type":"NameLoad","value":"n"}]
+[{
+  "id": 0,
+  "type": "Module",
+  "children": [1, 3, 6, 9, 20]
+}, {
+  "id": 1,
+  "type": "Import",
+  "children": [2]
+}, {
+  "id": 2,
+  "type": "alias",
+  "value": "sys"
+}, {
+  "id": 3,
+  "type": "Assign",
+  "children": [4, 5]
+}, {
+  "id": 4,
+  "type": "NameStore",
+  "value": "n"
+}, {
+  "id": 5,
+  "type": "Num",
+  "value": "1"
+}, {
+  "id": 6,
+  "type": "Assign",
+  "children": [7, 8]
+}, {
+  "id": 7,
+  "type": "NameStore",
+  "value": "i"
+}, {
+  "id": 8,
+  "type": "Num",
+  "value": "1"
+}, {
+  "id": 9,
+  "type": "While",
+  "children": [10, 13]
+}, {
+  "id": 10,
+  "type": "CompareLtE",
+  "children": [11, 12]
+}, {
+  "id": 11,
+  "type": "NameLoad",
+  "value": "i"
+}, {
+  "id": 12,
+  "type": "Num",
+  "value": "5"
+}, {
+  "id": 13,
+  "type": "body",
+  "children": [14, 17]
+}, {
+  "id": 14,
+  "type": "AugAssignMult",
+  "children": [15, 16]
+}, {
+  "id": 15,
+  "type": "NameStore",
+  "value": "n"
+}, {
+  "id": 16,
+  "type": "NameLoad",
+  "value": "i"
+}, {
+  "id": 17,
+  "type": "AugAssignAdd",
+  "children": [18, 19]
+}, {
+  "id": 18,
+  "type": "NameStore",
+  "value": "i"
+}, {
+  "id": 19,
+  "type": "Num",
+  "value": "1"
+}, {
+  "id": 20,
+  "type": "Expr",
+  "children": [21]
+}, {
+  "id": 21,
+  "type": "Call",
+  "children": [22, 27]
+}, {
+  "id": 22,
+  "type": "AttributeLoad",
+  "children": [23, 26]
+}, {
+  "id": 23,
+  "type": "AttributeLoad",
+  "children": [24, 25]
+}, {
+  "id": 24,
+  "type": "NameLoad",
+  "value": "sys"
+}, {
+  "id": 25,
+  "type": "attr",
+  "value": "stdout"
+}, {
+  "id": 26,
+  "type": "attr",
+  "value": "write"
+}, {
+  "id": 27,
+  "type": "Call",
+  "children": [28, 29]
+}, {
+  "id": 28,
+  "type": "NameLoad",
+  "value": "str"
+}, {
+  "id": 29,
+  "type": "NameLoad",
+  "value": "n"
+}]

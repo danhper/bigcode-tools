@@ -45,7 +45,7 @@ class ASTGenerator:
 
     def gen_identifier(self, identifier, node_type="identifier"):
         pos = len(self._nodes)
-        json_node = {}
+        json_node = {"id": pos}
         self._nodes.append(json_node)
         json_node["type"] = node_type
         json_node["value"] = identifier
@@ -53,7 +53,7 @@ class ASTGenerator:
 
     def traverse_list(self, nodes_list, node_type="list"):
         pos = len(self._nodes)
-        json_node = {}
+        json_node = {"id": pos}
         self._nodes.append(json_node)
         json_node["type"] = node_type
         children = []
@@ -71,7 +71,7 @@ class ASTGenerator:
 
     def traverse(self, node):
         pos = len(self._nodes)
-        json_node = {}
+        json_node = {"id": pos}
         self._nodes.append(json_node)
         json_node["type"] = type(node).__name__
         children = []

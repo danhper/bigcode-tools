@@ -40,6 +40,11 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
     from javadoc.destinationDir
 }
 
+task sourcesJar(type: Jar) {
+    from sourceSets.main.allJava
+    classifier = 'source'
+}
+
 bintray {
     if (hasProperty('bintray.username')) {
         user = property('bintray.username')
@@ -56,10 +61,10 @@ bintray {
         publish = true
 
         version {
-            name = '0.1.0'
+            name = project.VERSION
             desc = 'bigcode-ast first release'
             released  = new Date()
-            vcsTag = '0.1.0'
+            vcsTag = project.VERSION
         }
     }
 }
@@ -68,10 +73,11 @@ publishing {
     publications {
         MyPublication(MavenPublication) {
             from components.java
+            artifact sourcesJar
             artifact javadocJar
             groupId 'com.tuvistavie.bigcode'
             artifactId 'astgen'
-            version '0.1.0'
+            version project.VERSION
         }
     }
 }
