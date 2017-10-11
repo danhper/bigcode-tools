@@ -14,6 +14,7 @@ references:
       command: |
         mv /tmp/workspace/bigcode-tools/* /tmp/workspace/bigcode-tools/.[!.]* .
 
+
 jobs:
   fetch_project:
     docker:
@@ -83,6 +84,22 @@ jobs:
       - run: cd bigcode-astgen/python && pip install --user -r requirements.txt
       - run: cd bigcode-astgen/python && python -m tox
 
+  build_docker_image:
+    docker:
+      - image: docker:stable
+    working_directory: ~/bigcode-tools
+    steps:
+      - *attach_workspace
+      - *load_code
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - run: |
+          TAG=0.1.$CIRCLE_BUILD_NUM
+          docker build -t tuvistavie/bigcode-tools:$TAG .
+          docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
+          docker push tuvistavie/bigcode-tools:$TAG
+
+
 workflows:
   version: 2
   test_all:
@@ -103,3 +120,14 @@ workflows:
       - test_code_fetcher:
           requires:
             - fetch_project
+      - build_docker_image:
+          filters:
+            branches:
+              only:
+                - master
+          requires:
+            - test_nodejs_ast
+            - test_python_ast
+            - test_java_ast
+            - test_code_fetcher
+            - test_ast_tools
