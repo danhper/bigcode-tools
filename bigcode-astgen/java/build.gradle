@@ -46,10 +46,10 @@ task sourcesJar(type: Jar) {
 }
 
 bintray {
-    if (hasProperty('bintray.username')) {
+    if (project.hasProperty('bintray.username')) {
         user = property('bintray.username')
     }
-    if (hasProperty('bintray.apiKey')) {
+    if (project.hasProperty('bintray.apikey')) {
         key = property('bintray.apikey')
     }
     publications = ['MyPublication']
