@@ -28,7 +28,7 @@ def process_files(files_pattern, output):
         files_pattern: a glob pattern containing python files
         output: the path to a file without extension where to output results
     """
-    queue = Queue()
+    queue = Queue(100)
 
     files = glob.glob(files_pattern, recursive=True)
     total_count = len(files)
@@ -40,6 +40,8 @@ def process_files(files_pattern, output):
     pool = Pool(None, process_file_init, [queue])
     pool.map(process_file, files)
     pool.close()
+    pool.join()
+    queue.put(None)
     write_results_process.join()
 
 
@@ -50,7 +52,10 @@ def write_results(queue, output, total_count):
          open(output + "_failed.txt", "w") as failed_files:
         while True:
             try:
-                filename, ast, success = queue.get(timeout=0.5)
+                task = queue.get(timeout=3)
+                if task is None:
+                    break
+                filename, ast, success = task
                 if success:
                     json.dump(ast, asts)
                     asts.write("\n")
@@ -64,6 +69,7 @@ def write_results(queue, output, total_count):
                 if current_count % 1000 == 0:
                     logging.info("progress: %s/%s", current_count, total_count)
             except queues.Empty:
+                logging.info("nothing left in the queue, stopping writer")
                 break
             except Exception as e: # pylint: disable=broad-except
                 logging.error("failed to write %s: %s", filename, e)
