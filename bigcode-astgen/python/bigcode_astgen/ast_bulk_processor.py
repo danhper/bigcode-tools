@@ -43,16 +43,18 @@ def process_files(files_pattern, output):
     pool.join()
     queue.put(None)
     write_results_process.join()
+    logging.info("successfully processed %s files", queue.get())
 
 
 def write_results(queue, output, total_count):
-    current_count = 0
+    failure_count = 0
+    success_count = 0
     with open(output + ".json", "w") as asts, \
          open(output + ".txt", "w") as files, \
          open(output + "_failed.txt", "w") as failed_files:
         while True:
             try:
-                task = queue.get(timeout=3)
+                task = queue.get()
                 if task is None:
                     break
                 filename, ast, success = task
@@ -62,14 +64,14 @@ def write_results(queue, output, total_count):
 
                     files.write(filename)
                     files.write("\n")
+                    success_count += 1
                 else:
                     failed_files.write(filename)
                     failed_files.write("\n")
-                current_count += 1
+                    failure_count += 1
+                current_count = success_count + failure_count
                 if current_count % 1000 == 0:
                     logging.info("progress: %s/%s", current_count, total_count)
-            except queues.Empty:
-                logging.info("nothing left in the queue, stopping writer")
-                break
             except Exception as e: # pylint: disable=broad-except
                 logging.error("failed to write %s: %s", filename, e)
+    queue.put(success_count)
