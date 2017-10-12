@@ -6,13 +6,30 @@ import java.util.zip.GZIPOutputStream
 import com.tuvistavie.bigcode.asttools.data._
 import com.tuvistavie.bigcode.asttools.models.{Node, SkipgramConfig, Token, Vocabulary}
 import com.typesafe.scalalogging.LazyLogging
-import resource.managed
 
 class SkipgramDataGenerator(vocabulary: Vocabulary, skipgramConfig: SkipgramConfig) extends LazyLogging {
-  def generateData(pw: PrintWriter): Unit = {
-    val process = (item: Item[Option[Node]]) => item.content.foreach(processAst(_, pw))
-    val processor = QueueItemProcessor.stringToNode _ andThen process
-    ASTProducerConsumerRunner.run(skipgramConfig.input, processor)
+  class SkipgramQueueItemProcessor(pw: PrintWriter) extends QueueItemProcessor[String] {
+    override def processItem(item: Item[String]): Unit = {
+      QueueItemProcessor.stringToNode(item).content.foreach(processAst(_, pw))
+    }
+    override def close(): Unit = pw.close()
+  }
+
+  object SkipgramQueueItemProcessor extends QueueItemProcessorBuilder[String] {
+    def apply(index: Int): SkipgramQueueItemProcessor = {
+      val fs = new FileOutputStream(skipgramConfig.output.concat("-%03d".format(index)))
+      val gs = new GZIPOutputStream(fs)
+      val pw = new PrintWriter(gs)
+      new SkipgramQueueItemProcessor(pw)
+    }
+  }
+
+  def generateData(processBuilder: QueueItemProcessorBuilder[String]): Unit = {
+    ASTProducerConsumerRunner.run(skipgramConfig.input, processBuilder)
+  }
+
+  def generateData(): Unit = {
+    generateData(SkipgramQueueItemProcessor)
   }
 
   def processAst(root: Node, pw: PrintWriter): Unit = {
@@ -75,12 +92,6 @@ object SkipgramDataGenerator {
   def generateData(config: SkipgramConfig): Unit = {
     val vocabulary = VocabularyGenerator.loadFromFile(config.vocabularyPath)
     val iterator = new SkipgramDataGenerator(vocabulary, config)
-    for {
-      fs <- managed(new FileOutputStream(config.output))
-      gs <- managed(new GZIPOutputStream(fs))
-      pw <- managed(new PrintWriter(gs))
-    } {
-      iterator.generateData(pw)
-    }
+    iterator.generateData()
   }
 }

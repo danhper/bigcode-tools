@@ -9,7 +9,7 @@ import scala.annotation.tailrec
 
 class Consumer[T](
   queue: BlockingQueue[QueueItem[T]],
-  processItem: (Item[T] => Unit),
+  processor: QueueItemProcessor[T],
   stopLatch: Option[CountDownLatch] = None
 ) extends Runnable with LazyLogging {
   @tailrec
@@ -26,7 +26,7 @@ class Consumer[T](
 
   private def safeProcessLine(item: Item[T]): Unit = {
     try {
-      processItem(item)
+      processor.processItem(item)
     } catch {
       case e: Throwable =>
         logger.error(s"failed to process line ${item.index}: $e ${e.getStackTrace.mkString("", "\n", "\n")}")

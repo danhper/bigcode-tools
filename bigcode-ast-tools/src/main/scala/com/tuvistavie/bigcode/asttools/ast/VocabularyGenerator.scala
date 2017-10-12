@@ -5,7 +5,7 @@ import java.nio.file.{Files, Paths}
 import java.util.concurrent._
 import java.util.concurrent.atomic.AtomicInteger
 
-import com.tuvistavie.bigcode.asttools.data.{ASTProducerConsumerRunner, Item, QueueItemProcessor}
+import com.tuvistavie.bigcode.asttools.data.{ASTProducerConsumerRunner, Item, QueueItemProcessor, QueueItemProcessorBuilder}
 import com.tuvistavie.bigcode.asttools.models._
 import com.typesafe.scalalogging.LazyLogging
 import resource.managed
@@ -17,9 +17,17 @@ import scala.collection.mutable
 class VocabularyGenerator(config: GenerateVocabularyConfig) extends LazyLogging {
   private val vocabulary: mutable.Map[Token, AtomicInteger] = new ConcurrentHashMap[Token, AtomicInteger]().asScala
 
+  class VocabularyGeneratorQueueItemProcessor extends QueueItemProcessor[String] {
+    override def processItem(item: Item[String]): Unit = {
+      QueueItemProcessor.stringToNode(item).content.foreach(generateGraphVocabulary)
+    }
+  }
+  object VocabularyGeneratorQueueItemProcessor extends QueueItemProcessorBuilder[String] {
+    override def apply(index: Int): QueueItemProcessor[String] = new VocabularyGeneratorQueueItemProcessor
+  }
+
   def generateVocabulary(): Vocabulary = {
-    val processor = QueueItemProcessor.stringToNode _ andThen processNodeItem
-    ASTProducerConsumerRunner.run(config.input, processor)
+    ASTProducerConsumerRunner.run(config.input, VocabularyGeneratorQueueItemProcessor)
     create(config.vocabularySize)
   }
 
@@ -31,10 +39,6 @@ class VocabularyGenerator(config: GenerateVocabularyConfig) extends LazyLogging 
         addTokenToVocabulary(node.getToken(stripIdentifiers = true))
       }
     }
-  }
-
-  private def processNodeItem(item: Item[Option[Node]]): Unit = {
-    item.content.foreach(generateGraphVocabulary)
   }
 
   private def addTokenToVocabulary(token: Token): Unit = {

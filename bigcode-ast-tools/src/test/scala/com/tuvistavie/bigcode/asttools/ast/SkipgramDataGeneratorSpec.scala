@@ -3,6 +3,7 @@ package com.tuvistavie.bigcode.asttools.ast
 import java.io.{ByteArrayOutputStream, PrintWriter}
 
 import com.tuvistavie.bigcode.asttools.BaseSpec
+import com.tuvistavie.bigcode.asttools.data.{QueueItemProcessor, QueueItemProcessorBuilder}
 import com.tuvistavie.bigcode.asttools.models.{GenerateVocabularyConfig, SkipgramConfig, Vocabulary}
 import resource.managed
 
@@ -40,7 +41,10 @@ class SkipgramDataGeneratorSpec extends BaseSpec {
     val generator = SkipgramDataGenerator(vocabulary, config)
     val outputStream = new ByteArrayOutputStream()
     for (writer <- managed(new PrintWriter(outputStream))) {
-      generator.generateData(writer)
+      val dummyBuilder = new QueueItemProcessorBuilder[String] {
+        override def apply(index: Int): QueueItemProcessor[String] = new generator.SkipgramQueueItemProcessor(writer)
+      }
+      generator.generateData(dummyBuilder)
     }
     outputStream.toString.split("\n").toList
   }
