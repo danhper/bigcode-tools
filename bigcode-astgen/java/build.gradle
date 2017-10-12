@@ -55,14 +55,14 @@ bintray {
     publications = ['MyPublication']
     pkg {
         repo = 'maven'
-        name = 'bigcode-ast'
+        name = 'bigcode-astgen'
         licenses = ['MIT']
         vcsUrl = 'https://github.com/tuvistavie/bigcode-tools.git'
         publish = true
 
         version {
             name = project.VERSION
-            desc = 'bigcode-ast first release'
+            desc = 'bigcode-astgen first release'
             released  = new Date()
             vcsTag = project.VERSION
         }
