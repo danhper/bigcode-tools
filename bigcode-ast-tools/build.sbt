@@ -21,7 +21,6 @@ libraryDependencies ++= Seq(
 
   "org.plotly-scala" %% "plotly-render" % "0.3.1",
 
-  "org.scalactic" %% "scalactic" % "3.0.1",
   "org.scalatest" %% "scalatest" % "3.0.1" % "test",
 
   "com.jsuereth" %% "scala-arm" % "2.0"
