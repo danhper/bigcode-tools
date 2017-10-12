@@ -31,3 +31,8 @@ javacOptions ++= Seq("-Xlint:unchecked", "-Xlint:deprecation")
 scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature", "-language:implicitConversions", "-Xlint")
 
 assemblyOption in assembly := (assemblyOption in assembly).value.copy(prependShellScript = Some(sbtassembly.AssemblyPlugin.defaultShellScript :+ ""))
+
+licenses += ("MIT", url("http://opensource.org/licenses/MIT"))
+
+bintrayReleaseOnPublish in ThisBuild := false
+bintrayPackage := "bigcode-asttools"
