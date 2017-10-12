@@ -19,7 +19,7 @@ def create_parser():
     search_projects_parser.add_argument("--keyword", help="keyword to search for")
     search_projects_parser.add_argument("--keyword-in", help="place to search for keyword",
                                         dest="in")
-    search_projects_parser.add_argument("--include-forks", help="keyword to search for",
+    search_projects_parser.add_argument("--include-forks", help="includes forks",
                                         default=False, action="store_true", dest="fork")
     search_projects_parser.add_argument("--user", help="limit search to user or org")
     search_projects_parser.add_argument(
