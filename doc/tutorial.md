@@ -140,15 +140,15 @@ children and siblings.
 
 ```
 mkdir $BIGCODE_WORKSPACE/apache-commons-skipgram-data
-docker-bigcode bigcode-ast-tools generate-skipgram-data -v workspace/java-vocabulary-no-ids.tsv --ancestors-window-size 2 --children-window-size 0 --without-siblings -o workspace/apache-commons-skipgram-data/data.txt.gz workspace/apache-commons-asts.json
+docker-bigcode bigcode-ast-tools generate-skipgram-data -v workspace/java-vocabulary-no-ids.tsv --ancestors-window-size 2 --children-window-size 0 --without-siblings -o workspace/apache-commons-skipgram-data/skipgram-data workspace/apache-commons-asts.json
 ```
 
-This will create `$BIGCODE_WORKSPACE/apache-commons-skipgram-data/data.txt.gz-0`
+This will create `$BIGCODE_WORKSPACE/apache-commons-skipgram-data/skipgram-data-0.txt.gz`
 (the number of files created depends on the number of cores) which
-are a bunch of `input, output` pairs gunzipped:
+is a bunch of `input, output` pairs gunzipped:
 
 ```
-gunzip -c $BIGCODE_WORKSPACE/apache-commons-skipgram-data.txt.gz-0 | head -n 20 | tail -n5
+gunzip -c $BIGCODE_WORKSPACE/apache-commons-skipgram-data/skipgram-data-0.txt.gz | head -n 20 | tail -n5
 14,31
 0,29
 14,31
@@ -159,7 +159,7 @@ gunzip -c $BIGCODE_WORKSPACE/apache-commons-skipgram-data.txt.gz-0 | head -n 20 
 We will now learn 50 dimensions embeddings on this data using `bigcode-embeddings` tool.
 
 ```
-docker-bigcode bigcode-embeddings train -o workspace/java-simple-embeddings --vocab-size=$(tail -n+2 $BIGCODE_WORKSPACE/java-vocabulary-no-ids.tsv | wc -l) --emb-size=50 --optimizer=gradient-descent --batch-size=64 workspace/apache-commons-skipgram-data/data.txt.gz-*
+docker-bigcode bigcode-embeddings train -o workspace/java-simple-embeddings --vocab-size=$(tail -n+2 $BIGCODE_WORKSPACE/java-vocabulary-no-ids.tsv | wc -l) --emb-size=50 --optimizer=gradient-descent --batch-size=64 workspace/apache-commons-skipgram-data/skipgram-data*
 ```
 
 This might take a while (probably a few minutes depending on the computer),
