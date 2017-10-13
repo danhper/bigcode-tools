@@ -36,7 +36,7 @@ Given a `data.txt.gz` generated from a vocabulary of size 30000,
 100D embeddings can be trained using
 
 ```
-./bin/bigcode-embeddings train -i data.txt.gz -o embeddings/ --vocab-size 30000 --emb-size 100 --l2-value 0.05 --learning-rate 0.01
+./bin/bigcode-embeddings train -o embeddings/ --vocab-size 30000 --emb-size 100 --l2-value 0.05 --learning-rate 0.01 data.txt.gz
 ```
 
 [Tensorboard][2] can be used to visualize the progress
@@ -56,7 +56,7 @@ If the generated vocabulary file is `vocab.tsv`, the above embeddings
 can be visualized with the following command
 
 ```
-./bin/data-explorer visualize clusters -m embeddings/w2v.bin-STEP -l vocab.tsv
+./bin/data-explorer visualize clusters -m embeddings/embeddings.bin-STEP -l vocab.tsv
 ```
 
 where `STEP` should be the largest value found in the `embeddings/` directory.

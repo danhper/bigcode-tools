@@ -6,7 +6,7 @@ from bigcode_embeddings import visualization, word2vec
 
 def create_train_parser(subparsers):
     parser = subparsers.add_parser("train", help="train word2vec model to learn embeddings")
-    parser.add_argument("-i", "--input-file", required=True)
+    parser.add_argument("inputs", nargs="+")
     parser.add_argument("-o", "--output-dir", required=True)
     parser.add_argument("--vocab-size", type=int, required=True)
     parser.add_argument("--emb-size", type=int, default=100)

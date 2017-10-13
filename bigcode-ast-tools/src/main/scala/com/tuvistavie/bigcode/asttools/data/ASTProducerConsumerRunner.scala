@@ -6,7 +6,7 @@ import com.typesafe.scalalogging.LazyLogging
 
 
 object ASTProducerConsumerRunner extends LazyLogging {
-  def run(filename: String, processor: Item[String] => Unit): Unit = {
+  def run(filename: String, processor: QueueItemProcessorBuilder[String]): Unit = {
     val queue = new LinkedBlockingQueue[QueueItem[String]](50)
     val producer = new StringProducer(filename, queue)
     val workers = Runtime.getRuntime.availableProcessors() - 1
@@ -15,8 +15,8 @@ object ASTProducerConsumerRunner extends LazyLogging {
     val countDownLatch = new CountDownLatch(workers)
     try {
       producerThread.start()
-      for (_ <- 1 to workers) {
-        pool.submit(new Consumer(queue, processor, Some(countDownLatch)))
+      for (i <- 1 to workers) {
+        pool.submit(new Consumer(queue, processor(i), Some(countDownLatch)))
       }
       logger.info(s"starting work with $workers workers")
       producerThread.join()

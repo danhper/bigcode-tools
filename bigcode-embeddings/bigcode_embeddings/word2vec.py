@@ -2,6 +2,7 @@ import threading
 import queue
 import io
 import gzip
+import itertools
 from concurrent.futures import ThreadPoolExecutor
 from os import path
 
@@ -16,16 +17,18 @@ OPTIMIZERS = {
 
 
 class DataReader:
-    def __init__(self, input_file):
-        with gzip.open(input_file, "rb") as f:
-            self._raw_data = f.read()
+    def __init__(self, input_files):
+        self._raw_data = []
+        for input_file in input_files:
+            with gzip.open(input_file, "rb") as f:
+                self._raw_data.append(f.read())
         self.lines = None
         self.reset_input()
         self._count_inputs()
         self.reset_input()
 
     def reset_input(self):
-        self.lines = io.BytesIO(self._raw_data)
+        self.lines = itertools.chain(io.BytesIO(data) for data in self._raw_data)
 
     def _count_inputs(self):
         inputs_count = 0
@@ -55,7 +58,7 @@ class DataReader:
 
 class Word2VecOptions:
     def __init__(self, options):
-        self.input_file = options["input_file"]
+        self.inputs = options["inputs"]
         self.vocab_size = options["vocab_size"]
         self.emb_size = options["emb_size"]
         self.batch_size = options["batch_size"]
@@ -198,7 +201,8 @@ class Word2Vec:
 
     def _train_batch(self, inputs, labels, record_results):
         feed_dict = {self.train_inputs: inputs, self.train_labels: labels}
-        _, tmp_step = self._session.run([self.optimization_step, self.temporary_step], feed_dict=feed_dict)
+        _, tmp_step = self._session.run(
+            [self.optimization_step, self.temporary_step], feed_dict=feed_dict)
         if tmp_step > 10000 and record_results:
             self._record_step()
 
@@ -215,8 +219,8 @@ class Word2Vec:
 
 def train(options):
     graph = tf.Graph()
-    data_reader = DataReader(options.input_file)
-    output_file = path.join(options.output_dir, "w2v.bin")
+    data_reader = DataReader(options.inputs)
+    output_file = path.join(options.output_dir, "embeddings.bin")
     with graph.as_default(), tf.Session() as session:
         model = Word2Vec(session, data_reader, options)
         current_epoch = session.run(model.epoch)
