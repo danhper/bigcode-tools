@@ -19,6 +19,7 @@ class Consumer[T](
         safeProcessLine(item)
         run()
       case Stop =>
+        processor.close()
         logger.info(s"consumer stopped")
         stopLatch.foreach(_.countDown())
     }

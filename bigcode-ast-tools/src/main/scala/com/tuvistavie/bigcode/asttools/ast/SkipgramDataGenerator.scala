@@ -12,12 +12,14 @@ class SkipgramDataGenerator(vocabulary: Vocabulary, skipgramConfig: SkipgramConf
     override def processItem(item: Item[String]): Unit = {
       QueueItemProcessor.stringToNode(item).content.foreach(processAst(_, pw))
     }
-    override def close(): Unit = pw.close()
+    override def close(): Unit = {
+      pw.close()
+    }
   }
 
   object SkipgramQueueItemProcessor extends QueueItemProcessorBuilder[String] {
     def apply(index: Int): SkipgramQueueItemProcessor = {
-      val fs = new FileOutputStream(skipgramConfig.output.concat("-%03d".format(index)))
+      val fs = new FileOutputStream(skipgramConfig.output.concat("-%03d.txt.gz".format(index)))
       val gs = new GZIPOutputStream(fs)
       val pw = new PrintWriter(gs)
       new SkipgramQueueItemProcessor(pw)
@@ -36,7 +38,6 @@ class SkipgramDataGenerator(vocabulary: Vocabulary, skipgramConfig: SkipgramConf
     VocabularyGenerator.getNodes(root).foreach { node =>
       generateContextPairs(node).foreach {
         case (word, context) if word != Vocabulary.unk && context != Vocabulary.unk =>
-          // FIXME: IO bottleneck here
           pw.println(f"$word,$context")
         case (_, _) =>
       }

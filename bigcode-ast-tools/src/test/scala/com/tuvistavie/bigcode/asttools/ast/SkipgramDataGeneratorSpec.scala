@@ -41,8 +41,11 @@ class SkipgramDataGeneratorSpec extends BaseSpec {
     val generator = SkipgramDataGenerator(vocabulary, config)
     val outputStream = new ByteArrayOutputStream()
     for (writer <- managed(new PrintWriter(outputStream))) {
+      // FIXME: this looks horribe
       val dummyBuilder = new QueueItemProcessorBuilder[String] {
-        override def apply(index: Int): QueueItemProcessor[String] = new generator.SkipgramQueueItemProcessor(writer)
+        override def apply(index: Int): QueueItemProcessor[String] = new generator.SkipgramQueueItemProcessor(writer) {
+          override def close(): Unit = ()
+        }
       }
       generator.generateData(dummyBuilder)
     }
