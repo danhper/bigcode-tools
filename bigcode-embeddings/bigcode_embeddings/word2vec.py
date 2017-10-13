@@ -28,7 +28,7 @@ class DataReader:
         self.reset_input()
 
     def reset_input(self):
-        self.lines = itertools.chain(io.BytesIO(data) for data in self._raw_data)
+        self.lines = itertools.chain(*[io.BytesIO(data) for data in self._raw_data])
 
     def _count_inputs(self):
         inputs_count = 0
