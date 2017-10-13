@@ -1,5 +1,6 @@
 package com.tuvistavie.bigcode.asttools.data
 
+import sys.process._
 import java.nio.charset.CodingErrorAction
 import java.util.concurrent.BlockingQueue
 
@@ -13,11 +14,9 @@ class StringProducer(val filepath: String, queue: BlockingQueue[QueueItem[String
   codec.onMalformedInput(CodingErrorAction.REPLACE)
   codec.onUnmappableCharacter(CodingErrorAction.REPLACE)
 
-  // XXX: instance creation will be slow for large files
-  val linesCount: Int = {
-    logger.info(s"loading $filepath ...")
-    Source.fromFile(filepath).getLines().length
-  }
+  // NOTE: ~10 times faster than reading lines with JVM
+  val linesCount: Int =  s"wc -l $filepath".!!.split(" ").head.toInt
+
 
   private val lines = Source.fromFile(filepath).getLines()
 
