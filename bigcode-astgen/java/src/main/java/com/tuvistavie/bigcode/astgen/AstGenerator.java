@@ -27,6 +27,19 @@ public class AstGenerator {
 
     private AstGenerator() {}
 
+    public static class Options {
+        private int maxNodes;
+        private int minNodes;
+
+        public Options() {
+            this(0, 100000);
+        }
+        public Options(int minNodes, int maxNodes) {
+            this.minNodes = minNodes;
+            this.maxNodes = maxNodes;
+        }
+    }
+
     /**
      * Returns a list containing all the nodes of the AST contained by the program in {@code filepath}
      *
@@ -43,15 +56,23 @@ public class AstGenerator {
     }
 
     /**
+     * @see AstGenerator#processAllFiles(Path, Path, Options)
+     */
+    public static void processAllFiles(Path pattern, Path output) throws IOException {
+        processAllFiles(pattern, output, new Options());
+
+    }
+    /**
      * Processes all the files matched by {@code pattern}, generate the JSON AST and
      * output the result in the {@code output}
      *
      * @param pattern the pattern to search for files
      * @param output  the path where to save result
+     * @param options options to parse files
      *
      * @throws IOException if the {@code output} does not point to an existing directory
      */
-    public static void processAllFiles(Path pattern, Path output) throws IOException {
+    public static void processAllFiles(Path pattern, Path output, Options options) throws IOException {
         FileFinder.Result filesResult = FileFinder.findFiles(pattern);
 
         Set<Path> files = filesResult.getFiles();
@@ -75,6 +96,13 @@ public class AstGenerator {
                 try {
                     List<Map<String, Object>> parsed = parseFile(file);
 
+                    if (parsed.size() < options.minNodes) {
+                        throw new RuntimeException("too few nodes");
+                    }
+                    if (parsed.size() > options.maxNodes) {
+                        throw new RuntimeException("too many nodes");
+                    }
+
                     String jsonAST = mapper.writeValueAsString(parsed);
 
                     synchronized(writeLock) {
@@ -88,7 +116,7 @@ public class AstGenerator {
                     }
                 } catch (Exception e) {
                     logger.debug("failed to parse " + file + ": " + e.getMessage());
-                    failedWriter.println(relativePath);
+                    failedWriter.println(relativePath + "\t" + e.getMessage());
                 }
             });
         }

@@ -4,14 +4,29 @@ const astGenerator = require('..');
 const yargs = require('yargs');
 
 const argv = yargs
-    .alias('f', 'files')
-    .alias('o', 'output')
-    .demandOption(['files', 'output'])
-    .usage('Usage: $0 -f <files> -o <output>')
-    .example('$0 -f \'src/**/*.js\' -o result',
+    .usage('Usage: bigcode-astgen-js -f <files> -o <output>')
+    .example('bigcode-astgen-js -f \'src/**/*.js\' -o result',
              'parse all JS files in src dir and output ASTs in result dir')
-    .describe('files', 'Glob pattern of files to parse')
-    .describe('output', 'The file basename (no extension) to put the results')
+    .option('f', {
+      alias: 'file',
+      demandOption: true,
+      describe: 'Glob pattern of files to parse',
+    })
+    .option('o', {
+      alias: 'output',
+      demandOption: true,
+      describe: 'The file basename (no extension) to put the results',
+    })
+    .option('min-nodes', {
+      describe: 'Minimum number of nodes',
+      default: 20,
+      number: true,
+    })
+    .option('max-nodes', {
+      describe: 'Maximum number of nodes',
+      default: 50000,
+      number: true,
+    })
     .help('h')
     .alias('h', 'help')
     .argv;
