@@ -2,6 +2,7 @@ const fs     = require('fs');
 const glob   = require('glob');
 const async  = require('async');
 const parser = require('acorn/dist/acorn_loose');
+const _      = require('lodash');
 
 
 function capitalizeFirstLetter(string) {
@@ -187,10 +188,16 @@ class ASTGenerator {
   }
 }
 
-function generateAndOuputAST(filepath, streams, callback) {
+function generateAndOuputAST(filepath, streams, options, callback) {
   bigcodeASTGen.fromFile(filepath, function(err, ast) {
+    if (!err && ast.length < options.minNodes) {
+      err = 'too few nodes';
+    }
+    if (!err && ast.length > options.maxNodes) {
+      err = 'too many nodes';
+    }
     if (err) {
-      streams.failedFiles.write(filepath + '\n');
+      streams.failedFiles.write(filepath + '\t' + err + '\n');
       return callback(null);
     }
     streams.asts.write(JSON.stringify(ast));
@@ -213,14 +220,14 @@ function createStreams(output, callback) {
   async.each(streams, waitForStream, (err) => callback(err, streams));
 }
 
-function processFiles(files, streams, callback) {
+function processFiles(files, streams, options, callback) {
   console.log(`starting to process ${files.length} files`);
 
   const processFile = (file, index, cb) => {
     if (index % 1000 === 0) {
       console.log(`progress: ${index}/${files.length}`);
     }
-    generateAndOuputAST(file, streams, cb);
+    generateAndOuputAST(file, streams, options, cb);
   };
   async.eachOfLimit(files, 30, processFile, (err) => {
     if (err) {
@@ -243,7 +250,8 @@ function bigcodeASTGen(options, callback) {
       if (err) {
         return callback(err);
       }
-      processFiles(files, streams, callback);
+      const processOptions = _.take(options, ['minNodes', 'maxNodes']);
+      processFiles(files, streams, processOptions, callback);
     });
   });
 }
