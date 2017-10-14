@@ -13,7 +13,7 @@ The repository is currently composed of the current subprojects
 * [bigcode-fetcher](./bigcode-fetcher): Search and fetch source code
 * [bigcode-astgen](./bigcode-astgen): Transform source code into JSON ASTs
 * [bigcode-ast-tools](./bigcode-ast-tools): Toolset to work with JSON ASTs
-* [bigcode-embeddings](./bigcode-embeddings): Generate [distributed vector embeddings][2] from ASTs
+* [bigcode-embeddings](./bigcode-embeddings): Generate [token embeddings][2] from ASTs
 
 Take a look at [the tutorial][3] to get started.
 
