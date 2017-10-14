@@ -6,7 +6,7 @@ with open("README.md", "r") as f:
 
 setup(
     name="bigcode-embeddings",
-    version="0.1.1",
+    version="0.1.2",
     description="Tool generate and visualize embeddings from bigcode",
     long_description=LONG_DESCRIPTION,
     author="Daniel Perez",

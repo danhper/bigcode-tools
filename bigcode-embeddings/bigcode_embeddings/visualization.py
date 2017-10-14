@@ -1,11 +1,11 @@
-import pandas as pd
-import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
 import plotly
 import plotly.graph_objs as go
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
+
+from bigcode_embeddings import model_utils
 
 
 DEFAULT_CLUSTERS_COUNT = 6
@@ -23,34 +23,6 @@ SVG_COLORS = [
     "#bcbd22",  # curry yellow-green
     "#17becf",  # blue-teal
 ]
-
-
-def memoize(f):
-    memoized = {}
-    def wrapper(*args):
-        tupled_args = tuple(args)
-        if tupled_args not in memoized:
-            memoized[tupled_args] = f(*args)
-        return memoized[tupled_args]
-    return wrapper
-
-
-@memoize
-def load_model(model_path):
-    metadata_path = model_path + ".meta"
-    saver = tf.train.import_meta_graph(metadata_path)
-    sess = tf.Session()
-    saver.restore(sess, model_path)
-    return sess
-
-
-def load_embeddings(model_path):
-    sess = load_model(model_path)
-    return sess.run(sess.graph.get_tensor_by_name("embeddings:0"))
-
-
-def load_labels(labels_path):
-    return pd.read_csv(labels_path, sep="\t")
 
 
 def sanitize_data(embeddings, labels):
@@ -89,13 +61,13 @@ def create_scatter_plot(embeddings_2d, labels, output=None):
     clusters_count = compute_clusters_count(labels)
 
     fig = plt.figure(figsize=(20, 20))
-    ax = fig.add_subplot(111)
+    axis = fig.add_subplot(111)
     for i in range(clusters_count):
         indexes = labels[labels.Cluster == i].index.values
-        ax.scatter(embeddings_2d[indexes, 0], embeddings_2d[indexes, 1], c="C{0}".format(i))
+        axis.scatter(embeddings_2d[indexes, 0], embeddings_2d[indexes, 1], c="C{0}".format(i))
         for j in indexes:
             label = labels.loc[j].value if "value" in labels.columns else labels.loc[j].type
-            ax.annotate(label, (embeddings_2d[j, 0], embeddings_2d[j, 1]), fontsize=8)
+            axis.annotate(label, (embeddings_2d[j, 0], embeddings_2d[j, 1]), fontsize=8)
 
     if output:
         fig.savefig(output)
@@ -108,11 +80,12 @@ def create_interactive_scatter_plot(embeddings_2d, labels, output=None):
     data = []
     for i in range(clusters_count):
         indexes = labels[labels.Cluster == i].index.values
+        label_column = "value" if "value" in labels.columns else "type"
         trace = go.Scatter(
             x=embeddings_2d[indexes, 0],
             y=embeddings_2d[indexes, 1],
             mode="markers",
-            text=labels.loc[indexes].Name.values,
+            text=labels.loc[indexes][label_column].values,
             marker={"color": SVG_COLORS[i]}
         )
         data.append(trace)
@@ -122,8 +95,8 @@ def create_interactive_scatter_plot(embeddings_2d, labels, output=None):
 
 
 def visualize_clusters(options):
-    labels = load_labels(options.labels_path)
-    embeddings = load_embeddings(options.model_path)
+    labels = model_utils.load_labels(options.labels_path)
+    embeddings = model_utils.load_embeddings(options.model_path)
     embeddings, labels = sanitize_data(embeddings, labels)
     assign_clusters(embeddings, labels, options.clusters_count)
     embeddings_2d = reduce_dimensions(embeddings)
@@ -134,5 +107,5 @@ def visualize_clusters(options):
 
 
 def visualize_elbow_graph(options):
-    embeddings = load_embeddings(options.model_path)
+    embeddings = model_utils.load_embeddings(options.model_path)
     create_elbow_graph(embeddings, max_clusters=options.max_clusters, output=options.output)
