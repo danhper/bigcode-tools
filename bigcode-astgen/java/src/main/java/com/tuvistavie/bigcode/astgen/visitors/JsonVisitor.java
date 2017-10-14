@@ -141,7 +141,7 @@ public class JsonVisitor extends GenericVisitorAdapter<Integer, List<Map<String,
 
     public Integer visit(BooleanLiteralExpr n, List<Map<String, Object>> arg) {
         Map<String, Object> result = enterNode(n, arg);
-        result.put(valueKey, n.getValue());
+        result.put(valueKey, String.valueOf(n.getValue()));
         return (Integer)result.get(idKey);
     }
 
@@ -197,8 +197,8 @@ public class JsonVisitor extends GenericVisitorAdapter<Integer, List<Map<String,
     public Integer visit(ClassOrInterfaceType n, List<Map<String, Object>> arg) {
         Map<String, Object> result = enterNode(n, arg);
         List<Integer> children = addChildren(result);
-        children.add(n.getName().accept(this, arg));
         n.getScope().ifPresent( c -> children.add(c.accept(this, arg)));
+        children.add(n.getName().accept(this, arg));
         return (Integer)result.get(idKey);
     }
 
@@ -304,8 +304,8 @@ public class JsonVisitor extends GenericVisitorAdapter<Integer, List<Map<String,
     public Integer visit(FieldAccessExpr n, List<Map<String, Object>> arg) {
         Map<String, Object> result = enterNode(n, arg);
         List<Integer> children = addChildren(result);
-        children.add(n.getName().accept(this, arg));
         children.add(n.getScope().accept(this, arg));
+        children.add(n.getName().accept(this, arg));
         return (Integer)result.get(idKey);
     }
 
@@ -443,9 +443,9 @@ public class JsonVisitor extends GenericVisitorAdapter<Integer, List<Map<String,
     public Integer visit(MethodCallExpr n, List<Map<String, Object>> arg) {
         Map<String, Object> result = enterNode(n, arg);
         List<Integer> children = addChildren(result);
+        n.getScope().ifPresent( c -> children.add(c.accept(this, arg)));
         children.add(n.getName().accept(this, arg));
         n.getArguments().forEach(a -> children.add(a.accept(this, arg)));
-        n.getScope().ifPresent( c -> children.add(c.accept(this, arg)));
         return (Integer)result.get(idKey);
     }
 
@@ -466,8 +466,8 @@ public class JsonVisitor extends GenericVisitorAdapter<Integer, List<Map<String,
     public Integer visit(MethodReferenceExpr n, List<Map<String, Object>> arg) {
         Map<String, Object> result = enterNode(n, arg);
         List<Integer> children = addChildren(result);
-        result.put("identifier", n.getIdentifier());
         children.add(n.getScope().accept(this, arg));
+        result.put("identifier", n.getIdentifier());
         return (Integer)result.get(idKey);
     }
 
@@ -502,9 +502,9 @@ public class JsonVisitor extends GenericVisitorAdapter<Integer, List<Map<String,
     public Integer visit(ObjectCreationExpr n, List<Map<String, Object>> arg) {
         Map<String, Object> result = enterNode(n, arg);
         List<Integer> children = addChildren(result);
+        n.getScope().ifPresent( c -> children.add(c.accept(this, arg)));
         n.getAnonymousClassBody().ifPresent( cb -> cb.forEach(c -> children.add(c.accept(this, arg))));
         n.getArguments().forEach(a -> children.add(a.accept(this, arg)));
-        n.getScope().ifPresent( c -> children.add(c.accept(this, arg)));
         children.add(n.getType().accept(this, arg));
         return (Integer)result.get(idKey);
     }
