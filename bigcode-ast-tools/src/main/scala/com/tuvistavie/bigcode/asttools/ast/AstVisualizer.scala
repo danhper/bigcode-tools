@@ -5,11 +5,12 @@ import java.io.{ByteArrayOutputStream, File, IOException}
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Path, Paths}
 
-import com.tuvistavie.bigcode.asttools.models.{VisualizeAstConfig, Node, Token}
+import com.tuvistavie.bigcode.asttools.models.{Node, Token, VisualizeAstConfig}
 import com.typesafe.scalalogging.LazyLogging
 import org.apache.commons.io.FilenameUtils
 import org.apache.commons.text.StringEscapeUtils
 
+import scala.io.Source
 import scala.sys.process._
 
 object AstVisualizer {
@@ -21,14 +22,21 @@ object AstVisualizer {
 class AstVisualizer(config: VisualizeAstConfig) extends LazyLogging {
   private val imageExtensions = Set("png", "jpg", "svg")
 
+  private lazy val astIndex: Either[String, Int] = {
+    (config.index, config.filename) match {
+      case (None, None) => Right(0)
+      case (Some(n), _) => Right(n)
+      case (_, Some(filename)) => findIndex(filename)
+    }
+  }
 
-  private lazy val parsedAst: Option[Node] = {
-    AstLoader.loadOne(config.filepath, config.index)
+  private lazy val parsedAst: Either[String, Node] = {
+    astIndex.flatMap(i => AstLoader.loadOne(config.input, i).toRight(s"could not parse AST at index $i in ${config.input}"))
   }
 
   def visualizeAst(): Unit = {
     parsedAst match {
-      case Some(root) =>
+      case Right(root) =>
         val dot = generateDot(root)
 
         if (config.debug) {
@@ -39,8 +47,8 @@ class AstVisualizer(config: VisualizeAstConfig) extends LazyLogging {
           outputDot(dot, output)
           if (config.view) { openOutput(output) }
         }
-      case None =>
-        logger.error(s"could not parse ${config.filepath}")
+      case Left(err) =>
+        logger.error(err)
     }
   }
 
@@ -50,7 +58,7 @@ class AstVisualizer(config: VisualizeAstConfig) extends LazyLogging {
     }
     val nodes = generateNodes(root).map(formatNode(_, config.hideIdentifiers))
 
-    val filename = Paths.get(config.filepath).getFileName.toString.replaceAll("[. -]", "_")
+    val filename = Paths.get(config.input).getFileName.toString.replaceAll("[. -]", "_")
     val dot = s"""digraph $filename {
         ${nodes.mkString("\n")}
         ${links.mkString("\n")}
@@ -58,6 +66,12 @@ class AstVisualizer(config: VisualizeAstConfig) extends LazyLogging {
     """.stripMargin
 
     dot
+  }
+
+  private def findIndex(filename: String): Either[String, Int] = {
+    val filesListPath = config.filesListPath.getOrElse(FilenameUtils.removeExtension(config.input) + ".txt")
+    val result = Source.fromFile(filesListPath).getLines.zipWithIndex.find(_._1 == filename).map(_._2)
+    result.toRight(s"$filename was not found in $filesListPath")
   }
 
   private def outputDot(dot: String, output: String): Unit = {

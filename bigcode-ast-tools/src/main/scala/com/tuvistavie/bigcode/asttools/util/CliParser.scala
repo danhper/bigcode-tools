@@ -13,7 +13,7 @@ object CliParser {
 
     cmd("visualize-ast").action((_, _) => VisualizeAstConfig()).children(
       arg[String]("<filepath>").action { (x, c) => (c: @unchecked) match { case c: VisualizeAstConfig =>
-        c.copy(filepath = x) } }.text("file to parse"),
+        c.copy(input = x) } }.text("file to parse"),
       opt[String]('o', "output").action { (x, c) => (c: @unchecked) match { case c: VisualizeAstConfig =>
         c.copy(output = Some(x)) } }.text("output file"),
       opt[Unit]("debug").action { (_, c) => (c: @unchecked) match { case c: VisualizeAstConfig =>
@@ -23,7 +23,11 @@ object CliParser {
       opt[Unit]("no-open").action { (_, c) => (c: @unchecked) match { case c: VisualizeAstConfig =>
         c.copy(view = false) } }.text("do not open generated file"),
       opt[Int]('i', "index").action { (v, c) => (c: @unchecked) match { case c: VisualizeAstConfig =>
-        c.copy(index = v) } }.text("the index of the AST to output")
+        c.copy(index = Some(v)) } }.text("the index of the AST to output"),
+      opt[String]('l', "files-list").action { (v, c) => (c: @unchecked) match { case c: VisualizeAstConfig =>
+        c.copy(filesListPath = Some(v)) } }.text("the path to the list of file names (only useful when using --filename)"),
+      opt[String]('f', "filename").action { (v, c) => (c: @unchecked) match { case c: VisualizeAstConfig =>
+        c.copy(filename = Some(v)) } }.text("the name of file to show")
     )
 
     cmd("generate-vocabulary").action((_, _) => GenerateVocabularyConfig()).children(

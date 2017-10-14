@@ -41,7 +41,7 @@ class AstLoader(array: Array[Map[String, Any]]) {
   }
 
   private def generateToken(jsonNode: Map[String, Any]): Option[Token] = (jsonNode.get("type"), jsonNode.get("value")) match {
-    case (Some(tokenType: String), Some(tokenValue: Any)) => Some(Token(tokenType, Some(tokenValue.toString)))
+    case (Some(tokenType: String), Some(tokenValue)) => Some(Token(tokenType, Some(tokenValue.toString)))
     case (Some(tokenType: String), None) => Some(Token(tokenType))
     case _ => None
   }

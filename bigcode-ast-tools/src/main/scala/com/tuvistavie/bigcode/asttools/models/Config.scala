@@ -13,12 +13,14 @@ case object ShowVersionConfig extends Config
 
 
 case class VisualizeAstConfig(
-  filepath: String = "",
+  input: String = "",
   output: Option[String] = None,
   debug: Boolean = false,
   hideIdentifiers: Boolean = false,
   view: Boolean = true,
-  index: Int = 0
+  index: Option[Int] = None,
+  filesListPath: Option[String] = None,
+  filename: Option[String] = None
 ) extends Config {
   def fileOutput: Option[String] = {
     output.orElse { view.option(temporaryPath) }
