@@ -20,6 +20,14 @@ but each tool can be installed separately without the need for Docker.
 
 The Docker image is available as [`tuvistavie/bigcode-tools`][2]
 
+To install it, you can run
+
+```
+docker run tuvistavie/bigcode-tools ls
+```
+
+If this succeed, everything is ready. Note that download might take a while.
+
 ## 1. Setting up workspace
 
 We will first create a directory to store downloaded code and generated
@@ -96,7 +104,7 @@ We can visualize the one of the generated AST. We will try with the first file i
 but if there is a warning, you can try with some other index containing a smaller AST.
 
 ```
-docker-bigcode bigcode-ast-tools visualize-ast workspace/apache-commons-asts.json -i 1 --no-open -o workspace/ast1.png
+docker-bigcode bigcode-ast-tools visualize-ast workspace/apache-commons-asts.json -i 0 --no-open -o workspace/ast0.png
 ```
 
 This should generate `$BIGCODE_WORKSPACE/ast1.png`, which should look something like this
@@ -195,7 +203,7 @@ of the result using
 
 ```
 # $MODEL_NAME is the last model saved by Tensorflow
-MODEL_NAME=$(basename $(ls $BIGCODE_WORKSPACE/java-simple-embeddings/w2v.bin-* | tail -n1) ".meta")
+MODEL_NAME=$(basename $(ls $BIGCODE_WORKSPACE/java-simple-embeddings/embeddings.bin-* | tail -n1) ".meta")
 docker-bigcode bigcode-embeddings visualize clusters -m workspace/java-simple-embeddings/$MODEL_NAME -n 5 -l workspace/java-vocabulary-no-ids.tsv -o workspace/java-2d-embeddings.png
 ```
 
