@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -79,6 +80,8 @@ public class AstGenerator {
         int totalCount = files.size();
         logger.info("starting to process " + totalCount + " files");
 
+        Path root = Paths.get("").toAbsolutePath();
+
         String jsonOutput = output.toString() + ".json";
         String filesOutput = output.toString() + ".txt";
         String failedOutput = output.toString() + "_failed.txt";
@@ -92,7 +95,7 @@ public class AstGenerator {
             AtomicInteger counter = new AtomicInteger(0);
 
             filesResult.getFiles().parallelStream().forEach(file -> {
-                Path relativePath = filesResult.getRoot().relativize(file);
+                Path relativePath = root.relativize(file.toAbsolutePath());
                 try {
                     List<Map<String, Object>> parsed = parseFile(file);
 

@@ -74,11 +74,12 @@ public class AstGeneratorTest {
 
         assertEquals(2, astLines.size());
         assertEquals(2, fileLines.size());
-        assertEquals(new HashSet<>(Arrays.asList("Main.java", "MyClass.java")), new HashSet<>(fileLines));
+        assertEquals(new HashSet<>(Arrays.asList("Main.java", "MyClass.java")),
+                new HashSet<>(fileLines.stream().map(f -> Paths.get(f).getFileName().toString()).collect(Collectors.toSet())));
 
         for (int i = 0; i < fileLines.size(); i++) {
             String file = fileLines.get(i);
-            String className = file.substring(0, file.lastIndexOf("."));
+            String className = Paths.get(file.substring(0, file.lastIndexOf("."))).getFileName().toString();
             JsonNode ast = mapper.readTree(astLines.get(i));
             assertEquals(className, ast.get(2).get("value").asText());
         }
