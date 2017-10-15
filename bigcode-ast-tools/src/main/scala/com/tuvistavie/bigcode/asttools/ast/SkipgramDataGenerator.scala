@@ -47,7 +47,7 @@ class SkipgramDataGenerator(vocabulary: Vocabulary, skipgramConfig: SkipgramConf
   private def generateContextPairs(node: Node): List[(Int, Int)] = {
     val context = generateContext(node)
     val nodeIndex = vocabulary.indexFor(getToken(node))
-    context.map(sg => nodeIndex -> vocabulary.indexFor(sg))
+    context.map(target => nodeIndex -> vocabulary.indexFor(target))
   }
 
   private def generateContext(node: Node): List[Token] = {

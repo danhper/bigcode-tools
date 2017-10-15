@@ -16,7 +16,11 @@ case class Vocabulary(
   lazy val letters: Set[Token] = vocabHash.keySet
 
   def indexFor(token: Token): Int = {
-    vocabHash.getOrElse(token, Vocabulary.unk)
+    vocabHash.get(token).orElse(indexForType(token)).getOrElse(Vocabulary.unk)
+  }
+
+  private def indexForType(token: Token): Option[Int] = {
+    token.value.flatMap(_ => vocabHash.get(token.copy(value = None)))
   }
 
   val totalLettersCount: Int = items.map(_._2.count).sum
