@@ -1,7 +1,7 @@
 package com.tuvistavie.bigcode.asttools.models
 
 
-import org.apache.commons.text.StringEscapeUtils
+import com.fasterxml.jackson.databind.ObjectMapper
 
 import scalaz.syntax.std.boolean._
 
@@ -33,7 +33,7 @@ case class Vocabulary(
       val token = item.token
       val baseRow = List(index.toString, token.tokenType, token.metaType, item.count.toString)
       val row = strippedIdentifiers.option(baseRow).getOrElse(
-        baseRow :+ StringEscapeUtils.escapeJson(token.value.getOrElse("")))
+        baseRow :+ token.value.map(n => Vocabulary.mapper.writeValueAsString(n)).getOrElse(""))
       row.mkString("\t")
     }
 
@@ -43,6 +43,7 @@ case class Vocabulary(
 
 object Vocabulary {
   val unk: Int = -1
+  val mapper = new ObjectMapper()
 
   def apply(items: Seq[VocabItem], strippedIdentifiers: Boolean = false): Vocabulary = {
     val mapItems = items.zipWithIndex.map(_.swap).toMap
@@ -56,7 +57,7 @@ object Vocabulary {
     val vocabItems = linesIterator.foldLeft(Map.empty[Int, VocabItem]) { case (items, row) =>
       val item = row.split("\t")
       val hasValue = item.isDefinedAt(4) && item(4).length > 0
-      val token = Token(item(1), hasValue.option(item(4)))
+      val token = Token(item(1), hasValue.option(mapper.readValue(item(4), classOf[String])))
       items + (item(0).toInt -> VocabItem(token, item(3).toInt))
     }
     new Vocabulary(vocabItems, strippedIdentifiers)

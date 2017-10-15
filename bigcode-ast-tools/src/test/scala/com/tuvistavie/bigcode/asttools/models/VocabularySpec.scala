@@ -6,15 +6,15 @@ class VocabularySpec extends FunSpec with Matchers {
   val vocabularyItems: Seq[VocabItem] = Seq(
     VocabItem(Token("FooStmt"), 1),
     VocabItem(Token("BarExpr", Some("barValue")), 3),
-    VocabItem(Token("Baz"), 2)
+    VocabItem(Token("Baz", Some("")), 2)
   )
 
   val vocabularyWithIdentifiers: Vocabulary = Vocabulary(vocabularyItems)
 
   val vocabTSVWithIdentifiers: String = s"""|id\ttype\tmetaType\tcount\tvalue
                                     |0\tFooStmt\tStmt\t1\t
-                                    |1\tBarExpr\tExpr\t3\tbarValue
-                                    |2\tBaz\tOther\t2\t""".stripMargin
+                                    |1\tBarExpr\tExpr\t3\t"barValue"
+                                    |2\tBaz\tOther\t2\t""""".stripMargin
   val vocabTSVWithoutIdentifiers: String = s"""|id\ttype\tmetaType\tcount
                                                |0\tFooStmt\tStmt\t1
                                                |1\tBarExpr\tExpr\t3
@@ -38,8 +38,9 @@ class VocabularySpec extends FunSpec with Matchers {
 
     it("should parse TSV without identifiers") {
       val barExprWithoutTokenVocabItem = VocabItem(Token("BarExpr"), 3)
+      val bazWithoutToken = VocabItem(Token("Baz"), 2)
       val vocabularyWithoutIdentifiers: Vocabulary = Vocabulary(
-        Seq(vocabularyItems.head, barExprWithoutTokenVocabItem, vocabularyItems.last), strippedIdentifiers = true)
+        Seq(vocabularyItems.head, barExprWithoutTokenVocabItem, bazWithoutToken), strippedIdentifiers = true)
       Vocabulary.fromTSV(vocabTSVWithoutIdentifiers) shouldEqual vocabularyWithoutIdentifiers
     }
   }
