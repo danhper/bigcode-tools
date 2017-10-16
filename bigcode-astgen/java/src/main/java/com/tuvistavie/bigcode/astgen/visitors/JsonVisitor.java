@@ -199,14 +199,15 @@ public class JsonVisitor extends GenericVisitorAdapter<Integer, List<Map<String,
         List<Integer> children = addChildren(result);
         n.getScope().ifPresent( c -> children.add(c.accept(this, arg)));
         children.add(n.getName().accept(this, arg));
+        n.getTypeArguments().ifPresent( ts -> ts.forEach( t -> children.add(t.accept(this, arg))));
         return (Integer)result.get(idKey);
     }
 
     public Integer visit(CompilationUnit n, List<Map<String, Object>> arg) {
         Map<String, Object> result = enterNode(n, arg);
         List<Integer> children = addChildren(result);
-        n.getImports().forEach(imp -> imp.accept(this, arg));
         n.getPackageDeclaration().ifPresent( c -> children.add(c.accept(this, arg)));
+        n.getImports().forEach(imp -> children.add(imp.accept(this, arg)));
         n.getTypes().forEach(t -> children.add(t.accept(this, arg)));
         return (Integer)result.get(idKey);
     }
@@ -452,14 +453,14 @@ public class JsonVisitor extends GenericVisitorAdapter<Integer, List<Map<String,
     public Integer visit(MethodDeclaration n, List<Map<String, Object>> arg) {
         Map<String, Object> result = enterNode(n, arg);
         List<Integer> children = addChildren(result);
-        result.put("isDefault", n.isDefault());
-        result.put(modifiersKey, n.getModifiers().toString());
-        n.getBody().ifPresent( c -> children.add(c.accept(this, arg)));
         children.add(n.getType().accept(this, arg));
         children.add(n.getName().accept(this, arg));
+        result.put("isDefault", n.isDefault());
+        result.put(modifiersKey, n.getModifiers().toString());
+        n.getTypeParameters().forEach(t -> children.add(t.accept(this, arg)));
         n.getParameters().forEach(p -> children.add(p.accept(this, arg)));
         n.getThrownExceptions().forEach(e -> children.add(e.accept(this, arg)));
-        n.getTypeParameters().forEach(t -> children.add(t.accept(this, arg)));
+        n.getBody().ifPresent( c -> children.add(c.accept(this, arg)));
         return (Integer)result.get(idKey);
     }
 
@@ -659,9 +660,9 @@ public class JsonVisitor extends GenericVisitorAdapter<Integer, List<Map<String,
     public Integer visit(VariableDeclarator n, List<Map<String, Object>> arg) {
         Map<String, Object> result = enterNode(n, arg);
         List<Integer> children = addChildren(result);
-        n.getInitializer().ifPresent( c -> children.add(c.accept(this, arg)));
-        children.add(n.getName().accept(this, arg));
         children.add(n.getType().accept(this, arg));
+        children.add(n.getName().accept(this, arg));
+        n.getInitializer().ifPresent( c -> children.add(c.accept(this, arg)));
         return (Integer)result.get(idKey);
     }
 
