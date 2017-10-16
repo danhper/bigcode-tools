@@ -522,8 +522,8 @@ public class JsonVisitor extends GenericVisitorAdapter<Integer, List<Map<String,
         List<Integer> children = addChildren(result);
         result.put("isVarArgs", n.isVarArgs());
         result.put(modifiersKey, n.getModifiers().toString());
-        children.add(n.getName().accept(this, arg));
         children.add(n.getType().accept(this, arg));
+        children.add(n.getName().accept(this, arg));
         return (Integer)result.get(idKey);
     }
 
