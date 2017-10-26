@@ -3,6 +3,8 @@
 
 import ast
 
+from bigcode_astgen import normalizer
+
 
 try:
     _ = bool(type(unicode))
@@ -12,7 +14,7 @@ except NameError:
     decode_utf8 = lambda x: x
 
 
-def parse_file(filename):
+def parse_file(filename, normalize=False):
     """Returns the AST nodes of the given file
 
     Args:
@@ -20,22 +22,24 @@ def parse_file(filename):
     """
     with open(filename, "r") as f:
         content = f.read()
-    return ASTGenerator(content, filename).generate_ast()
+    return parse_string(content, normalize=normalize)
 
 
-def parse_string(content):
+def parse_string(content, normalize=False):
     """Returns the AST nodes of the given string
 
     Args:
         content: string containing a Python program
     """
-    return ASTGenerator(content).generate_ast()
+    return ASTGenerator(content, normalize=normalize).generate_ast()
 
 
 class ASTGenerator:
-    def __init__(self, content, filename="<unknonwn>"):
+    def __init__(self, content, filename="<unknonwn>", normalize=False):
         self.content = content
         self.tree = ast.parse(self.content, filename)
+        if normalize:
+            self.tree = normalizer.normalize(self.tree)
         self._nodes = []
 
     def generate_ast(self):

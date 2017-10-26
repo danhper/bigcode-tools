@@ -15,7 +15,7 @@ def process_file_init(queue, options):
 def process_file(filename):
     logging.debug("processing file %s", filename)
     try:
-        ast = ast_generator.parse_file(filename)
+        ast = ast_generator.parse_file(filename, process_file.options.get("normalize", False))
         item = ProcessedFileItem(filename, ast, process_file.options)
         process_file.queue.put(item)
     except Exception as e: # pylint: disable=broad-except
