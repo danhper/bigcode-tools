@@ -3,7 +3,7 @@ FROM ubuntu:16.04
 RUN apt-get update -qq
 RUN apt-get install -y openjdk-8-jdk git build-essential curl wget apt-transport-https \
                        libncursesw5-dev libreadline-dev libssl-dev libgdbm-dev \
-                       libc-dev libsqlite3-dev tk-dev libbz2-dev graphviz
+                       libc-dev libsqlite3-dev tk-dev libbz2-dev graphviz bc
 
 RUN echo "deb https://dl.bintray.com/sbt/debian /" >> /etc/apt/sources.list.d/sbt.list
 RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 2EE0EA64E40A89B84B2DF73499E82A75642AC823
