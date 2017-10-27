@@ -24,7 +24,7 @@ dependencies {
     compile 'com.fasterxml.jackson.core:jackson-databind:2.9.1'
     compile 'org.slf4j:slf4j-api:1.7.25'
     compile 'org.slf4j:slf4j-simple:1.7.25'
-    compile 'commons-cli:commons-cli:1.2'
+    compile 'args4j:args4j:2.33'
 
     testCompile 'junit:junit:4.12'
     testCompile 'commons-io:commons-io:2.5'

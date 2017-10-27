@@ -5,6 +5,7 @@ import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.tuvistavie.bigcode.astgen.util.FileFinder;
 import com.tuvistavie.bigcode.astgen.visitors.JsonVisitor;
+import org.kohsuke.args4j.Option;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,15 +30,28 @@ public class AstGenerator {
     private AstGenerator() {}
 
     public static class Options {
-        private int maxNodes;
-        private int minNodes;
+        @Option(name = "--files", aliases = "-f", usage = "Glob pattern of files to parse", required = true, metaVar = "FILES")
+        public String files;
 
-        public Options() {
-            this(0, 100000);
+        @Option(name = "--output", aliases = "-o", usage = "Directory where to put the results", required = true, metaVar = "OUTPUT")
+        public String output;
+
+        @Option(name = "--max-nodes", usage = "Maximum number of nodes")
+        public int maxNodes = 30000;
+
+        @Option(name = "--min-nodes", usage = "Minimum number of nodes")
+        public int minNodes = 20;
+
+        @Option(name = "--help", aliases = "-h", usage = "Shows this help", help = true)
+        public boolean help = false;
+
+
+        public Path getFilesPath() {
+            return Paths.get(files);
         }
-        public Options(int minNodes, int maxNodes) {
-            this.minNodes = minNodes;
-            this.maxNodes = maxNodes;
+
+        public Path getOutputPath() {
+            return Paths.get(output);
         }
     }
 
@@ -55,6 +69,7 @@ public class AstGenerator {
         cu.accept(visitor, astNodes);
         return astNodes;
     }
+
 
     /**
      * @see AstGenerator#processAllFiles(Path, Path, Options)
