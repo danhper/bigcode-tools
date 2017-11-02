@@ -6,7 +6,7 @@ import scopt.OptionParser
 object CliParser {
   val parser: OptionParser[Config] = new scopt.OptionParser[Config]("bigcode-ast-tools") {
 
-    head("ast-transformer", Config.version)
+    head("bigcode-ast-tools", Config.version)
 
     opt[Unit]('h', "help").action((_, _) => ShowHelpConfig).text("shows help")
     opt[Unit]('v', "version").action((_, _) => ShowVersionConfig).text("shows version")
