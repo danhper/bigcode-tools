@@ -24,6 +24,7 @@ jobs:
 
     steps:
       - checkout
+      - run: git log --format=%B -n1 | ./misc/git-hooks/commit-msg
       - run:
           command: |
             mkdir -p /tmp/workspace/bigcode-tools

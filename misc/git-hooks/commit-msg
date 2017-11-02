@@ -1,0 +1,20 @@
+#!/bin/bash
+
+set -o nounset -o pipefail -o errexit
+
+
+if [ -n "${1+x}" ]; then
+  msg="$(cat "$1")"
+else
+  read -r msg < /dev/stdin
+fi
+
+pr_regexp="Merge pull request"
+commit_regexp="(fix|chore|feat|doc)\((all|ast-tools|fetcher|astgen/(js|java|python)|README|docker|tutorial|embeddings)\): [A-Z]"
+
+echo "$msg" | grep -qE "^($pr_regexp|$commit_regexp)" || {
+  echo "message should have format 'task(project): Message'"
+  echo "tasks:    fix, chore, feat, doc"
+  echo "projects: all, ast-tools, astgen/[js,java,python], fetcher, embeddings, README, docker, tutorial"
+  exit 1
+}
