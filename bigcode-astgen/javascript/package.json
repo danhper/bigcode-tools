@@ -1,6 +1,6 @@
 {
   "name": "bigcode-astgen",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "repository": "https://github.com/tuvistavie/bigcode-tools.git",
   "license": "MIT",
   "bin": {

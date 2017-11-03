@@ -41,6 +41,7 @@ function runBatch(argv) {
   if (!argv.output) {
     console.error('--batch requires --output to be set');
     yargs.showHelp();
+    process.exit(1);
   }
   astGenerator(argv, (err, count) => {
     if (err !== null) {
