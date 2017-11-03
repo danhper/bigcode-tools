@@ -19,6 +19,7 @@ def parse_file(filename, normalize=False):
 
     Args:
         filename: path to a file containing a Python program
+        normalize: whether the AST should be normalized or not
     """
     with open(filename, "r") as f:
         content = f.read()

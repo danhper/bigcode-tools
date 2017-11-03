@@ -25,20 +25,44 @@ pip install .
 ## CLI usage
 
 ```
-bigcode-astgen-py -f <files> -o <output>
+bigcode-astgen-py -o <output> <input>
 ```
 
-`<files>` should be a file, or a glob expression to files, and `output`
-should be a filename prefix in an existing directory where the result should be outputted.
-`output.txt` and `output.json` will be created.
+`<input>` should be a file, or a glob expression to files.
+
+### Normal mode
+
+In normal mode, `<input>` is interpreted as a filename and the resulting AST
+is outputed in `<output>` if provided, else printed to `stdout`.
+
+### Batch mode
+
+In batch mode, `<input>` is interpreted as a glob, and all matching files
+are parsed. `<output>` is a prefix and `<output>.json`, `<output>.txt` and
+`<output>_failed.txt` files will be created.
+
+* `<output>.json` - contains a JSON formatted AST per line
+* `<output>.txt` - contains a filename per line, in the same order as `<output>.json`
+* `<output>_failed.txt` - contains a filename per line, with the reason why it could not be parsed
 
 ### Example
 
+#### Normal mode
+
 ```
-bigcode-astgen-py -f "src/**/*.py" -o result
+bigcode-astgen-py bigcode_astgen/normalizer.py
+```
+
+parse `bigcode_astgen/normalizer.py` and output the result to stdout.
+
+#### Batch mode
+
+```
+bigcode-astgen-py --batch -o result/asts "src/**/*.py"
 ```
 
 parse all `.py` files in `src` directory and output results in the `result` directory
+with the prefix `asts`.
 
 
 ## Python API
