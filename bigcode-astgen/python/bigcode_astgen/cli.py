@@ -11,13 +11,13 @@ def run_parse_file(args):
         result = ast_generator.parse_file(args.input, args.normalize)
     except Exception as e: # pylint: disable=broad-except
         sys.stderr.write("could not parse {0}: {1}\n".format(args.input, e))
-        return 1
+        return False
     if args.output:
         with open(args.output, "w") as f:
             json.dump(result, f)
     else:
         print(json.dumps(result))
-    return 0
+    return True
 
 
 def run():
