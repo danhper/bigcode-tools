@@ -1,7 +1,7 @@
 import multiprocessing
 import argparse
 
-from bigcode_embeddings import visualization, word2vec
+from bigcode_embeddings import visualization, word2vec, model_utils
 
 
 def create_train_parser(subparsers):
@@ -20,6 +20,11 @@ def create_train_parser(subparsers):
     parser.add_argument("--no-clipping", action="store_true", default=False)
     parser.add_argument("--checkpoint", default=None)
     return parser
+
+def create_export_parser(subparsers):
+    parser = subparsers.add_parser("export", help="exports the embeddings to numpy format")
+    parser.add_argument("model", help="path of the trained model")
+    parser.add_argument("-o", "--output", required=True, help="location to export the embeddings")
 
 
 def create_visualize_clusters_parser(subparsers):
@@ -64,6 +69,7 @@ def create_parser():
     subparsers = parser.add_subparsers(dest="command")
     create_visualize_parser(subparsers)
     create_train_parser(subparsers)
+    create_export_parser(subparsers)
 
     return parser
 
@@ -87,3 +93,5 @@ def run():
         run_visualize(parser, args)
     elif args.command == "train":
         word2vec.run(args)
+    elif args.command == "export":
+        model_utils.export_embeddings(args.model, args.output)

@@ -1,5 +1,6 @@
 import pandas as pd
 import tensorflow as tf
+import numpy as np
 
 
 def memoize(f):
@@ -28,3 +29,11 @@ def load_embeddings(model_path, embeddings_name="embeddings:0"):
 
 def load_labels(labels_path):
     return pd.read_csv(labels_path, sep="\t")
+
+
+def export_embeddings(model_path, output):
+    embeddings = load_embeddings(model_path)
+    if output.endswith(".txt"):
+        np.savetxt(output, embeddings)
+    else:
+        np.save(output, embeddings)
