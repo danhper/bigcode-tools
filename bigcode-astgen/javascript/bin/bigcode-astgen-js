@@ -7,7 +7,7 @@ const argv = yargs
     .usage('$0 [options] <input>',
            'parse the file or files to a JSON AST format', (yargs) => {
       yargs
-      .example('bigcode-astgen-js -o result \'src/**/*.js\'',
+      .example('bigcode-astgen-js --batch -o result/asts \'src/**/*.js\'',
                'parse all JS files in src dir and output ASTs in result dir')
       .positional('input', {
         describe: 'file or glob pattern of files to parse',
