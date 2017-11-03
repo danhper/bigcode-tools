@@ -15,7 +15,7 @@ def compute_install_requires():
 
 setup(
     name="bigcode-astgen",
-    version="0.1.3",
+    version="0.2.0",
     description="Tool to search and fetch code from GitHub",
     long_description=LONG_DESCRIPTION,
     author="Daniel Perez",

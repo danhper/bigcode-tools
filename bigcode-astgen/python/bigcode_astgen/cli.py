@@ -23,9 +23,11 @@ def run_parse_file(args):
 def run():
     parser = argparse.ArgumentParser("bigcode-ast-py")
     parser.add_argument("input", help="file or glob pattern of files to parse")
-    parser.add_argument("-o", "--output", help="output file without extension")
     parser.add_argument(
-        "-b", "--batch", help="process a batch of files. input will be treated as a glob")
+        "-o", "--output", help="output file for normal mode, output prefix for batch mode")
+    parser.add_argument(
+        "-b", "--batch", help="process a batch of files. input will be treated as a glob",
+        action="store_true", default=False)
     parser.add_argument("-N", "--no-normalize", help="does not normalize the AST",
                         default=True, action="store_false", dest="normalize")
     parser.add_argument(
@@ -45,7 +47,7 @@ def run():
 
     if args.batch:
         options = {k: getattr(args, k) for k in ["min_nodes", "max_nodes", "normalize"]}
-        ast_bulk_processor.process_files(args.files, args.output, options)
+        ast_bulk_processor.process_files(args.input, args.output, options)
     else:
         success = run_parse_file(args)
         sys.exit(0 if success else 1)
