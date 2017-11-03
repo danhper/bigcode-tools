@@ -91,7 +91,7 @@ There should now be more than 20 repositories inside `$BIGCODE_WORKSPACE/reposit
 We will now generate the ASTs for all the data in the downloaded repositories.
 
 ```
-docker-bigcode bigcode-astgen-java -f 'workspace/repositories/**/*.java' -o workspace/apache-commons-asts
+docker-bigcode bigcode-astgen-java --batch -o workspace/apache-commons-asts 'workspace/repositories/**/*.java'
 ```
 
 This will create three files:
