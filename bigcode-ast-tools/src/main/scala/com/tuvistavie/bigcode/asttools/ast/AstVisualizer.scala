@@ -10,7 +10,7 @@ import com.typesafe.scalalogging.LazyLogging
 import org.apache.commons.io.FilenameUtils
 import org.apache.commons.text.StringEscapeUtils
 
-import scala.io.Source
+import scala.io.{Source, StdIn}
 import scala.sys.process._
 
 object AstVisualizer {
@@ -31,7 +31,11 @@ class AstVisualizer(config: VisualizeAstConfig) extends LazyLogging {
   }
 
   private lazy val parsedAst: Either[String, Node] = {
-    astIndex.flatMap(i => AstLoader.loadOne(config.input, i).toRight(s"could not parse AST at index $i in ${config.input}"))
+    config.input match {
+      case "<STDIN>" => AstLoader.parseLine(StdIn.readLine()).toRight(s"could not parse AST from stdin")
+      case _ =>
+        astIndex.flatMap(i => AstLoader.loadOne(config.input, i).toRight(s"could not parse AST at index $i in ${config.input}"))
+    }
   }
 
   def visualizeAst(): Unit = {

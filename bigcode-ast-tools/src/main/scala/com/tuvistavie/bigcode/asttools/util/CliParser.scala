@@ -81,6 +81,12 @@ object CliParser {
   }
 
   def parse(args: Array[String]): Option[Config] = {
-    parser.parse(args, NoConfig)
+    // XXX: scopt does not support - as argument
+    // https://github.com/scopt/scopt/issues/108
+    val normalizedArgs = args.map {
+      case "-" => "<STDIN>"
+      case arg => arg
+    }
+    parser.parse(normalizedArgs, NoConfig)
   }
 }
