@@ -20,22 +20,47 @@ npm i -g .
 ## CLI usage
 
 ```
-bigcode-astgen-js -f <files> -o <output>
+bigcode-astgen-js -o <output> <input>
 ```
 
-`<files>` should be a file, or a glob expression to files, and `output`
-should be a file basename (without extension) inside existing directory
-where the result should be outputted.
+`<input>` should be a file, or a glob expression to files.
+
+### Normal mode
+
+In normal mode, `<input>` is interpreted as a filename and the resulting AST
+is outputed in `<output>` if provided, else printed to `stdout`.
+
+### Batch mode
+
+In batch mode, `<input>` is interpreted as a glob, and all matching files
+are parsed. `<output>` is a prefix and `<output>.json`, `<output>.txt` and
+`<output>_failed.txt` files will be created.
+
+* `<output>.json` - contains a JSON formatted AST per line
+* `<output>.txt` - contains a filename per line, in the same order as `<output>.json`
+* `<output>_failed.txt` - contains a filename per line, with the reason why it could not
+ be parsed
+
 Quote your glob pattern so that it is not expanded by your shell.
 
 ### Example
 
+#### Normal mode
+
 ```
-bigcode-astgen-js -f 'src/**/*.js' -o result/asts
+bigcode-astgen-js index.js
 ```
 
-parse all JS files in `src` directory and output results in the `result` directory
-as `asts.json`, `asts.txt` and `asts_failed.txt`.
+parse `index.js` and output the result to stdout.
+
+#### Batch mode
+
+```
+bigcode-astgen-js --batch -o result/asts "src/**/*.js"
+```
+
+parse all `.js` files in `src` directory and output results in the `result` directory
+with the prefix `asts` as `asts.json`, `asts.txt` and `asts_failed.txt`.
 
 ## NodeJS API
 
@@ -44,11 +69,18 @@ as `asts.json`, `asts.txt` and `asts_failed.txt`.
 ### `bigcodeASTGen(options, callback)`
 
 * `options` `{Object}` - should contain the following properties
-  * `files` `{String}` - glob expression of the files to process
+  * `input` `{String}` - glob expression of the files to process
   * `output` `{String}` - file basename to save the data
 * `callback` `{Function}`
   * `err` `{Error | null}`
   * `count` `{Number}` - the number of files processed
+
+### `bigcodeASTGen.processFile(path, output, callback)`
+
+* `path` `{String}` - path of the file to process
+* `output` `{String}` - output file to save the AST, outputs to stdout if falsy
+* `callback` `{Function}`
+  * `err` `{Error | null}`
 
 ### `bigcodeASTGen.fromFile`
 

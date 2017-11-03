@@ -4,37 +4,64 @@ const astGenerator = require('..');
 const yargs = require('yargs');
 
 const argv = yargs
-    .usage('Usage: bigcode-astgen-js -f <files> -o <output>')
-    .example('bigcode-astgen-js -f \'src/**/*.js\' -o result',
-             'parse all JS files in src dir and output ASTs in result dir')
-    .option('files', {
-      alias: 'f',
-      demandOption: true,
-      describe: 'Glob pattern of files to parse',
-    })
-    .option('output', {
-      alias: 'o',
-      demandOption: true,
-      describe: 'The file basename (no extension) to put the results',
-    })
-    .option('min-nodes', {
-      describe: 'Minimum number of nodes',
-      default: 20,
-      number: true,
-    })
-    .option('max-nodes', {
-      describe: 'Maximum number of nodes',
-      default: 50000,
-      number: true,
+    .usage('$0 [options] <input>',
+           'parse the file or files to a JSON AST format', (yargs) => {
+      yargs
+      .example('bigcode-astgen-js -o result \'src/**/*.js\'',
+               'parse all JS files in src dir and output ASTs in result dir')
+      .positional('input', {
+        describe: 'file or glob pattern of files to parse',
+      })
+      .option('batch', {
+        describe: 'process a batch of files, input will be treated as a glob',
+        boolean: true,
+        default: false,
+      })
+      .option('output', {
+        alias: 'o',
+        describe: 'output file for normal mode, output prefix for batch mode',
+      })
+      .option('min-nodes', {
+        describe: 'minimum number of nodes (only batch mode)',
+        default: 20,
+        number: true,
+      })
+      .option('max-nodes', {
+        describe: 'maximum number of nodes (only batch mode)',
+        default: 50000,
+        number: true,
+      });
     })
     .help('h')
     .alias('h', 'help')
     .argv;
 
-astGenerator(argv, (err, count) => {
-  if (err !== null) {
-    console.error('failed: ' + err);
-  } else {
-    console.log(`generated ASTs for ${count} files`);
+
+function runBatch(argv) {
+  if (!argv.output) {
+    console.error('--batch requires --output to be set');
+    yargs.showHelp();
   }
-});
+  astGenerator(argv, (err, count) => {
+    if (err !== null) {
+      console.error('failed: ' + err);
+    } else {
+      console.log(`generated ASTs for ${count} files`);
+    }
+  });
+}
+
+function run(argv) {
+  astGenerator.processFile(argv.input, argv.output, (err) => {
+    if (err !== null) {
+      console.error(`failed to process ${argv.input}: ${err}`);
+      process.exit(1);
+    }
+  });
+}
+
+if (argv.batch) {
+  runBatch(argv);
+} else {
+  run(argv);
+}

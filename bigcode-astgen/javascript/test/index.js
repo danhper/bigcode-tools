@@ -71,7 +71,7 @@ describe('bigcodeAST', function() {
     it('should process all files in the directory', function(cb) {
       const pattern = path.join(FIXTURES_PATH, 'sources/*.js');
       const output = path.join(resultsDir, 'files');
-      bigcodeAST({output: output, files: pattern}, function(err, count) {
+      bigcodeAST({output: output, input: pattern}, function(err, count) {
         expect(err).to.be.null;
         expect(count).to.equal(4);
 

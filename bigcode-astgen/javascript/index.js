@@ -241,7 +241,7 @@ function processFiles(files, streams, options, callback) {
 }
 
 function bigcodeASTGen(options, callback) {
-  glob(options.files, {nodir: true}, function(err, files) {
+  glob(options.input, {nodir: true}, function(err, files) {
     if (err) {
       return callback(err);
     }
@@ -280,6 +280,20 @@ bigcodeASTGen.fromFile = function(path, callback) {
       callback(null, bigcodeASTGen.fromString(content));
     } catch (e) {
       callback(e);
+    }
+  });
+};
+
+bigcodeASTGen.processFile = function(path, output, callback) {
+  bigcodeASTGen.fromFile(path, (err, ast) => {
+    if (err !== null) {
+      return callback(err);
+    }
+    const jsonAST = JSON.stringify(ast);
+    if (output) {
+      fs.writeFile(output, jsonAST, 'utf8', callback);
+    } else {
+      console.log(jsonAST);
     }
   });
 };
