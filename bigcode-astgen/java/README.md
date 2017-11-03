@@ -16,20 +16,47 @@ The only dependency is JDK >= 8. The project can be built with the following com
 ## CLI usage
 
 ```
-./bin/java-bigcode-ast -f <files> -o <output-dir>
+./bin/bigcode-astgen-java [options] <input>
 ```
 
-`<files>` should be a file, or a glob expression to files, and `output-dir`
-should be an existing directory where the result should be outputted.
+`<input>` should be a file, or a glob expression to files.
+
+### Normal mode
+
+In normal mode, `<input>` is interpreted as a filename and the resulting AST
+is outputed in `<output>` if provided, else printed to `stdout`.
+
+### Batch mode
+
+In batch mode, `<input>` is interpreted as a glob, and all matching files
+are parsed. `<output>` is a prefix and `<output>.json`, `<output>.txt` and
+`<output>_failed.txt` files will be created.
+
+* `<output>.json` - contains a JSON formatted AST per line
+* `<output>.txt` - contains a filename per line, in the same order as `<output>.json`
+* `<output>_failed.txt` - contains a filename per line, with the reason why it co
+uld not be parsed
+
 The glob expression should be quoted so that it is not expanded by the shell.
 
 ### Example
 
+#### Normal mode
+
 ```
-java-bigcode-ast -f 'src/**/*.java' -o result
+bigcode-astgen-java src/main/java/com/tuvistavie/bigcode/astgen/AstGenerator.java
+```
+
+parse `src/main/java/com/tuvistavie/bigcode/astgen/AstGenerator.java` and output the result to stdout.
+
+#### Batch mode
+
+```
+bigcode-astgen-java --batch -o result/asts "src/**/*.java"
 ```
 
 parse all `.java` files in `src` directory and output results in the `result` directory
+with the prefix `asts`.
 
 ## Java API
 

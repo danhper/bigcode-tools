@@ -5,14 +5,17 @@ import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.tuvistavie.bigcode.astgen.util.FileFinder;
 import com.tuvistavie.bigcode.astgen.visitors.JsonVisitor;
+import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.Option;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -30,27 +33,33 @@ public class AstGenerator {
     private AstGenerator() {}
 
     public static class Options {
-        @Option(name = "--files", aliases = "-f", usage = "Glob pattern of files to parse", required = true, metaVar = "FILES")
-        public String files;
+        @Argument(usage = "file or glob pattern of input to parse", required = true, metaVar = "<input>")
+        public String input;
 
-        @Option(name = "--output", aliases = "-o", usage = "Directory where to put the results", required = true, metaVar = "OUTPUT")
+        @Option(name = "--output", aliases = "-o", usage = "output file for normal mode, output prefix for batch mode", metaVar = "<output>")
         public String output;
 
-        @Option(name = "--max-nodes", usage = "Maximum number of nodes")
+        @Option(name = "--batch", usage = "process a batch of input, input will be treated as a glob", depends = "--output")
+        public boolean batch = false;
+
+        @Option(name = "--max-nodes", usage = "maximum number of nodes (batch mode only)")
         public int maxNodes = 30000;
 
-        @Option(name = "--min-nodes", usage = "Minimum number of nodes")
+        @Option(name = "--min-nodes", usage = "minimum number of nodes (batch mode only)")
         public int minNodes = 20;
 
-        @Option(name = "--help", aliases = "-h", usage = "Shows this help", help = true)
+        @Option(name = "--help", aliases = "-h", usage = "shows this help", help = true)
         public boolean help = false;
 
 
-        public Path getFilesPath() {
-            return Paths.get(files);
+        public Path getInputPath() {
+            return Paths.get(input);
         }
 
         public Path getOutputPath() {
+            if (output == null) {
+                return null;
+            }
             return Paths.get(output);
         }
     }
@@ -70,6 +79,22 @@ public class AstGenerator {
         return astNodes;
     }
 
+    /**
+     * Parse the file passed as input and outputs the ast to output or to stdout
+     *
+     * @param input the input file
+     * @param output the output file, AST is output to stdout if null
+     * @throws IOException
+     */
+    public static void processFile(Path input, Path output) throws IOException {
+        List<Map<String, Object>> parsed = parseFile(input);
+        String jsonAST = mapper.writeValueAsString(parsed);
+        if (output == null) {
+            System.out.println(jsonAST);
+        } else {
+            Files.write(output, jsonAST.getBytes(), StandardOpenOption.CREATE);
+        }
+    }
 
     /**
      * @see AstGenerator#processAllFiles(Path, Path, Options)
@@ -83,7 +108,7 @@ public class AstGenerator {
      * output the result in the {@code output}
      *
      * @param pattern the pattern to search for files
-     * @param output  the path where to save result
+     * @param output  the path where to save files
      * @param options options to parse files
      *
      * @throws IOException if the {@code output} does not point to an existing directory
@@ -93,7 +118,7 @@ public class AstGenerator {
 
         Set<Path> files = filesResult.getFiles();
         int totalCount = files.size();
-        logger.info("starting to process " + totalCount + " files");
+        logger.info("starting to process " + totalCount + " input");
 
         Path root = Paths.get("").toAbsolutePath();
 

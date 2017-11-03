@@ -17,20 +17,27 @@ public class Cli {
                 showUsage(cmd, System.out);
                 return;
             }
-            AstGenerator.processAllFiles(options.getFilesPath(), options.getOutputPath(), options);
+            if (options.batch) {
+                AstGenerator.processAllFiles(options.getInputPath(), options.getOutputPath(), options);
+            } else {
+                AstGenerator.processFile(options.getInputPath(), options.getOutputPath());
+            }
         } catch (IOException e) {
-            System.out.println("failed to process files: " + e.getMessage());
+            System.err.println("failed to process " + options.input + ": " + e.getMessage());
             System.exit(1);
         } catch (CmdLineException e) {
-            System.out.println("failed to parse arguments: " + e.getMessage());
+            System.err.println(e.getMessage());
             showUsage(cmd, System.err);
+            System.exit(1);
+        } catch (Exception e) {
+            System.err.println("failed to process " + options.input + ": " + e.getMessage());
             System.exit(1);
         }
     }
 
     private static void showUsage(CmdLineParser cmd, OutputStream out) {
         PrintWriter pw = new PrintWriter(out, true);
-        pw.println("usage: bigcode-astgen-java -f FILES -o OUTPUT [options]\nOptions:");
+        pw.println("usage: bigcode-astgen-java [options] <input>");
         cmd.printUsage(out);
     }
 }
