@@ -11,8 +11,9 @@ import numpy as np
 
 
 OPTIMIZERS = {
-    "gradient-descent": tf.train.GradientDescentOptimizer,
-    "adam": tf.train.AdamOptimizer
+    "gradient-descent" : tf.train.GradientDescentOptimizer,
+    "adam"             : tf.train.AdamOptimizer,
+    "rmsprop"          : tf.train.RMSPropOptimizer
 }
 
 
