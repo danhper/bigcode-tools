@@ -56,7 +56,7 @@ class DataReader:
             pass
 
 
-class Word2VecOptions:
+class SkipgramOptions:
     def __init__(self, options):
         self.inputs = options["inputs"]
         self.vocab_size = options["vocab_size"]
@@ -73,7 +73,7 @@ class Word2VecOptions:
         self.checkpoint = options["checkpoint"]
 
 
-class Word2Vec:
+class Skipgram:
     def __init__(self, session, data, options):
         self.options = options
         self._session = session
@@ -222,7 +222,7 @@ def train(options):
     data_reader = DataReader(options.inputs)
     output_file = path.join(options.output_dir, "embeddings.bin")
     with graph.as_default(), tf.Session() as session:
-        model = Word2Vec(session, data_reader, options)
+        model = Skipgram(session, data_reader, options)
         current_epoch = session.run(model.epoch)
         while current_epoch < options.epochs:
             model.train()
@@ -231,5 +231,5 @@ def train(options):
 
 
 def run(namespace):
-    options = Word2VecOptions(vars(namespace))
+    options = SkipgramOptions(vars(namespace))
     train(options)

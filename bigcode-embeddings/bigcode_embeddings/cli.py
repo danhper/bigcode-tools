@@ -1,11 +1,11 @@
 import multiprocessing
 import argparse
 
-from bigcode_embeddings import visualization, word2vec, model_utils
+from bigcode_embeddings import visualization, skipgram, model_utils
 
 
 def create_train_parser(subparsers):
-    parser = subparsers.add_parser("train", help="train word2vec model to learn embeddings")
+    parser = subparsers.add_parser("train", help="train skipgram model to learn embeddings")
     parser.add_argument("inputs", nargs="+")
     parser.add_argument("-o", "--output-dir", required=True)
     parser.add_argument("--vocab-size", type=int, required=True)
@@ -92,6 +92,6 @@ def run():
     elif args.command == "visualize":
         run_visualize(parser, args)
     elif args.command == "train":
-        word2vec.run(args)
+        skipgram.run(args)
     elif args.command == "export":
         model_utils.export_embeddings(args.model, args.output)
