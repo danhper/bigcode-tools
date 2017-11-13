@@ -194,7 +194,7 @@ The projector output should look something like this
 
 ![3D embeddings][9]
 
-Although we did not train with much data, the result should hopefully a little sense.
+Although we did not train with much data, the result should hopefully make some sense.
 For example the closest letters from `DoubleLiteralExpr` are `IntegerLiteralExpr` and
 `StringLiteralExpr`.
 
