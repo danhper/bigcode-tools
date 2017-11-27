@@ -50,10 +50,20 @@ class VocabularyGenerator(config: GenerateVocabularyConfig) extends LazyLogging 
 
 
   def create(size: Int): Vocabulary = {
-    val items = vocabulary.toList.sortBy { case (_, count) => -count.get() }.take(size).map { case (token, count) =>
+    val items = vocabulary.toList.sortBy { case (token, count) => sortVocabulary(token, -count.get()) }.take(size).map { case (token, count) =>
       VocabItem(token, count.get())
     }
     Vocabulary(items, config.stripIdentifiers)
+  }
+
+  private val typeOffset = 50000
+  private def sortVocabulary(token: Token, count: Int): Int = {
+    if (config.includeTypes && token.value.isEmpty) {
+      // NOTE: add arbitrary large value to ensure to include all types
+      -(count + typeOffset)
+    } else {
+      -count
+    }
   }
 }
 

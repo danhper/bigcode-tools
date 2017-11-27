@@ -42,7 +42,7 @@ object CliParser {
       opt[Unit]("strip-identifiers").action { (_, c) => (c: @unchecked) match { case c: GenerateVocabularyConfig =>
         c.copy(stripIdentifiers = true) } }.text("remove identifiers from output"),
       opt[Unit]("include-types").action { (_, c) => (c: @unchecked) match { case c: GenerateVocabularyConfig =>
-        c.copy(includeTypes = true) } }.text("remove identifiers from output")
+        c.copy(includeTypes = true) } }.text("include all types in the output")
     )
 
     cmd("generate-skipgram-data").action((_, _) => SkipgramConfig()).children(
