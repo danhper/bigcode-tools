@@ -43,7 +43,7 @@ def run_search(args):
     licenses = getattr(args, "licenses", constants.DEFAULT_LICENSES).split(",")
     if getattr(args, "token", None):
         headers["Authorization"] = "token {0}".format(args.token)
-    else:
+    elif licenses and not "all" in licenses:
         logging.warning("you did not provide a GitHub authentication token, " +
                         "you may run in a rate limit issue." +
                         "go to https://github.com/settings/tokens to generate a token")
@@ -60,8 +60,9 @@ def run_search(args):
             logging.error("failed to fetch %s: %s", url, response.text)
             break
         projects = [Project(repo) for repo in response.json()["items"]]
-        filtered_projects = filter_projects_by_license(projects, headers, licenses)
-        for project in filtered_projects:
+        if licenses and not "all" in licenses:
+            projects = filter_projects_by_license(projects, headers, licenses)
+        for project in projects:
             if len(fetched_repos) < args.max_repos:
                 fetched_repos.append(project)
         url = response.links.get("next", {}).get("url")
@@ -73,8 +74,6 @@ def create_search_query(args):
     query = []
     if getattr(args, "keyword", None):
         query.append(args.keyword)
-        if not getattr(args, "in", None):
-            query.append("in:name")
 
     search_fields = ["user", "language", "stars", "fork", "in", "size"]
     for field in search_fields:

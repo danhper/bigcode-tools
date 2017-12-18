@@ -16,7 +16,7 @@ gevent.monkey.patch_ssl()
 class FetcherTest(TestCase):
     def test_create_search_query(self):
         args = Namespace(keyword="foo")
-        self.assertEqual("foo in:name", fetcher.create_search_query(args))
+        self.assertEqual("foo", fetcher.create_search_query(args))
 
         args = Namespace(**{"keyword": "foo", "in": "description"})
         self.assertEqual("foo in:description", fetcher.create_search_query(args))
@@ -26,7 +26,7 @@ class FetcherTest(TestCase):
                          fetcher.create_search_query(args))
 
         args = Namespace(keyword="test", size="1000..10000")
-        self.assertEqual("test in:name size:1000..10000", fetcher.create_search_query(args))
+        self.assertEqual("test size:1000..10000", fetcher.create_search_query(args))
 
     @requests_mock.Mocker()
     def test_run_search(self, mreq):
