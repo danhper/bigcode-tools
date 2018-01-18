@@ -2,7 +2,7 @@ package com.tuvistavie.bigcode.asttools.visualizers
 
 import com.tuvistavie.bigcode.asttools.models.{VisualizeVocabularyDistributionConfig, Vocabulary}
 import com.tuvistavie.bigcode.asttools.ast.VocabularyGenerator
-import plotly.layout.Layout
+import plotly.layout.{Axis, Layout}
 import plotly.{Bar, Plotly}
 
 import scala.reflect.io.{File, Path}
@@ -24,7 +24,8 @@ class VocabularyDistributionVisualizer(vocabulary: Vocabulary) {
   }
 
   def makeTitle(baseTitle: String): String = {
-    f"${baseTitle }<br>${vocabulary.size} unique letters<br>${vocabulary.totalLettersCount} letters in total"
+    val title = if (baseTitle.length > 0) baseTitle + "<br>" else ""
+    title + f"${vocabulary.size} unique tokens<br>${vocabulary.totalLettersCount} tokens in total"
   }
 }
 
@@ -36,7 +37,11 @@ object VocabularyDistributionVisualizer {
     if (config.replace) {
       File(Path(config.fileOutput)).delete()
     }
-    val layout = Layout(title=visualizer.makeTitle(config.title))
+    val layout = Layout(
+      title=visualizer.makeTitle(config.title),
+      xaxis=Axis(title="Token appearance count"),
+      yaxis=Axis(title="Number of tokens")
+    )
     Plotly.plot(
       config.fileOutput,
       Seq(plot),
