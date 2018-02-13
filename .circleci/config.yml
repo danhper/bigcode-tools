@@ -85,6 +85,16 @@ jobs:
       - run: cd bigcode-astgen/python && pip install --user -r requirements.txt
       - run: cd bigcode-astgen/python && python -m tox
 
+  test_tokenizer:
+    docker:
+      - image: circleci/python:3.6
+    working_directory: ~/bigcode-tools
+    steps:
+      - *attach_workspace
+      - *load_code
+      - run: cd bigcode-tokenizer && pip install --user -r requirements.txt
+      - run: cd bigcode-tokenizer && python -m nose
+
   build_docker_image:
     docker:
       - image: docker:stable
@@ -123,6 +133,9 @@ workflows:
       - test_code_fetcher:
           requires:
             - fetch_project
+      - test_tokenizer:
+          requires:
+            - fetch_project
       - build_docker_image:
           filters:
             branches:
@@ -134,3 +147,4 @@ workflows:
             - test_java_ast
             - test_code_fetcher
             - test_ast_tools
+            - test_tokenizer
