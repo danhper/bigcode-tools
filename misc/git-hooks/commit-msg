@@ -10,11 +10,11 @@ else
 fi
 
 pr_regexp="Merge pull request"
-commit_regexp="(fix|chore|feat|doc)\((all|ast-tools|fetcher|astgen/(js|java|python)|README|docker|tutorial|embeddings)\): [A-Z]"
+commit_regexp="(fix|chore|feat|doc)\((all|ast-tools|fetcher|astgen/(js|java|python)|README|docker|tutorial|embeddings|tokenizer)\): [A-Z]"
 
 echo "$msg" | grep -qE "^($pr_regexp|$commit_regexp)" || {
   echo "message should have format 'task(project): Message'"
   echo "tasks:    fix, chore, feat, doc"
-  echo "projects: all, ast-tools, astgen/[js,java,python], fetcher, embeddings, README, docker, tutorial"
+  echo "projects: all, ast-tools, astgen/[js,java,python], fetcher, embeddings, tokenizer, README, docker, tutorial"
   exit 1
 }
