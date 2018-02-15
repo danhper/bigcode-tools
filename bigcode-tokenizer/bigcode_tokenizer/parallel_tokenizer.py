@@ -1,3 +1,4 @@
+from os import path
 from typing import List
 import json
 import logging
@@ -32,6 +33,7 @@ def tokenize_files(files_glob: str, output: str, options: dict = None) -> None:
     if options is None:
         options = {}
 
+    files = path.realpath(files_glob)
     files = glob(files_glob, recursive=True)
     total_count = len(files)
     logging.info("starting to tokenize %s files", total_count)

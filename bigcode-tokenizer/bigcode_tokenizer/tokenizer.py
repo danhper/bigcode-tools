@@ -73,8 +73,8 @@ class JavaTokenizer(Tokenizer):
              "^=", "|=", ">>", "<<", "++", "--", "&&", "||"])
     ]
 
-    def __init__(self, include_values=True):
-        super(JavaTokenizer, self).__init__(include_values)
+    def __init__(self, **kwargs):
+        super(JavaTokenizer, self).__init__(**kwargs)
         self._lexer = JavaLexer()
 
     def get_next_token(self, raw_tokens: List[RawToken]) -> Tuple[Token, int]:
