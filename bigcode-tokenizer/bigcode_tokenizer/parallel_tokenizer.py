@@ -1,5 +1,6 @@
 from os import path
-from typing import List
+import gzip
+from typing import List, IO, Any
 import json
 import logging
 from glob import glob
@@ -29,16 +30,16 @@ def process_file(filename):
         logging.error("failed to process %s: %s", filename, str(e))
 
 
-def tokenize_files(files_glob: str, output: str, options: dict = None) -> None:
+def tokenize_files(files_pattern: str, output: str, options: dict = None) -> None:
     if options is None:
         options = {}
 
-    files = path.realpath(files_glob)
-    files = glob(files_glob, recursive=True)
+    files_pattern = path.expandvars(path.expanduser(files_pattern))
+    files = glob(files_pattern, recursive=True)
     total_count = len(files)
     logging.info("starting to tokenize %s files", total_count)
 
-    queue = Queue(100)
+    queue = Queue(100) # type: Queue[QueueItem]
 
     write_results_process = Process(target=write_results, args=(queue, output, total_count))
     write_results_process.start()
@@ -53,17 +54,24 @@ def tokenize_files(files_glob: str, output: str, options: dict = None) -> None:
     logging.info("successfully processed %s files", queue.get())
 
 
+def open_output(output: str) -> IO[Any]:
+    if output.endswith(".gz"):
+        return gzip.open(output, "wb")
+    else:
+        return open(output, "w")
+
+
 def write_results(queue: Queue, output: str, total_count: int) -> None:
     current_count = 0
-    with open(output, "w") as f:
+    with open_output(output) as f:
         while True:
             item = queue.get()
-            logging.debug("RECEIVED ITEM: %s", item)
             if not item:
                 break
             try:
-                json.dump(item.tokens, f, default=lambda x: x.as_dict())
-                f.write("\n")
+                line = json.dumps(item.tokens, default=lambda x: x.as_dict())
+                f.write(line.encode("utf-8"))
+                f.write(b"\n")
                 current_count += 1
                 if current_count % 1000 == 0:
                     logging.info("progress: %s/%s", current_count, total_count)
