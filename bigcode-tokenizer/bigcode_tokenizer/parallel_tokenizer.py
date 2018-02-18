@@ -54,8 +54,12 @@ def tokenize_files(files_pattern: str, output: str, options: dict = None) -> Non
     logging.info("successfully processed %s files", queue.get())
 
 
+def is_gunzipped(output: str) -> bool:
+    return output.endswith(".gz")
+
+
 def open_output(output: str) -> IO[Any]:
-    if output.endswith(".gz"):
+    if is_gunzipped(output):
         return gzip.open(output, "wb")
     else:
         return open(output, "w")
@@ -63,15 +67,18 @@ def open_output(output: str) -> IO[Any]:
 
 def write_results(queue: Queue, output: str, total_count: int) -> None:
     current_count = 0
+    output_is_gunzipped = is_gunzipped(output)
     with open_output(output) as f:
         while True:
             item = queue.get()
             if not item:
                 break
             try:
-                line = json.dumps(item.tokens, default=lambda x: x.as_dict())
-                f.write(line.encode("utf-8"))
-                f.write(b"\n")
+                to_serialize = {"filename": item.filename, "tokens": item.tokens}
+                line = json.dumps(to_serialize, default=lambda x: x.as_dict()) + "\n"
+                if output_is_gunzipped:
+                    line = line.encode("utf-8")
+                f.write(line)
                 current_count += 1
                 if current_count % 1000 == 0:
                     logging.info("progress: %s/%s", current_count, total_count)

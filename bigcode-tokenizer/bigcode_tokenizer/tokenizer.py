@@ -4,6 +4,7 @@ from os import path
 from bigcode_tokenizer.token import Token
 
 from pygments.lexers.jvm import JavaLexer
+from pygments.lexers.python import PythonLexer, Python3Lexer
 from pygments import token
 
 
@@ -91,13 +92,33 @@ class JavaTokenizer(Tokenizer):
         return super(JavaTokenizer, self).get_next_token(raw_tokens)
 
 
+class PythonTokenizer(Tokenizer):
+    pass
+
+
+class Python3Tokenizer(PythonTokenizer):
+    def __init__(self, **kwargs):
+        super(Python3Tokenizer, self).__init__(**kwargs)
+        self._lexer = Python3Lexer()
+
+
+class Python2Tokenizer(PythonTokenizer):
+    def __init__(self, **kwargs):
+        super(Python2Tokenizer, self).__init__(**kwargs)
+        self._lexer = PythonLexer()
+
+
 TOKENIZERS: Dict[str, Type[Tokenizer]] = {
     "java": JavaTokenizer,
+    "py": Python3Tokenizer,
+    "python": Python3Tokenizer,
+    "python2": PythonTokenizer,
 }
 
+
 def tokenize_file(filename: str, options: dict) -> List[Token]:
-    ext = path.splitext(filename)[1][1:]
-    if ext not in TOKENIZERS:
-        raise ValueError("no tokenizer found for {0}".format(filename))
-    tokenizer = TOKENIZERS[ext](**options)
+    tokenizer_name = options.pop("tokenizer", None) or path.splitext(filename)[1][1:]
+    if tokenizer_name not in TOKENIZERS:
+        raise ValueError("no tokenizer named {0} found for {1}".format(tokenizer_name, filename))
+    tokenizer = TOKENIZERS[tokenizer_name](**options)
     return tokenizer.tokenize_file(filename)
