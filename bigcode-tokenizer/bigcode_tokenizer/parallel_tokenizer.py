@@ -22,10 +22,12 @@ def process_file_init(queue, options: dict):
 
 
 def process_file(filename):
-    logging.debug("processing file %s", filename)
     try:
         tokens = tokenizer.tokenize_file(filename, process_file.options)
-        process_file.queue.put(QueueItem(filename, tokens))
+        if tokens:
+            process_file.queue.put(QueueItem(filename, tokens))
+        else:
+            logging.debug("skipped file %s", filename)
     except Exception as e: # pylint: disable=broad-except
         logging.error("failed to process %s: %s", filename, str(e))
 

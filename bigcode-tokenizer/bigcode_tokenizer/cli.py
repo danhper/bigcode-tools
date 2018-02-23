@@ -4,7 +4,7 @@ import logging
 from bigcode_tokenizer import parallel_tokenizer
 
 
-OPTION_ATTRS = ["skip_text", "skip_comments", "tokenizer"]
+OPTION_ATTRS = ["skip_text", "skip_comments", "tokenizer", "max_len"]
 
 
 def run():
@@ -20,10 +20,14 @@ def run():
     parser.add_argument(
         "--include-text", help="include text (whitespaces, etc)",
         action="store_false", dest="skip_text")
+    parser.add_argument(
+        "--max-len", help="max length files to be processed",
+        default=50000, type=int)
 
     args = parser.parse_args()
-    loglevel = logging.INFO - (10 * args.verbose)
-    logging.basicConfig(level=loglevel)
+    log_level = logging.INFO - (10 * args.verbose)
+    logging.basicConfig(level=log_level,
+                        format="%(asctime)-15s %(levelname)s %(message)s")
 
 
     options = {k: getattr(args, k) for k in OPTION_ATTRS}

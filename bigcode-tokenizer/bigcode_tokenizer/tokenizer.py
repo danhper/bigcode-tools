@@ -13,10 +13,11 @@ RawToken = Tuple[token._TokenType, str]
 
 class Tokenizer:
     def __init__(self, include_values: bool = True, skip_text: bool = True,
-                 skip_comments: bool = True) -> None:
+                 skip_comments: bool = True, max_len: int = 50000) -> None:
         self.include_values = include_values
         self.skip_text = skip_text
         self.skip_comments = skip_comments
+        self.max_len = max_len
 
     @property
     def lexer(self):
@@ -63,7 +64,10 @@ class Tokenizer:
 
     def tokenize_file(self, filename: str) -> List[Token]:
         with open(filename) as f:
-            return self.tokenize_string(f.read())
+            content = f.read()
+            if len(content) > self.max_len:
+                return None
+            return self.tokenize_string(content)
 
 
 class JavaTokenizer(Tokenizer):
