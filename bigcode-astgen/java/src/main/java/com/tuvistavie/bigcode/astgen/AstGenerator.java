@@ -3,6 +3,7 @@ package com.tuvistavie.bigcode.astgen;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.Node;
 import com.tuvistavie.bigcode.astgen.util.FileFinder;
 import com.tuvistavie.bigcode.astgen.visitors.JsonVisitor;
 import org.kohsuke.args4j.Argument;
@@ -39,6 +40,9 @@ public class AstGenerator {
         @Option(name = "--output", aliases = "-o", usage = "output file for normal mode, output prefix for batch mode", metaVar = "<output>")
         public String output;
 
+        @Option(name = "--method", aliases = "-m", usage = "parse a method instead of a full file class")
+        public boolean method = false;
+
         @Option(name = "--batch", usage = "process a batch of input, input will be treated as a glob", depends = "--output")
         public boolean batch = false;
 
@@ -71,12 +75,24 @@ public class AstGenerator {
      * @return the list of all the nodes in the AST
      * @throws IOException if the file does not exist
      */
-    public static List<Map<String, Object>> parseFile(Path filepath) throws IOException {
-        CompilationUnit cu = JavaParser.parse(filepath);
+    public static List<Map<String, Object>> parseFile(Path filepath, boolean methodOnly) throws IOException {
+        Node result;
+        if (methodOnly) {
+            result = JavaParser.parseBodyDeclaration(new String(Files.readAllBytes(filepath)));
+        } else {
+            result = JavaParser.parse(filepath);
+        }
         JsonVisitor visitor = new JsonVisitor();
         List<Map<String, Object>> astNodes = new ArrayList<>();
-        cu.accept(visitor, astNodes);
+        result.accept(visitor, astNodes);
         return astNodes;
+    }
+
+    /**
+     * @see AstGenerator#parseFile(Path, boolean)
+     */
+    public static List<Map<String, Object>> parseFile(Path filepath) throws IOException {
+        return parseFile(filepath, false);
     }
 
     /**
@@ -86,14 +102,21 @@ public class AstGenerator {
      * @param output the output file, AST is output to stdout if null
      * @throws IOException
      */
-    public static void processFile(Path input, Path output) throws IOException {
-        List<Map<String, Object>> parsed = parseFile(input);
+    public static void processFile(Path input, Path output, boolean methodOnly) throws IOException {
+        List<Map<String, Object>> parsed = parseFile(input, methodOnly);
         String jsonAST = mapper.writeValueAsString(parsed);
         if (output == null) {
             System.out.println(jsonAST);
         } else {
             Files.write(output, jsonAST.getBytes(), StandardOpenOption.CREATE);
         }
+    }
+
+    /**
+     * @see AstGenerator#processFile(Path, Path, boolean)
+     */
+    public static void processFile(Path input, Path output) throws IOException {
+        processFile(input, output, false);
     }
 
     /**

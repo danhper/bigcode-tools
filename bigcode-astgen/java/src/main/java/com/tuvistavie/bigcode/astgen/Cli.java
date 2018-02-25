@@ -20,7 +20,7 @@ public class Cli {
             if (options.batch) {
                 AstGenerator.processAllFiles(options.getInputPath(), options.getOutputPath(), options);
             } else {
-                AstGenerator.processFile(options.getInputPath(), options.getOutputPath());
+                AstGenerator.processFile(options.getInputPath(), options.getOutputPath(), options.method);
             }
         } catch (IOException e) {
             System.err.println("failed to process " + options.input + ": " + e.getMessage());
