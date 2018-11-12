@@ -22,11 +22,11 @@ RUN asdf plugin-add python
 
 RUN bash $ASDF_DIR/plugins/nodejs/bin/import-release-team-keyring
 
-RUN asdf install python 3.6.2
+RUN asdf install python 3.6.6
 RUN asdf install python 2.7.14
-RUN asdf install nodejs 6.11.4
+RUN asdf install nodejs 8.11.4
 # XXX: postinstall hook creates permission issue
-RUN rm /root/.asdf/installs/nodejs/6.11.4/.npm/lib/node_modules/.hooks/postinstall
+RUN rm /root/.asdf/installs/nodejs/8.11.4/.npm/lib/node_modules/.hooks/postinstall
 
 COPY .tool-versions .tool-versions
 
