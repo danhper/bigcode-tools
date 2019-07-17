@@ -2,8 +2,9 @@ package com.tuvistavie.bigcode.asttools.models
 
 
 import com.fasterxml.jackson.databind.ObjectMapper
-
 import scalaz.syntax.std.boolean._
+
+import scala.collection.immutable.StringOps
 
 case class Vocabulary(
   items: Map[Int, VocabItem],
@@ -51,7 +52,7 @@ object Vocabulary {
   }
 
   def fromTSV(tsv: String): Vocabulary = {
-    val linesIterator = tsv.lines
+    val linesIterator = (tsv: StringOps).lines
     val headers = linesIterator.next().split("\t")
     val strippedIdentifiers = headers.length == 4
     val vocabItems = linesIterator.foldLeft(Map.empty[Int, VocabItem]) { case (items, row) =>
