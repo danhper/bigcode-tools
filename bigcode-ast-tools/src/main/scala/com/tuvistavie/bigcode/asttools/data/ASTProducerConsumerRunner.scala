@@ -9,7 +9,8 @@ object ASTProducerConsumerRunner extends LazyLogging {
   def run(filename: String, processor: QueueItemProcessorBuilder[String]): Unit = {
     val queue = new LinkedBlockingQueue[QueueItem[String]](50)
     val producer = new StringProducer(filename, queue)
-    val workers = Runtime.getRuntime.availableProcessors() - 1
+    val availableProcessors = Runtime.getRuntime.availableProcessors()
+    val workers = if (availableProcessors <= 1) 1 else availableProcessors - 1
     val producerThread = new Thread(producer)
     val pool = Executors.newFixedThreadPool(workers)
     val countDownLatch = new CountDownLatch(workers)
