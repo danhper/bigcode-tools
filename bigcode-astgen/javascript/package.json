@@ -7,7 +7,7 @@
     "bigcode-astgen-js": "./bin/bigcode-astgen-js"
   },
   "dependencies": {
-    "acorn": "^5.1.2",
+    "acorn": "^5.7.4",
     "async": "^2.5.0",
     "glob": "^7.1.2",
     "yargs": "10.0.3"
