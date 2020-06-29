@@ -76,7 +76,7 @@ class SkipgramDataGenerator(vocabulary: Vocabulary, skipgramConfig: SkipgramConf
       return List.empty
     }
     node.parent.map(n =>
-      getToken(n) +: findAncestors(node, currentDepth + 1)
+      getToken(n) +: findAncestors(n, currentDepth + 1)
     ).getOrElse(List.empty)
   }
 

@@ -21,19 +21,19 @@ class SkipgramDataGeneratorSpec extends BaseSpec {
     it("should have more data when ancestors window size increases") {
       val sizeOneWindowData = runSkipgramGenerator(baseConfig.copy(ancestorsWindowSize = 1))
       val sizeTwoWindowData = runSkipgramGenerator(baseConfig.copy(ancestorsWindowSize = 2))
-      sizeTwoWindowData.size should be > sizeOneWindowData.size
+      sizeTwoWindowData.toSet.size should be > sizeOneWindowData.toSet.size
     }
 
     it("should have more data when children window size increases") {
       val sizeOneWindowData = runSkipgramGenerator(baseConfig.copy(childrenWindowSize = 1))
       val sizeTwoWindowData = runSkipgramGenerator(baseConfig.copy(childrenWindowSize = 2))
-      sizeTwoWindowData.size should be > sizeOneWindowData.size
+      sizeTwoWindowData.toSet.size should be > sizeOneWindowData.toSet.size
     }
 
     it("should have more data when siblings are included") {
       val dataWithSiblings = runSkipgramGenerator(baseConfig.copy(includeSiblings = true))
       val dataWithoutSiblings = runSkipgramGenerator(baseConfig.copy(includeSiblings = false))
-      dataWithSiblings.size should be > dataWithoutSiblings.size
+      dataWithSiblings.toSet.size should be > dataWithoutSiblings.toSet.size
     }
   }
 
